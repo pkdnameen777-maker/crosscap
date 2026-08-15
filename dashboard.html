@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard — CrossCap</title>
+  <title>Sign in — CrossCap</title>
   <meta name="theme-color" content="#7e22ce" />
   <link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32" />
   <link rel="icon" href="assets/icon.png" type="image/png" sizes="512x512" />
@@ -32,145 +32,65 @@
           fontFamily: {
             sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', 'Roboto', 'sans-serif'],
             display: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', 'Roboto', 'sans-serif']
-          },
-          boxShadow: {
-            'soft': '0 4px 20px -4px rgba(88, 28, 135, 0.06), 0 2px 6px -2px rgba(0,0,0,0.04)',
-            'card': '0 8px 30px -8px rgba(88, 28, 135, 0.1), 0 4px 12px -4px rgba(0,0,0,0.04)',
           }
         }
       }
     }
   </script>
-  <style>
-    html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, sans-serif; letter-spacing: -0.011em; }
-    .font-display, h1, h2, h3 { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif; letter-spacing: -0.025em; }
-    .sidebar-link { transition: all 0.15s ease; }
-    .sidebar-link.active { background: #faf5ff; color: #6b21a8; font-weight: 600; }
-    .view { display: none; }
-    .view.active { display: block; }
-  </style>
 </head>
-<body class="bg-zinc-50/80 text-zinc-900 min-h-screen">
+<body class="bg-white text-zinc-900 min-h-screen flex flex-col">
 
-  <div class="flex min-h-screen">
-    <!-- Sidebar -->
-    <aside class="fixed inset-y-0 left-0 z-40 w-[240px] bg-white border-r border-zinc-100 flex flex-col hidden lg:flex">
-      <div class="h-16 flex items-center gap-2.5 px-5 border-b border-zinc-100">
-        <img src="assets/logo.png" alt="CrossCap" class="w-8 h-8 rounded-lg object-contain shrink-0" width="32" height="32" />
-        <span class="font-display font-semibold text-[16px] tracking-tight">CrossCap</span>
+  <header class="px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between border-b border-zinc-100/80">
+    <a href="index.html" class="flex items-center gap-2.5">
+      <img src="assets/logo.png" alt="CrossCap" class="w-8 h-8 rounded-lg object-contain shrink-0" width="32" height="32" />
+      <span class="font-display font-semibold text-[17px] tracking-tight">CrossCap</span>
+    </a>
+    <a href="index.html" class="text-[13px] text-zinc-500 hover:text-zinc-800 transition-colors">← Back to home</a>
+  </header>
+
+  <main class="flex-1 flex items-center justify-center px-4 py-12">
+    <div class="w-full max-w-[400px]">
+      <div class="bg-white rounded-[22px] border border-zinc-200/80 shadow-lg p-8 sm:p-9">
+        <div class="text-center mb-8">
+          <img src="assets/logo.png" alt="CrossCap" class="w-14 h-14 rounded-2xl mx-auto mb-5 object-contain shadow" width="56" height="56" />
+          <h1 class="font-display text-[22px] font-semibold text-zinc-900 tracking-tight mb-1.5">Welcome to CrossCap</h1>
+          <p class="text-[14px] text-zinc-500">Sign in to access your AED wealth dashboard</p>
+        </div>
+
+        <div id="auth-error" class="hidden mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs leading-relaxed"></div>
+
+        <!-- Google OAuth Button -->
+        <button id="googleBtn" type="button" class="flex items-center justify-center gap-3 w-full rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-800 text-[14.5px] font-semibold px-4 py-3.5 shadow-sm transition mb-4">
+          <svg class="w-5 h-5" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          Continue with Google
+        </button>
+
+        <div class="relative my-6">
+          <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-zinc-100"></div></div>
+          <div class="relative flex justify-center text-[12px]"><span class="px-3 bg-white text-zinc-400">or continue with email</span></div>
+        </div>
+
+        <form id="emailForm" class="space-y-3.5">
+          <div>
+            <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Email</label>
+            <input id="email" type="email" required placeholder="alex@example.com" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
+          </div>
+          <div>
+            <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Password</label>
+            <input id="password" type="password" required placeholder="••••••••" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
+          </div>
+          <button type="submit" class="w-full rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[14.5px] font-semibold px-4 py-3.5 shadow transition">
+            Sign In / Sign Up
+          </button>
+        </form>
       </div>
-
-      <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        <button data-view="overview" class="sidebar-link active w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-left">
-          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
-          Overview
-        </button>
-        <button data-view="portfolio" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
-          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/></svg>
-          Portfolio
-        </button>
-        <button data-view="add-asset" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
-          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-          Add Asset
-        </button>
-        <button data-view="real-estate" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
-          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/></svg>
-          Real Estate
-        </button>
-      </nav>
-
-      <div class="p-3 border-t border-zinc-100">
-        <button id="signOutBtn" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-zinc-500 hover:bg-zinc-50 transition">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
-          Sign Out
-        </button>
-      </div>
-    </aside>
-
-    <!-- Main area -->
-    <div class="flex-1 lg:pl-[240px]">
-      <header class="sticky top-0 z-30 h-16 bg-white/90 backdrop-blur-md border-b border-zinc-100 flex items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div>
-          <h1 id="userGreeting" class="font-display text-[17px] font-semibold tracking-tight text-zinc-900">Good morning</h1>
-        </div>
-        <div class="flex items-center gap-2.5">
-          <p id="userEmailDisplay" class="text-[13px] font-semibold text-zinc-700"></p>
-        </div>
-      </header>
-
-      <main class="p-4 sm:p-6 lg:p-8 max-w-[1400px]">
-        <!-- OVERVIEW -->
-        <div id="view-overview" class="view active">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="font-display text-xl font-semibold tracking-tight">Portfolio overview</h2>
-            <button data-view="add-asset" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13.5px] font-semibold px-4 py-2.5">Add Asset</button>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-            <div class="bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft">
-              <p class="text-[12px] font-medium text-zinc-400 mb-1">Total Net Worth</p>
-              <p id="totalNetWorthCard" class="font-display text-[26px] font-semibold tracking-tight text-zinc-900">AED 0.00</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- PORTFOLIO -->
-        <div id="view-portfolio" class="view">
-          <h2 class="font-display text-xl font-semibold tracking-tight mb-6">Portfolio Holdings</h2>
-          <div class="bg-white rounded-2xl border border-zinc-100 shadow-soft overflow-hidden">
-            <table class="w-full text-left text-[13.5px]">
-              <thead>
-                <tr class="text-[11px] text-zinc-400 uppercase tracking-wider border-b border-zinc-100">
-                  <th class="px-5 py-3.5 font-medium">Asset</th>
-                  <th class="px-5 py-3.5 font-medium">Exchange</th>
-                  <th class="px-5 py-3.5 font-medium text-right">Qty</th>
-                  <th class="px-5 py-3.5 font-medium text-right">Avg Cost</th>
-                  <th class="px-5 py-3.5 font-medium text-right">Total Value</th>
-                </tr>
-              </thead>
-              <tbody id="portfolioTableBody" class="divide-y divide-zinc-50"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- ADD ASSET -->
-        <div id="view-add-asset" class="view">
-          <h2 class="font-display text-xl font-semibold tracking-tight mb-4">Add Asset</h2>
-          <div class="bg-white rounded-2xl border border-zinc-100 p-6 shadow-soft max-w-xl">
-            <div class="space-y-4">
-              <div>
-                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Ticker Symbol</label>
-                <input id="assetSymbol" type="text" placeholder="e.g. AAPL, EMAAR" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]" />
-              </div>
-              <div>
-                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Market</label>
-                <select id="assetMarket" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]">
-                  <option value="DFM">UAE (DFM / ADX)</option>
-                  <option value="US">US (NYSE / NASDAQ)</option>
-                  <option value="NSE">India (NSE / BSE)</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Shares / Quantity</label>
-                <input id="assetShares" type="number" placeholder="10" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]" />
-              </div>
-              <div>
-                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Average Purchase Price (AED)</label>
-                <input id="assetPrice" type="number" step="0.01" placeholder="100.00" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]" />
-              </div>
-              <button id="saveAssetBtn" class="w-full rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[14px] font-semibold px-5 py-3">Save Asset</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- REAL ESTATE -->
-        <div id="view-real-estate" class="view">
-          <h2 class="font-display text-xl font-semibold tracking-tight mb-4">Real Estate</h2>
-          <p class="text-sm text-zinc-500">Add off-plan payment plans and track milestones.</p>
-        </div>
-      </main>
     </div>
-  </div>
+  </main>
 
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script>
@@ -179,104 +99,61 @@
       const SUPABASE_ANON_KEY = 'PASTE_YOUR_ACTUAL_ANON_KEY_HERE';
 
       const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      let currentUser = null;
 
-      async function checkSession() {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (!session) {
-          window.location.href = 'login.html';
-          return;
+      supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (session) {
+          window.location.href = 'dashboard.html';
         }
-        currentUser = session.user;
-        const name = currentUser.user_metadata?.full_name || currentUser.email;
-        document.getElementById('userGreeting').textContent = `Good morning, ${name}`;
-        document.getElementById('userEmailDisplay').textContent = currentUser.email;
-        loadHoldings();
-      }
-      checkSession();
-
-      document.getElementById('signOutBtn').addEventListener('click', async () => {
-        await supabaseClient.auth.signOut();
-        window.location.href = 'login.html';
       });
 
-      document.getElementById('saveAssetBtn').addEventListener('click', async () => {
-        const symbol = document.getElementById('assetSymbol').value.trim().toUpperCase();
-        const market = document.getElementById('assetMarket').value;
-        const shares = parseFloat(document.getElementById('assetShares').value);
-        const avg_buy_price = parseFloat(document.getElementById('assetPrice').value);
-
-        if (!symbol || isNaN(shares) || isNaN(avg_buy_price)) {
-          alert('Please enter valid details.');
-          return;
-        }
-
-        const { error } = await supabaseClient.from('holdings').insert([{
-          user_id: currentUser.id,
-          symbol,
-          market,
-          asset_type: 'stocks',
-          shares,
-          avg_buy_price,
-          currency: 'AED'
-        }]);
-
-        if (error) {
-          alert('Error: ' + error.message);
+      const errorBox = document.getElementById('auth-error');
+      function showError(msg) {
+        if (errorBox) {
+          errorBox.textContent = msg;
+          errorBox.classList.remove('hidden');
         } else {
-          alert('Asset saved!');
-          showView('portfolio');
-          loadHoldings();
+          alert(msg);
         }
-      });
-
-      async function loadHoldings() {
-        const { data: holdings, error } = await supabaseClient.from('holdings').select('*');
-        if (error || !holdings) return;
-
-        const tbody = document.getElementById('portfolioTableBody');
-        tbody.innerHTML = '';
-        let totalVal = 0;
-
-        holdings.forEach(item => {
-          const val = item.shares * item.avg_buy_price;
-          totalVal += val;
-          tbody.innerHTML += `
-            <tr class="hover:bg-zinc-50/50">
-              <td class="px-5 py-4 font-medium">${item.symbol}</td>
-              <td class="px-5 py-4 text-zinc-500">${item.market}</td>
-              <td class="px-5 py-4 text-right tabular-nums">${item.shares}</td>
-              <td class="px-5 py-4 text-right tabular-nums">${item.avg_buy_price.toFixed(2)}</td>
-              <td class="px-5 py-4 text-right tabular-nums font-semibold">${val.toLocaleString(undefined, { minimumFractionDigits: 2 })} AED</td>
-            </tr>
-          `;
-        });
-
-        document.getElementById('totalNetWorthCard').textContent = `AED ${totalVal.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
       }
 
-      function showView(name) {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.querySelectorAll('.sidebar-link').forEach(l => {
-          l.classList.remove('active');
-          l.classList.add('text-zinc-500');
+      const googleBtn = document.getElementById('googleBtn');
+      if (googleBtn) {
+        googleBtn.addEventListener('click', async () => {
+          const { error } = await supabaseClient.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo: window.location.origin + '/dashboard.html'
+            }
+          });
+          if (error) showError(error.message);
         });
-        const target = document.getElementById('view-' + name);
-        if (target) target.classList.add('active');
-        document.querySelectorAll(`[data-view="${name}"]`).forEach(btn => {
-          if (btn.classList.contains('sidebar-link')) {
-            btn.classList.add('active');
-            btn.classList.remove('text-zinc-500');
+      }
+
+      const emailForm = document.getElementById('emailForm');
+      if (emailForm) {
+        emailForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const email = document.getElementById('email').value;
+          const password = document.getElementById('password').value;
+
+          let { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+          if (error && (error.message.includes('Invalid login credentials') || error.message.includes('User not found'))) {
+            const signUpRes = await supabaseClient.auth.signUp({ email, password });
+            if (signUpRes.error) {
+              showError(signUpRes.error.message);
+              return;
+            }
+            window.location.href = 'dashboard.html';
+            return;
+          }
+
+          if (error) {
+            showError(error.message);
+          } else {
+            window.location.href = 'dashboard.html';
           }
         });
       }
-
-      document.querySelectorAll('[data-view]').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.preventDefault();
-          showView(btn.getAttribute('data-view'));
-        });
-      });
     });
   </script>
 </body>
