@@ -1,155 +1,283 @@
-<!-- Include Supabase JS Client in <head> or right before </body> -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — CrossCap</title>
+  <meta name="theme-color" content="#7e22ce" />
+  <link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="icon" href="assets/icon.png" type="image/png" sizes="512x512" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" sizes="180x180" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    // REPLACE THESE WITH YOUR SUPABASE PROJECT CREDENTIALS:
-    const SUPABASE_URL = 'https://mbweotdviwxmutxdjlpj.supabase.co';
-    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    let currentUser = null;
-
-    // 1. Auth Guard & User Profile
-    async function initAuth() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        window.location.href = 'login.html';
-        return;
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50:  '#faf5ff',
+              100: '#f3e8ff',
+              200: '#e9d5ff',
+              300: '#d8b4fe',
+              400: '#c084fc',
+              500: '#a855f7',
+              600: '#9333ea',
+              700: '#7e22ce',
+              800: '#6b21a8',
+              900: '#581c87',
+              950: '#3b0764',
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', 'Roboto', 'sans-serif'],
+            display: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', 'Roboto', 'sans-serif']
+          },
+          boxShadow: {
+            'soft': '0 4px 20px -4px rgba(88, 28, 135, 0.06), 0 2px 6px -2px rgba(0,0,0,0.04)',
+            'card': '0 8px 30px -8px rgba(88, 28, 135, 0.1), 0 4px 12px -4px rgba(0,0,0,0.04)',
+          }
+        }
       }
-      currentUser = session.user;
-
-      const userName = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
-      const headerTitle = document.querySelector('header h1');
-      if (headerTitle) headerTitle.textContent = `Good morning, ${userName}`;
-
-      const nameDisplay = document.querySelector('header p.font-semibold');
-      if (nameDisplay) nameDisplay.textContent = userName;
-
-      // Load user assets from DB
-      loadPortfolioHoldings();
     }
-    initAuth();
+  </script>
+  <style>
+    html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, sans-serif; letter-spacing: -0.011em; }
+    .font-display, h1, h2, h3 { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif; letter-spacing: -0.025em; }
+    .sidebar-link { transition: all 0.15s ease; }
+    .sidebar-link.active { background: #faf5ff; color: #6b21a8; font-weight: 600; }
+    .view { display: none; }
+    .view.active { display: block; }
+  </style>
+</head>
+<body class="bg-zinc-50/80 text-zinc-900 min-h-screen">
 
-    // 2. Sign Out Handler
-    const signOutBtn = document.querySelector('a[href="index.html"]');
-    if (signOutBtn && signOutBtn.textContent.includes('Sign Out')) {
-      signOutBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        await supabase.auth.signOut();
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="fixed inset-y-0 left-0 z-40 w-[240px] bg-white border-r border-zinc-100 flex flex-col hidden lg:flex">
+      <div class="h-16 flex items-center gap-2.5 px-5 border-b border-zinc-100">
+        <img src="assets/logo.png" alt="CrossCap" class="w-8 h-8 rounded-lg object-contain shrink-0" width="32" height="32" />
+        <span class="font-display font-semibold text-[16px] tracking-tight">CrossCap</span>
+      </div>
+
+      <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+        <button data-view="overview" class="sidebar-link active w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-left">
+          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+          Overview
+        </button>
+        <button data-view="portfolio" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
+          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/></svg>
+          Portfolio
+        </button>
+        <button data-view="add-asset" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
+          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+          Add Asset
+        </button>
+        <button data-view="real-estate" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
+          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/></svg>
+          Real Estate
+        </button>
+      </nav>
+
+      <div class="p-3 border-t border-zinc-100">
+        <button id="signOutBtn" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-zinc-500 hover:bg-zinc-50 transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
+          Sign Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main area -->
+    <div class="flex-1 lg:pl-[240px]">
+      <header class="sticky top-0 z-30 h-16 bg-white/90 backdrop-blur-md border-b border-zinc-100 flex items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div>
+          <h1 id="userGreeting" class="font-display text-[17px] font-semibold tracking-tight text-zinc-900">Good morning</h1>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <p id="userEmailDisplay" class="text-[13px] font-semibold text-zinc-700"></p>
+        </div>
+      </header>
+
+      <main class="p-4 sm:p-6 lg:p-8 max-w-[1400px]">
+        <!-- OVERVIEW -->
+        <div id="view-overview" class="view active">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="font-display text-xl font-semibold tracking-tight">Portfolio overview</h2>
+            <button data-view="add-asset" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13.5px] font-semibold px-4 py-2.5">Add Asset</button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div class="bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft">
+              <p class="text-[12px] font-medium text-zinc-400 mb-1">Total Net Worth</p>
+              <p id="totalNetWorthCard" class="font-display text-[26px] font-semibold tracking-tight text-zinc-900">AED 0.00</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- PORTFOLIO -->
+        <div id="view-portfolio" class="view">
+          <h2 class="font-display text-xl font-semibold tracking-tight mb-6">Portfolio Holdings</h2>
+          <div class="bg-white rounded-2xl border border-zinc-100 shadow-soft overflow-hidden">
+            <table class="w-full text-left text-[13.5px]">
+              <thead>
+                <tr class="text-[11px] text-zinc-400 uppercase tracking-wider border-b border-zinc-100">
+                  <th class="px-5 py-3.5 font-medium">Asset</th>
+                  <th class="px-5 py-3.5 font-medium">Exchange</th>
+                  <th class="px-5 py-3.5 font-medium text-right">Qty</th>
+                  <th class="px-5 py-3.5 font-medium text-right">Avg Cost</th>
+                  <th class="px-5 py-3.5 font-medium text-right">Total Value</th>
+                </tr>
+              </thead>
+              <tbody id="portfolioTableBody" class="divide-y divide-zinc-50"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ADD ASSET -->
+        <div id="view-add-asset" class="view">
+          <h2 class="font-display text-xl font-semibold tracking-tight mb-4">Add Asset</h2>
+          <div class="bg-white rounded-2xl border border-zinc-100 p-6 shadow-soft max-w-xl">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Ticker Symbol</label>
+                <input id="assetSymbol" type="text" placeholder="e.g. AAPL, EMAAR" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]" />
+              </div>
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Market</label>
+                <select id="assetMarket" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]">
+                  <option value="DFM">UAE (DFM / ADX)</option>
+                  <option value="US">US (NYSE / NASDAQ)</option>
+                  <option value="NSE">India (NSE / BSE)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Shares / Quantity</label>
+                <input id="assetShares" type="number" placeholder="10" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]" />
+              </div>
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Average Purchase Price (AED)</label>
+                <input id="assetPrice" type="number" step="0.01" placeholder="100.00" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]" />
+              </div>
+              <button id="saveAssetBtn" class="w-full rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[14px] font-semibold px-5 py-3">Save Asset</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- REAL ESTATE -->
+        <div id="view-real-estate" class="view">
+          <h2 class="font-display text-xl font-semibold tracking-tight mb-4">Real Estate</h2>
+          <p class="text-sm text-zinc-500">Add off-plan payment plans and track milestones.</p>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const SUPABASE_URL = 'https://mbweotdviwxmutxdjlpj.supabase.co';
+      const SUPABASE_ANON_KEY = 'PASTE_YOUR_ACTUAL_ANON_KEY_HERE';
+
+      const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      let currentUser = null;
+
+      async function checkSession() {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) {
+          window.location.href = 'login.html';
+          return;
+        }
+        currentUser = session.user;
+        const name = currentUser.user_metadata?.full_name || currentUser.email;
+        document.getElementById('userGreeting').textContent = `Good morning, ${name}`;
+        document.getElementById('userEmailDisplay').textContent = currentUser.email;
+        loadHoldings();
+      }
+      checkSession();
+
+      document.getElementById('signOutBtn').addEventListener('click', async () => {
+        await supabaseClient.auth.signOut();
         window.location.href = 'login.html';
       });
-    }
 
-    // 3. Save Stock Holding to Database
-    const stockForm = document.getElementById('form-stocks');
-    if (stockForm) {
-      const saveBtn = stockForm.querySelector('button.bg-brand-700');
-      saveBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        const ticker = stockForm.querySelector('input[type="text"]').value.trim().toUpperCase();
-        const market = stockForm.querySelector('select').value;
-        const qty = parseFloat(stockForm.querySelector('input[placeholder="100"]').value);
-        const price = parseFloat(stockForm.querySelector('input[placeholder="10.45"]').value);
+      document.getElementById('saveAssetBtn').addEventListener('click', async () => {
+        const symbol = document.getElementById('assetSymbol').value.trim().toUpperCase();
+        const market = document.getElementById('assetMarket').value;
+        const shares = parseFloat(document.getElementById('assetShares').value);
+        const avg_buy_price = parseFloat(document.getElementById('assetPrice').value);
 
-        if (!ticker || isNaN(qty) || isNaN(price)) {
-          alert('Please enter valid ticker, quantity, and price.');
+        if (!symbol || isNaN(shares) || isNaN(avg_buy_price)) {
+          alert('Please enter valid details.');
           return;
         }
 
-        const { error } = await supabase.from('holdings').insert([{
+        const { error } = await supabaseClient.from('holdings').insert([{
           user_id: currentUser.id,
-          symbol: ticker,
-          market: market,
+          symbol,
+          market,
           asset_type: 'stocks',
-          shares: qty,
-          avg_buy_price: price,
+          shares,
+          avg_buy_price,
           currency: 'AED'
         }]);
 
         if (error) {
-          alert('Error saving asset: ' + error.message);
+          alert('Error: ' + error.message);
         } else {
-          alert('Asset saved successfully!');
+          alert('Asset saved!');
           showView('portfolio');
-          loadPortfolioHoldings();
+          loadHoldings();
         }
       });
-    }
 
-    // 4. Fetch & Render User Holdings
-    async function loadPortfolioHoldings() {
-      const { data: holdings, error } = await supabase.from('holdings').select('*');
-      if (error || !holdings) return;
+      async function loadHoldings() {
+        const { data: holdings, error } = await supabaseClient.from('holdings').select('*');
+        if (error || !holdings) return;
 
-      const tbody = document.querySelector('#view-portfolio tbody');
-      if (!tbody) return;
+        const tbody = document.getElementById('portfolioTableBody');
+        tbody.innerHTML = '';
+        let totalVal = 0;
 
-      tbody.innerHTML = '';
-      let totalStockValue = 0;
+        holdings.forEach(item => {
+          const val = item.shares * item.avg_buy_price;
+          totalVal += val;
+          tbody.innerHTML += `
+            <tr class="hover:bg-zinc-50/50">
+              <td class="px-5 py-4 font-medium">${item.symbol}</td>
+              <td class="px-5 py-4 text-zinc-500">${item.market}</td>
+              <td class="px-5 py-4 text-right tabular-nums">${item.shares}</td>
+              <td class="px-5 py-4 text-right tabular-nums">${item.avg_buy_price.toFixed(2)}</td>
+              <td class="px-5 py-4 text-right tabular-nums font-semibold">${val.toLocaleString(undefined, { minimumFractionDigits: 2 })} AED</td>
+            </tr>
+          `;
+        });
 
-      holdings.forEach(item => {
-        const val = item.shares * item.avg_buy_price;
-        totalStockValue += val;
-        tbody.innerHTML += `
-          <tr class="hover:bg-zinc-50/50">
-            <td class="px-5 py-4">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-brand-100 flex items-center justify-center text-[10px] font-bold text-brand-700">${item.symbol.slice(0, 4)}</div>
-                <div>
-                  <p class="font-medium text-zinc-900">${item.symbol}</p>
-                  <p class="text-[11px] text-zinc-400">${item.asset_type.toUpperCase()}</p>
-                </div>
-              </div>
-            </td>
-            <td class="px-5 py-4 text-zinc-500">${item.market}</td>
-            <td class="px-5 py-4 text-right tabular-nums">${item.shares.toLocaleString()}</td>
-            <td class="px-5 py-4 text-right tabular-nums">${item.avg_buy_price.toFixed(2)}</td>
-            <td class="px-5 py-4 text-right tabular-nums font-medium">${item.avg_buy_price.toFixed(2)}</td>
-            <td class="px-5 py-4 text-right tabular-nums font-medium">${val.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-            <td class="px-5 py-4 text-right tabular-nums text-emerald-600 font-medium">+0.0%</td>
-          </tr>
-        `;
-      });
-
-      // Update Net Worth Card on Overview if assets exist
-      const netWorthDisplay = document.querySelector('#view-overview .font-display.text-\\[26px\\]');
-      if (netWorthDisplay && totalStockValue > 0) {
-        netWorthDisplay.textContent = `AED ${totalStockValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+        document.getElementById('totalNetWorthCard').textContent = `AED ${totalVal.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
       }
-    }
 
-    // View switcher helper
-    const links = document.querySelectorAll('[data-view]');
-    const views = document.querySelectorAll('.view');
+      function showView(name) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.sidebar-link').forEach(l => {
+          l.classList.remove('active');
+          l.classList.add('text-zinc-500');
+        });
+        const target = document.getElementById('view-' + name);
+        if (target) target.classList.add('active');
+        document.querySelectorAll(`[data-view="${name}"]`).forEach(btn => {
+          if (btn.classList.contains('sidebar-link')) {
+            btn.classList.add('active');
+            btn.classList.remove('text-zinc-500');
+          }
+        });
+      }
 
-    function showView(name) {
-      views.forEach(v => v.classList.remove('active'));
-      document.querySelectorAll('.sidebar-link').forEach(l => {
-        l.classList.remove('active');
-        l.classList.add('text-zinc-500');
-      });
-      const target = document.getElementById('view-' + name);
-      if (target) target.classList.add('active');
-      document.querySelectorAll(`[data-view="${name}"]`).forEach(btn => {
-        if (btn.classList.contains('sidebar-link')) {
-          btn.classList.add('active');
-          btn.classList.remove('text-zinc-500');
-        }
-      });
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    links.forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const name = btn.getAttribute('data-view');
-        if (name) showView(name);
+      document.querySelectorAll('[data-view]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          showView(btn.getAttribute('data-view'));
+        });
       });
     });
-
-    function showReForm(type) {
-      document.getElementById('form-offplan').classList.add('hidden');
-      document.getElementById('form-ready').classList.add('hidden');
-      if (type === 'offplan') document.getElementById('form-offplan').classList.remove('hidden');
-      if (type === 'ready') document.getElementById('form-ready').classList.remove('hidden');
-    }
   </script>
+</body>
+</html>
