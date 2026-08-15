@@ -1,73 +1,62 @@
-# CrossCap — UAE-First Wealth OS Landing Page
+# CrossCap — UAE-First Wealth OS
 
-Premium marketing site for **CrossCap**, the AED-native wealth operating system for global expats and investors in the UAE.
+Premium static website + app flow for CrossCap.
 
-## Features
+## Pages
 
-- Clean white-primary design with refined purple (brand) accent palette
-- Fully responsive (mobile → desktop)
-- Interactive dashboard mockup reflecting the product (net worth, cash flow, 30-day outflow radar, off-plan installments, Golden Visa progress)
-- Sections covering:
-  - Hero with dual CTAs (Launch App / Book Demo)
-  - Multi-asset AED dashboard
-  - Off-plan real estate radar + installment table
-  - Passive income & dividend tracking
-  - 3-step How it Works
-  - Liquid assets (stocks / gold / crypto) teaser
+| File | Description |
+|------|-------------|
+| `index.html` | Marketing landing page |
+| `login.html` | Sign-in / Continue with Google |
+| `dashboard.html` | Full wealth dashboard (all modules) |
 
-## Tech
+## User flow
 
-- Pure HTML + Tailwind CSS (CDN) + minimal vanilla JS
-- No build step required
-- Optimized for Vercel / Netlify / GitHub Pages
+1. **Landing** → click **Launch App** or **Book Demo**
+2. **Login** → **Continue with Google** (or email) → enters Dashboard
+3. **Dashboard** modules:
+   - Overview (Net Worth, Cash Flow, 30-Day Outflow Radar, Golden Visa)
+   - Portfolio (stocks table)
+   - Add Asset (Stocks & ETFs, Real Estate, Crypto, Gold)
+   - Real Estate (Ready + Off-Plan forms with installment schedule + reminder engine)
+   - AI Insights
+   - Cash Flow
+   - Goals
+   - Reports
+   - Settings
+
+## Design
+
+- Font: San Francisco (SF Pro) system stack
+- Primary: white surfaces
+- Accent: purple brand scale
+- Fully responsive
 
 ## Deploy to Vercel
-
-### Option A — GitHub + Vercel (recommended)
-
-1. Create a new repository on GitHub
-2. Push this folder:
 
 ```bash
 cd crosscap-website
 git init
 git add .
-git commit -m "Initial CrossCap landing page"
+git commit -m "CrossCap full flow"
 git branch -M main
 git remote add origin https://github.com/YOUR_USERNAME/crosscap-website.git
 git push -u origin main
 ```
 
-3. Go to [vercel.com](https://vercel.com) → **Add New Project** → Import the GitHub repo
-4. Framework Preset: **Other** (or leave blank)
-5. Click **Deploy**
+Then import the repo on vercel.com.
 
-Your site will be live at `https://your-project.vercel.app`
-
-### Option B — Vercel CLI
-
-```bash
-npm i -g vercel
-cd crosscap-website
-vercel
-```
+Or drag the folder into Vercel / Netlify.
 
 ## Local preview
 
-Just open `index.html` in a browser, or run a simple static server:
+Open `index.html` in a browser, or:
 
 ```bash
 npx serve .
-# or
-python3 -m http.server 3000
 ```
 
-## Customization
-
-- Brand colors are defined in the Tailwind config inside `<script>` in `index.html` (`brand-50` → `brand-950`)
-- Replace `mailto:hello@crosscap.ae` and CTA links with your real app / Calendly URLs
-- Favicon and Open Graph tags can be added in `<head>` as needed
-
----
-
-Built for the CrossCap startup · 2026
+Then visit:
+- `/` → Landing
+- `/login.html` → Auth
+- `/dashboard.html` → App

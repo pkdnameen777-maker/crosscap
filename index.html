@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CrossCap — The UAE-First Wealth OS for Global Expats</title>
   <meta name="description" content="Unify live global stocks, dividend cash flow, and off-plan real estate payment schedules in one AED-denominated dashboard. Never miss a property installment again." />
+  <meta name="theme-color" content="#7e22ce" />
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="assets/icon.svg" />
+  <link rel="manifest" href="manifest.webmanifest" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -145,12 +149,8 @@
   <header class="fixed top-0 inset-x-0 z-50 nav-blur border-b border-zinc-100/70">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16 lg:h-[70px]">
-        <a href="#" class="flex items-center gap-2.5 group">
-          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 flex items-center justify-center shadow-soft group-hover:shadow-glow transition-shadow duration-300">
-            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.5l4.5-4.5 4.5 4.5 6-6M21 10.5v7.5a1.5 1.5 0 01-1.5 1.5H4.5A1.5 1.5 0 013 18V6a1.5 1.5 0 011.5-1.5h9" />
-            </svg>
-          </div>
+        <a href="index.html" class="flex items-center gap-2.5 group">
+          <img src="assets/logo.svg" alt="CrossCap" class="w-9 h-9 rounded-xl shadow-soft group-hover:shadow-glow transition-shadow duration-300" />
           <span class="font-display font-semibold text-[19px] tracking-tight text-zinc-900">CrossCap</span>
         </a>
 
@@ -158,12 +158,12 @@
           <a href="#features" class="text-[13.5px] font-medium text-zinc-500 hover:text-zinc-900 transition-colors">Features</a>
           <a href="#how-it-works" class="text-[13.5px] font-medium text-zinc-500 hover:text-zinc-900 transition-colors">How it Works</a>
           <a href="#real-estate" class="text-[13.5px] font-medium text-zinc-500 hover:text-zinc-900 transition-colors">Off-Plan Radar</a>
-          <a href="#demo" class="text-[13.5px] font-medium text-zinc-500 hover:text-zinc-900 transition-colors">Dashboard</a>
+          <a href="login.html" class="text-[13.5px] font-medium text-zinc-500 hover:text-zinc-900 transition-colors">Dashboard</a>
         </nav>
 
         <div class="flex items-center gap-3">
-          <a href="#demo" class="hidden sm:inline-flex text-[13.5px] font-medium text-zinc-600 hover:text-zinc-900 transition-colors px-3 py-2">Book Demo</a>
-          <a href="#cta" class="btn-primary inline-flex items-center gap-2 rounded-full bg-brand-700 hover:bg-brand-800 text-white text-[13.5px] font-semibold px-5 py-2.5 shadow-soft hover:shadow-glow">
+          <a href="login.html" class="hidden sm:inline-flex text-[13.5px] font-medium text-zinc-600 hover:text-zinc-900 transition-colors px-3 py-2">Book Demo</a>
+          <a href="login.html" class="btn-primary inline-flex items-center gap-2 rounded-full bg-brand-700 hover:bg-brand-800 text-white text-[13.5px] font-semibold px-5 py-2.5 shadow-soft hover:shadow-glow">
             Launch App
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
           </a>
@@ -194,11 +194,11 @@
         </p>
 
         <div class="flex flex-col sm:flex-row items-center justify-center gap-3.5 mb-14">
-          <a href="#cta" class="btn-primary w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-2xl bg-brand-700 hover:bg-brand-800 text-white text-[15px] font-semibold px-7 py-3.5 shadow-card hover:shadow-glow">
+          <a href="login.html" class="btn-primary w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-2xl bg-brand-700 hover:bg-brand-800 text-white text-[15px] font-semibold px-7 py-3.5 shadow-card hover:shadow-glow">
             Launch App
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
           </a>
-          <a href="#demo" class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-2xl bg-white border border-zinc-200/90 hover:border-zinc-300 text-zinc-800 text-[15px] font-semibold px-7 py-3.5 shadow-soft hover:shadow-card transition-all">
+          <a href="login.html" class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-2xl bg-white border border-zinc-200/90 hover:border-zinc-300 text-zinc-800 text-[15px] font-semibold px-7 py-3.5 shadow-soft hover:shadow-card transition-all">
             Book Product Demo
           </a>
         </div>
@@ -244,9 +244,7 @@
               <!-- Sidebar -->
               <aside class="hidden lg:flex flex-col w-48 shrink-0">
                 <div class="flex items-center gap-2.5 mb-7">
-                  <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-600 to-brand-800 flex items-center justify-center">
-                    <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.5l4.5-4.5 4.5 4.5 6-6"/></svg>
-                  </div>
+                  <img src="assets/logo.svg" alt="CrossCap" class="w-7 h-7 rounded-lg" />
                   <span class="font-display font-semibold text-[15px] tracking-tight text-zinc-900">CrossCap</span>
                 </div>
                 <nav class="space-y-0.5 text-[13px]">
@@ -638,7 +636,7 @@
           Join early access for global expats and investors in the UAE. Launch the app or book a personalized product demo.
         </p>
         <div class="flex flex-col sm:flex-row items-center justify-center gap-3.5">
-          <a href="#" class="btn-primary w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-2xl bg-brand-700 hover:bg-brand-800 text-white text-[15px] font-semibold px-7 py-3.5 shadow-card hover:shadow-glow">
+          <a href="login.html" class="btn-primary w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-2xl bg-brand-700 hover:bg-brand-800 text-white text-[15px] font-semibold px-7 py-3.5 shadow-card hover:shadow-glow">
             Launch App
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
           </a>
@@ -655,9 +653,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex flex-col md:flex-row items-center justify-between gap-5">
         <div class="flex items-center gap-2.5">
-          <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-600 to-brand-800 flex items-center justify-center">
-            <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.5l4.5-4.5 4.5 4.5 6-6"/></svg>
-          </div>
+          <img src="assets/logo.svg" alt="CrossCap" class="w-7 h-7 rounded-lg" />
           <span class="font-display font-semibold text-[16px] tracking-tight text-zinc-900">CrossCap</span>
         </div>
         <p class="text-[13px] text-zinc-400 text-center">

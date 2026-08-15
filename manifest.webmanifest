@@ -1,0 +1,24 @@
+{
+  "name": "CrossCap — UAE Wealth OS",
+  "short_name": "CrossCap",
+  "description": "The UAE-First Wealth OS for Global Expats and Investors",
+  "start_url": "/dashboard.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#7e22ce",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
