@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
-  <rect fill="#7e22cf" x="170.31" y="165.48" width="637.36" height="666.14" rx="191.04" ry="191.04"/>
-  <!-- stylized c shapes using paths approximating the letters for better favicon reliability -->
-  <text x="217.16" y="712.92" fill="#fff" font-family="system-ui, -apple-system, sans-serif" font-size="860" font-weight="500">c</text>
-  <text x="372.15" y="593.15" fill="#fff" font-family="system-ui, -apple-system, sans-serif" font-size="395" font-weight="700">c</text>
-  <polygon fill="#7e22cf" points="701.8 331.45 683.27 349.1 488.2 470.91 483.78 477.09 477.6 478.86 515.56 522.11 527.92 523.87 759.18 670.4 701.8 331.45"/>
-  <circle fill="#fff" cx="671.85" cy="484.88" r="63.87"/>
-</svg>
