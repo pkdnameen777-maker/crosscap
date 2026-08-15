@@ -96,12 +96,15 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const SUPABASE_URL = 'https://mbweotdviwxmutxdjlpj.supabase.co';
-      const SUPABASE_ANON_KEY = 'PASTE_YOUR_ACTUAL_ANON_KEY_HERE';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1id2VvdGR2aXd4bXV0eGRqbHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MTAxNDQsImV4cCI6MjEwMjM4NjE0NH0.2hbHdyxS7zqiP-CexUsu8hI0nsgkdjCBeIKcQrmJCAw';
 
       const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      supabaseClient.auth.getSession().then(({ data: { session } }) => {
-        if (session) window.location.href = 'dashboard.html';
+      // Auto-redirect if session is active
+      supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (session) {
+          window.location.href = 'dashboard.html';
+        }
       });
 
       const errorBox = document.getElementById('auth-error');
@@ -114,6 +117,7 @@
         }
       }
 
+      // Google Sign In
       const googleBtn = document.getElementById('googleBtn');
       if (googleBtn) {
         googleBtn.addEventListener('click', async () => {
@@ -127,6 +131,7 @@
         });
       }
 
+      // Email Sign In / Sign Up
       const emailForm = document.getElementById('emailForm');
       if (emailForm) {
         emailForm.addEventListener('submit', async (e) => {
