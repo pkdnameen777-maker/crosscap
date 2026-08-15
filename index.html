@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CrossCap — The UAE-First Wealth OS for Global Expats</title>
+  <meta name="description" content="Unify live global stocks, dividend cash flow, and off-plan real estate payment schedules in one AED-denominated dashboard. Never miss a property installment again." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50:  '#faf5ff',
+              100: '#f3e8ff',
+              200: '#e9d5ff',
+              300: '#d8b4fe',
+              400: '#c084fc',
+              500: '#a855f7',
+              600: '#9333ea',
+              700: '#7e22ce',
+              800: '#6b21a8',
+              900: '#581c87',
+              950: '#3b0764',
+            }
+          },
+          fontFamily: {
+            sans: [
+              '-apple-system',
+              'BlinkMacSystemFont',
+              '"SF Pro Text"',
+              '"SF Pro Display"',
+              '"Segoe UI"',
+              'Roboto',
+              '"Helvetica Neue"',
+              'Arial',
+              'sans-serif'
+            ],
+            display: [
+              '-apple-system',
+              'BlinkMacSystemFont',
+              '"SF Pro Display"',
+              '"SF Pro Text"',
+              '"Segoe UI"',
+              'Roboto',
+              '"Helvetica Neue"',
+              'Arial',
+              'sans-serif'
+            ]
+          },
+          boxShadow: {
+            'soft': '0 4px 24px -4px rgba(88, 28, 135, 0.07), 0 2px 8px -2px rgba(0,0,0,0.04)',
+            'card': '0 10px 40px -10px rgba(88, 28, 135, 0.12), 0 4px 14px -4px rgba(0,0,0,0.05)',
+            'glow': '0 0 48px -10px rgba(168, 85, 247, 0.35)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* SF Pro optical & system font polish */
+    html {
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+      letter-spacing: -0.01em;
+    }
+
+    /* Display headings – tighter tracking like SF Pro Display */
+    .font-display,
+    h1, h2, h3 {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      letter-spacing: -0.025em;
+    }
+
+    h1 {
+      letter-spacing: -0.035em;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #7e22ce 0%, #a855f7 45%, #c084fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-gradient {
+      background:
+        radial-gradient(ellipse 80% 55% at 50% -15%, rgba(168, 85, 247, 0.14), transparent),
+        radial-gradient(ellipse 55% 35% at 92% 8%, rgba(192, 132, 252, 0.09), transparent),
+        radial-gradient(ellipse 45% 28% at 8% 18%, rgba(126, 34, 206, 0.07), transparent);
+    }
+
+    .dashboard-mock {
+      background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%);
+    }
+
+    .chart-line {
+      stroke-dasharray: 1000;
+      stroke-dashoffset: 1000;
+      animation: drawLine 2.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes drawLine {
+      to { stroke-dashoffset: 0; }
+    }
+
+    .fade-up {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+                  transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .nav-blur {
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: saturate(180%) blur(16px);
+      -webkit-backdrop-filter: saturate(180%) blur(16px);
+    }
+
+    /* Subtle button press */
+    .btn-primary {
+      transition: transform 0.15s ease, box-shadow 0.25s ease, background-color 0.2s ease;
+    }
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+  </style>
+</head>
+<body class="bg-white text-zinc-900 antialiased">
+
+  <!-- Navigation -->
+  <header class="fixed top-0 inset-x-0 z-50 nav-blur border-b border-zinc-100/70">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 lg:h-[70px]">
+        <a href="#" class="flex items-center gap-2.5 group">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 flex items-center justify-center shadow-soft group-hover:shadow-glow transition-shadow duration-300">
+            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.5l4.5-4.5 4.5 4.5 6-6M21 10.5v7.5a1.5 1.5 0 01-1.5 1.5H4.5A1.5 1.5 0 013 18V6a1.5 1.5 0 011.5-1.5h9" />
+            </svg>
+          </div>
+          <span class="font-display font-semibold text-[19px] tracking-tight text-zinc-900">CrossCap</span>
+        </a>
+
+        <nav class="hidden md:flex items-center gap-9">
+          <a href="#features" class="text-[13.5px] font-medium text-zinc-500 hover:text-zinc-900 transition-colors">Features</a>
+          <a href="#how-it-works" class="text-[13.5px] font-medium text-zinc-500 hover:text-zinc-900 transition-colors">How it Works</a>
+          <a href="#real-estate" class="text-[13.5px] font-medium text-zinc-500 hover:text-zinc-900 transition-colors">Off-Plan Radar</a>
+          <a href="#demo" class="text-[13.5px] font-medium text-zinc-500 hover:text-zinc-900 transition-colors">Dashboard</a>
+        </nav>
+
+        <div class="flex items-center gap-3">
+          <a href="#demo" class="hidden sm:inline-flex text-[13.5px] font-medium text-zinc-600 hover:text-zinc-900 transition-colors px-3 py-2">Book Demo</a>
+          <a href="#cta" class="btn-primary inline-flex items-center gap-2 rounded-full bg-brand-700 hover:bg-brand-800 text-white text-[13.5px] font-semibold px-5 py-2.5 shadow-soft hover:shadow-glow">
+            Launch App
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="relative pt-28 lg:pt-36 pb-16 lg:pb-24 hero-gradient overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto">
+        <div class="inline-flex items-center gap-2 rounded-full bg-brand-50/90 border border-brand-100/80 px-3.5 py-1.5 mb-7">
+          <span class="relative flex h-1.5 w-1.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-brand-500"></span>
+          </span>
+          <span class="text-[11px] font-semibold text-brand-700 tracking-wide uppercase">UAE-First Wealth Platform</span>
+        </div>
+
+        <h1 class="font-display text-[2.6rem] sm:text-5xl lg:text-[3.65rem] font-bold tracking-tight text-zinc-900 leading-[1.08] mb-6">
+          The UAE-First <span class="gradient-text">Wealth OS</span><br class="hidden sm:block" />
+          for Global Expats &amp; Investors
+        </h1>
+
+        <p class="text-[17px] sm:text-lg text-zinc-500 leading-relaxed max-w-xl mx-auto mb-10 font-normal">
+          Unify live global stocks, dividend cash flow, and off-plan real estate payment schedules in one <span class="text-zinc-700 font-medium">AED-denominated dashboard</span>. Never miss a property installment again.
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3.5 mb-14">
+          <a href="#cta" class="btn-primary w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-2xl bg-brand-700 hover:bg-brand-800 text-white text-[15px] font-semibold px-7 py-3.5 shadow-card hover:shadow-glow">
+            Launch App
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+          </a>
+          <a href="#demo" class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-2xl bg-white border border-zinc-200/90 hover:border-zinc-300 text-zinc-800 text-[15px] font-semibold px-7 py-3.5 shadow-soft hover:shadow-card transition-all">
+            Book Product Demo
+          </a>
+        </div>
+
+        <!-- Trust row -->
+        <div class="flex flex-wrap items-center justify-center gap-x-7 gap-y-2.5 text-[13px] text-zinc-400">
+          <div class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-brand-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+            AED-native net worth
+          </div>
+          <div class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-brand-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+            WhatsApp installment alerts
+          </div>
+          <div class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-brand-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+            Golden Visa progress
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard Preview -->
+      <div id="demo" class="mt-16 lg:mt-20 relative max-w-6xl mx-auto fade-up">
+        <div class="absolute -inset-3 bg-gradient-to-r from-brand-200/30 via-brand-100/20 to-brand-200/30 rounded-[28px] blur-2xl opacity-80"></div>
+        <div class="relative rounded-2xl lg:rounded-[22px] overflow-hidden border border-zinc-200/70 shadow-card bg-white">
+          <!-- Browser chrome -->
+          <div class="flex items-center gap-2 px-4 py-3 bg-zinc-50/90 border-b border-zinc-100">
+            <div class="flex gap-1.5">
+              <div class="w-3 h-3 rounded-full bg-[#FF5F57]"></div>
+              <div class="w-3 h-3 rounded-full bg-[#FEBC2E]"></div>
+              <div class="w-3 h-3 rounded-full bg-[#28C840]"></div>
+            </div>
+            <div class="flex-1 mx-4">
+              <div class="bg-white rounded-lg border border-zinc-200/80 px-3 py-1.5 text-[11px] text-zinc-400 font-medium max-w-[220px] mx-auto text-center tracking-tight">
+                app.crosscap.ae
+              </div>
+            </div>
+          </div>
+
+          <!-- App shell mock -->
+          <div class="dashboard-mock p-4 sm:p-6 lg:p-7">
+            <div class="flex flex-col lg:flex-row gap-6">
+              <!-- Sidebar -->
+              <aside class="hidden lg:flex flex-col w-48 shrink-0">
+                <div class="flex items-center gap-2.5 mb-7">
+                  <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-600 to-brand-800 flex items-center justify-center">
+                    <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.5l4.5-4.5 4.5 4.5 6-6"/></svg>
+                  </div>
+                  <span class="font-display font-semibold text-[15px] tracking-tight text-zinc-900">CrossCap</span>
+                </div>
+                <nav class="space-y-0.5 text-[13px]">
+                  <div class="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-brand-50 text-brand-800 font-semibold">
+                    <svg class="w-4 h-4 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+                    Overview
+                  </div>
+                  <div class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-zinc-500">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/></svg>
+                    Portfolio
+                  </div>
+                  <div class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-zinc-500">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+                    AI Insights
+                  </div>
+                  <div class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-zinc-500">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/></svg>
+                    Real Estate
+                  </div>
+                  <div class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-zinc-500">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Cash Flow
+                  </div>
+                </nav>
+              </aside>
+
+              <!-- Main content -->
+              <div class="flex-1 min-w-0">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+                  <div>
+                    <p class="text-[11px] text-zinc-400 font-medium tracking-wide">Today, May 22, 2026</p>
+                    <h2 class="font-display text-xl sm:text-[22px] font-semibold text-zinc-900 tracking-tight">Good morning, Alex</h2>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-[11px] font-semibold text-zinc-500 bg-zinc-100 px-2.5 py-1 rounded-full tracking-wide">AED</span>
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-700 ring-2 ring-white"></div>
+                  </div>
+                </div>
+
+                <!-- Metric cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+                  <div class="bg-white rounded-2xl border border-zinc-100/90 p-4 shadow-soft">
+                    <p class="text-[11px] font-medium text-zinc-400 mb-1 tracking-wide">Total Net Worth</p>
+                    <p class="font-display text-[22px] font-semibold text-zinc-900 tracking-tight">AED 4,720,850</p>
+                    <p class="text-[12px] font-semibold text-emerald-600 mt-1">+3.24% this month</p>
+                  </div>
+                  <div class="bg-white rounded-2xl border border-zinc-100/90 p-4 shadow-soft">
+                    <p class="text-[11px] font-medium text-zinc-400 mb-1 tracking-wide">Monthly Cash Flow</p>
+                    <p class="font-display text-[22px] font-semibold text-zinc-900 tracking-tight">+AED 28,400</p>
+                    <p class="text-[12px] font-semibold text-emerald-600 mt-1">Dividends + Rent</p>
+                  </div>
+                  <div class="bg-white rounded-2xl border border-amber-100/80 p-4 shadow-soft bg-amber-50/30">
+                    <p class="text-[11px] font-medium text-amber-700/80 mb-1 tracking-wide">30-Day Outflow Radar</p>
+                    <p class="font-display text-[20px] font-semibold text-zinc-900 tracking-tight">AED 185,000</p>
+                    <p class="text-[12px] font-semibold text-amber-600 mt-1">Installment due Jul 10</p>
+                  </div>
+                </div>
+
+                <!-- Chart + allocation -->
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-3.5">
+                  <div class="lg:col-span-3 bg-white rounded-2xl border border-zinc-100/90 p-4 shadow-soft">
+                    <div class="flex items-center justify-between mb-2.5">
+                      <p class="text-[13px] font-semibold text-zinc-800">Portfolio overview</p>
+                      <div class="flex gap-1 text-[10px] font-semibold">
+                        <span class="px-2 py-0.5 rounded-md bg-brand-50 text-brand-700">1M</span>
+                        <span class="px-2 py-0.5 rounded-md text-zinc-400">YTD</span>
+                        <span class="px-2 py-0.5 rounded-md text-zinc-400">All</span>
+                      </div>
+                    </div>
+                    <div class="h-32 sm:h-36 relative">
+                      <svg viewBox="0 0 400 120" class="w-full h-full" preserveAspectRatio="none">
+                        <defs>
+                          <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#a855f7" stop-opacity="0.22"/>
+                            <stop offset="100%" stop-color="#a855f7" stop-opacity="0"/>
+                          </linearGradient>
+                        </defs>
+                        <path d="M0,90 C40,85 60,70 100,65 C140,60 160,75 200,50 C240,25 280,40 320,30 C360,20 380,35 400,25 L400,120 L0,120 Z" fill="url(#chartGrad)"/>
+                        <path class="chart-line" d="M0,90 C40,85 60,70 100,65 C140,60 160,75 200,50 C240,25 280,40 320,30 C360,20 380,35 400,25" fill="none" stroke="#9333ea" stroke-width="2.25" stroke-linecap="round"/>
+                      </svg>
+                    </div>
+                    <div class="flex flex-wrap gap-3 mt-1.5 text-[11px] font-medium text-zinc-500">
+                      <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-brand-500"></span>Stocks 52%</span>
+                      <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-violet-300"></span>Real Estate 31%</span>
+                      <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Cash 9%</span>
+                      <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>Gold 8%</span>
+                    </div>
+                  </div>
+
+                  <div class="lg:col-span-2 space-y-3">
+                    <div class="bg-white rounded-2xl border border-zinc-100/90 p-4 shadow-soft">
+                      <p class="text-[11px] font-medium text-zinc-400 mb-2 tracking-wide">Golden Visa Progress</p>
+                      <div class="flex items-end justify-between mb-2">
+                        <p class="font-display text-[17px] font-semibold text-zinc-900 tracking-tight">AED 1.84M</p>
+                        <p class="text-[11px] text-brand-600 font-semibold">92% to AED 2M</p>
+                      </div>
+                      <div class="h-1.5 bg-zinc-100 rounded-full overflow-hidden">
+                        <div class="h-full w-[92%] bg-gradient-to-r from-brand-500 to-brand-400 rounded-full"></div>
+                      </div>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-zinc-100/90 p-4 shadow-soft">
+                      <p class="text-[11px] font-medium text-zinc-400 mb-1 tracking-wide">Next Off-Plan Payment</p>
+                      <p class="font-display text-[14px] font-semibold text-zinc-900 tracking-tight">Binghatti Crest — Unit 1204</p>
+                      <p class="text-[11px] text-zinc-500 mt-0.5">40% Construction · Jul 10, 2026</p>
+                      <p class="text-[13px] font-semibold text-brand-700 mt-2">AED 185,000 due</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="py-20 lg:py-28 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto mb-14 lg:mb-16">
+        <p class="text-[12px] font-semibold text-brand-600 tracking-wide uppercase mb-3">Core Capabilities</p>
+        <h2 class="font-display text-3xl sm:text-[2.4rem] font-bold text-zinc-900 tracking-tight leading-tight">Everything you need to run wealth in the UAE</h2>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
+        <!-- Block 1 -->
+        <div class="group rounded-[20px] border border-zinc-100 bg-white p-7 shadow-soft hover:shadow-card hover:border-brand-100/80 transition-all duration-300 fade-up">
+          <div class="w-11 h-11 rounded-2xl bg-brand-50 flex items-center justify-center mb-5 group-hover:bg-brand-100 transition-colors">
+            <svg class="w-5 h-5 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6"/>
+            </svg>
+          </div>
+          <h3 class="font-display text-[17px] font-semibold text-zinc-900 mb-2.5 tracking-tight">All Your Global Assets, One AED Currency</h3>
+          <p class="text-zinc-500 leading-relaxed text-[14.5px]">
+            No more switching between brokerage apps, physical spreadsheets, and bank portals. CrossCap consolidates your DFM, US, and Indian stock portfolios alongside physical gold, silver, and liquid cash into a unified AED net-worth dashboard.
+          </p>
+        </div>
+
+        <!-- Block 2 -->
+        <div class="group rounded-[20px] border border-zinc-100 bg-white p-7 shadow-soft hover:shadow-card hover:border-brand-100/80 transition-all duration-300 fade-up">
+          <div class="w-11 h-11 rounded-2xl bg-brand-50 flex items-center justify-center mb-5 group-hover:bg-brand-100 transition-colors">
+            <svg class="w-5 h-5 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
+            </svg>
+          </div>
+          <h3 class="font-display text-[17px] font-semibold text-zinc-900 mb-2.5 tracking-tight">Never Miss a Dubai Real Estate Installment</h3>
+          <p class="text-zinc-500 leading-relaxed text-[14.5px]">
+            Managing off-plan property payment plans across multiple developers can lead to missed milestones and overdue penalties. CrossCap tracks every installment date, calculates your remaining equity, and sends automated WhatsApp and email reminders before every due date.
+          </p>
+        </div>
+
+        <!-- Block 3 -->
+        <div class="group rounded-[20px] border border-zinc-100 bg-white p-7 shadow-soft hover:shadow-card hover:border-brand-100/80 transition-all duration-300 fade-up md:col-span-2 lg:col-span-1">
+          <div class="w-11 h-11 rounded-2xl bg-brand-50 flex items-center justify-center mb-5 group-hover:bg-brand-100 transition-colors">
+            <svg class="w-5 h-5 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/>
+            </svg>
+          </div>
+          <h3 class="font-display text-[17px] font-semibold text-zinc-900 mb-2.5 tracking-tight">Real-Time Dividend &amp; Rental Yields</h3>
+          <p class="text-zinc-500 leading-relaxed text-[14.5px]">
+            Understand your true monthly cash flow. CrossCap tracks incoming stock dividends across global exchanges alongside net property rental yields, giving you a clear forecast of your financial runway in the UAE.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Off-Plan Real Estate deep section -->
+  <section id="real-estate" class="py-20 lg:py-28 bg-zinc-50/70">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div class="fade-up">
+          <p class="text-[12px] font-semibold text-brand-600 tracking-wide uppercase mb-3">Off-Plan Real Estate Radar</p>
+          <h2 class="font-display text-3xl sm:text-[2.35rem] font-bold text-zinc-900 tracking-tight leading-tight mb-5">
+            Payment plans that never surprise you
+          </h2>
+          <p class="text-zinc-500 text-[16px] leading-relaxed mb-8">
+            Log every milestone from your SPA. CrossCap builds a living schedule, tracks equity toward the AED 2M Golden Visa threshold, and fires reminders on Email, WhatsApp, and in-app — 30, 14, and 7 days before each due date.
+          </p>
+
+          <ul class="space-y-4">
+            <li class="flex gap-3">
+              <div class="w-5 h-5 rounded-full bg-brand-100 flex items-center justify-center shrink-0 mt-0.5">
+                <svg class="w-3 h-3 text-brand-700" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+              </div>
+              <div>
+                <p class="font-semibold text-[14.5px] text-zinc-900 tracking-tight">Ready vs Off-Plan workflows</p>
+                <p class="text-[13.5px] text-zinc-500 mt-0.5">Mortgage, rental yield, or full construction payment plan support.</p>
+              </div>
+            </li>
+            <li class="flex gap-3">
+              <div class="w-5 h-5 rounded-full bg-brand-100 flex items-center justify-center shrink-0 mt-0.5">
+                <svg class="w-3 h-3 text-brand-700" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+              </div>
+              <div>
+                <p class="font-semibold text-[14.5px] text-zinc-900 tracking-tight">Developer-ready templates</p>
+                <p class="text-[13.5px] text-zinc-500 mt-0.5">Emaar, Binghatti, Sobha and custom developers supported.</p>
+              </div>
+            </li>
+            <li class="flex gap-3">
+              <div class="w-5 h-5 rounded-full bg-brand-100 flex items-center justify-center shrink-0 mt-0.5">
+                <svg class="w-3 h-3 text-brand-700" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+              </div>
+              <div>
+                <p class="font-semibold text-[14.5px] text-zinc-900 tracking-tight">Golden Visa equity bar</p>
+                <p class="text-[13.5px] text-zinc-500 mt-0.5">Live progress toward the AED 2,000,000 property equity threshold.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Installment table mock -->
+        <div class="fade-up">
+          <div class="bg-white rounded-[20px] border border-zinc-200/80 shadow-card overflow-hidden">
+            <div class="px-5 py-4 border-b border-zinc-100 flex items-center justify-between">
+              <div>
+                <p class="text-[14px] font-semibold text-zinc-900 tracking-tight">London Boutique · Unit 402</p>
+                <p class="text-[12px] text-zinc-400 mt-0.5">Emaar · Handover Q4 2027</p>
+              </div>
+              <span class="text-[11px] font-semibold bg-brand-50 text-brand-700 px-2.5 py-1 rounded-full">Off-Plan</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-[13px]">
+                <thead>
+                  <tr class="text-[11px] text-zinc-400 uppercase tracking-wider border-b border-zinc-50">
+                    <th class="px-5 py-3 font-medium">Stage</th>
+                    <th class="px-5 py-3 font-medium">Due</th>
+                    <th class="px-5 py-3 font-medium text-right">Amount</th>
+                    <th class="px-5 py-3 font-medium text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-zinc-50">
+                  <tr>
+                    <td class="px-5 py-3.5">
+                      <p class="font-medium text-zinc-800">Down Payment</p>
+                      <p class="text-[11px] text-zinc-400">Booking 20%</p>
+                    </td>
+                    <td class="px-5 py-3.5 text-zinc-500">15 Jan 2025</td>
+                    <td class="px-5 py-3.5 text-right font-medium tabular-nums">370,000</td>
+                    <td class="px-5 py-3.5 text-right"><span class="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Paid</span></td>
+                  </tr>
+                  <tr>
+                    <td class="px-5 py-3.5">
+                      <p class="font-medium text-zinc-800">Installment 1</p>
+                      <p class="text-[11px] text-zinc-400">20% Construction</p>
+                    </td>
+                    <td class="px-5 py-3.5 text-zinc-500">10 Jul 2025</td>
+                    <td class="px-5 py-3.5 text-right font-medium tabular-nums">185,000</td>
+                    <td class="px-5 py-3.5 text-right"><span class="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Paid</span></td>
+                  </tr>
+                  <tr class="bg-amber-50/40">
+                    <td class="px-5 py-3.5">
+                      <p class="font-medium text-zinc-800">Installment 2</p>
+                      <p class="text-[11px] text-zinc-400">40% Construction</p>
+                    </td>
+                    <td class="px-5 py-3.5 text-zinc-500">15 Sep 2026</td>
+                    <td class="px-5 py-3.5 text-right font-medium tabular-nums">185,000</td>
+                    <td class="px-5 py-3.5 text-right"><span class="text-[11px] font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">Pending</span></td>
+                  </tr>
+                  <tr>
+                    <td class="px-5 py-3.5">
+                      <p class="font-medium text-zinc-800">Handover Balance</p>
+                      <p class="text-[11px] text-zinc-400">Completion 40%</p>
+                    </td>
+                    <td class="px-5 py-3.5 text-zinc-500">15 Dec 2027</td>
+                    <td class="px-5 py-3.5 text-right font-medium tabular-nums">740,000</td>
+                    <td class="px-5 py-3.5 text-right"><span class="text-[11px] font-semibold text-zinc-500 bg-zinc-100 px-2 py-0.5 rounded-full">Scheduled</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="px-5 py-3.5 bg-zinc-50/80 border-t border-zinc-100 flex items-center justify-between text-[12px]">
+              <span class="text-zinc-400">Total contract</span>
+              <span class="font-semibold text-zinc-800 tabular-nums">AED 1,480,000</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="how-it-works" class="py-20 lg:py-28 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto mb-14">
+        <p class="text-[12px] font-semibold text-brand-600 tracking-wide uppercase mb-3">Simple by design</p>
+        <h2 class="font-display text-3xl sm:text-[2.4rem] font-bold text-zinc-900 tracking-tight">How CrossCap works</h2>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-8 lg:gap-10">
+        <div class="relative text-center fade-up">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-600 to-brand-800 text-white font-display font-semibold text-lg flex items-center justify-center mx-auto mb-5 shadow-soft">1</div>
+          <h3 class="font-display text-[16px] font-semibold text-zinc-900 mb-2 tracking-tight">Connect Your Accounts</h3>
+          <p class="text-zinc-500 text-[14.5px] leading-relaxed">
+            Add global stock tickers (DFM, NYSE, NSE), crypto wallets, and precious metal holdings with decimal precision. Live prices and FX conversion to AED.
+          </p>
+        </div>
+        <div class="relative text-center fade-up">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-600 to-brand-800 text-white font-display font-semibold text-lg flex items-center justify-center mx-auto mb-5 shadow-soft">2</div>
+          <h3 class="font-display text-[16px] font-semibold text-zinc-900 mb-2 tracking-tight">Log Your Real Estate</h3>
+          <p class="text-zinc-500 text-[14.5px] leading-relaxed">
+            Select Ready or Off-Plan property types and upload your payment plan milestones. Mortgage EMIs, rental cheques, or construction stages — all tracked.
+          </p>
+        </div>
+        <div class="relative text-center fade-up">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-600 to-brand-800 text-white font-display font-semibold text-lg flex items-center justify-center mx-auto mb-5 shadow-soft">3</div>
+          <h3 class="font-display text-[16px] font-semibold text-zinc-900 mb-2 tracking-tight">Automate &amp; Track</h3>
+          <p class="text-zinc-500 text-[14.5px] leading-relaxed">
+            Receive intelligent payment reminders, monitor Golden Visa equity milestones, and watch your total AED net worth grow in one executive console.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stocks workflow teaser -->
+  <section class="py-16 lg:py-20 bg-brand-950 text-white overflow-hidden relative">
+    <div class="absolute inset-0 opacity-40" style="background-image: radial-gradient(circle at 20% 50%, rgba(168,85,247,0.35), transparent 50%), radial-gradient(circle at 80% 20%, rgba(126,34,206,0.25), transparent 40%);"></div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <div class="grid lg:grid-cols-2 gap-10 items-center">
+        <div>
+          <p class="text-[12px] font-semibold text-brand-300 tracking-wide uppercase mb-3">Liquid Assets</p>
+          <h2 class="font-display text-3xl sm:text-[2.35rem] font-bold tracking-tight mb-4 leading-tight">Stocks, ETFs, Gold &amp; Crypto — live in AED</h2>
+          <p class="text-brand-100/85 text-[16px] leading-relaxed mb-6">
+            Search any ticker across UAE (DFM / ADX), US (NYSE / NASDAQ), India (NSE / BSE). Auto-log dividends, track average cost, and see real-time contribution to your net worth.
+          </p>
+          <div class="flex flex-wrap gap-2.5 text-[13px]">
+            <span class="bg-white/10 border border-white/10 rounded-full px-3.5 py-1.5 font-medium">Auto dividend tracking</span>
+            <span class="bg-white/10 border border-white/10 rounded-full px-3.5 py-1.5 font-medium">Live FX to AED</span>
+            <span class="bg-white/10 border border-white/10 rounded-full px-3.5 py-1.5 font-medium">Gold &amp; Silver</span>
+          </div>
+        </div>
+        <div class="bg-white/5 border border-white/10 rounded-[20px] p-5 backdrop-blur-sm">
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between p-3 rounded-xl bg-white/5">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-300 font-semibold text-[11px] tracking-tight">EMAAR</div>
+                <div>
+                  <p class="font-medium text-[13.5px]">Emaar Properties</p>
+                  <p class="text-[11px] text-brand-200/80">DFM · 1,250 shares</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="font-semibold text-[13.5px] tabular-nums">AED 9.42</p>
+                <p class="text-[11px] text-emerald-400">+1.8%</p>
+              </div>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-xl bg-white/5">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-300 font-semibold text-[11px] tracking-tight">AAPL</div>
+                <div>
+                  <p class="font-medium text-[13.5px]">Apple Inc.</p>
+                  <p class="text-[11px] text-brand-200/80">NASDAQ · 42 shares</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="font-semibold text-[13.5px] tabular-nums">AED 712.40</p>
+                <p class="text-[11px] text-emerald-400">+0.6%</p>
+              </div>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-xl bg-white/5">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-300 font-semibold text-[11px] tracking-tight">XAU</div>
+                <div>
+                  <p class="font-medium text-[13.5px]">Physical Gold</p>
+                  <p class="text-[11px] text-brand-200/80">250g · Dubai</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="font-semibold text-[13.5px] tabular-nums">AED 68,250</p>
+                <p class="text-[11px] text-emerald-400">+0.3%</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section id="cta" class="py-20 lg:py-28 bg-white">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div class="rounded-[24px] bg-gradient-to-br from-brand-50/80 via-white to-brand-50/60 border border-brand-100/70 p-10 lg:p-12 shadow-soft">
+        <h2 class="font-display text-3xl sm:text-[2.25rem] font-bold text-zinc-900 tracking-tight mb-4 leading-tight">
+          Ready to run your wealth from one AED dashboard?
+        </h2>
+        <p class="text-zinc-500 text-[16px] max-w-lg mx-auto mb-8">
+          Join early access for global expats and investors in the UAE. Launch the app or book a personalized product demo.
+        </p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3.5">
+          <a href="#" class="btn-primary w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-2xl bg-brand-700 hover:bg-brand-800 text-white text-[15px] font-semibold px-7 py-3.5 shadow-card hover:shadow-glow">
+            Launch App
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+          </a>
+          <a href="mailto:hello@crosscap.ae" class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-2xl bg-white border border-zinc-200 hover:border-zinc-300 text-zinc-800 text-[15px] font-semibold px-7 py-3.5 shadow-soft transition-all">
+            Book Product Demo
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-zinc-100 bg-zinc-50/40 py-11">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-5">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-600 to-brand-800 flex items-center justify-center">
+            <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.5l4.5-4.5 4.5 4.5 6-6"/></svg>
+          </div>
+          <span class="font-display font-semibold text-[16px] tracking-tight text-zinc-900">CrossCap</span>
+        </div>
+        <p class="text-[13px] text-zinc-400 text-center">
+          © 2026 CrossCap. The UAE-First Wealth OS for Global Expats &amp; Investors.
+        </p>
+        <div class="flex gap-6 text-[13px] text-zinc-400">
+          <a href="#" class="hover:text-zinc-700 transition-colors">Privacy</a>
+          <a href="#" class="hover:text-zinc-700 transition-colors">Terms</a>
+          <a href="mailto:hello@crosscap.ae" class="hover:text-zinc-700 transition-colors">Contact</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Fade-up on scroll
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+    // Header subtle elevation
+    const header = document.querySelector('header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 12) {
+        header.classList.add('shadow-sm');
+      } else {
+        header.classList.remove('shadow-sm');
+      }
+    }, { passive: true });
+  </script>
+</body>
+</html>
