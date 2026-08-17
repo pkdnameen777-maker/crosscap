@@ -179,13 +179,18 @@
                 <input id="assetSymbol" type="text" placeholder="e.g. AAPL, EMAAR, BTC" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
               </div>
               <div>
-                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Market / Category</label>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Market</label>
                 <select id="assetMarket" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]">
-                  <option value="DFM">UAE (DFM / ADX)</option>
-                  <option value="US">US (NYSE / NASDAQ)</option>
-                  <option value="NSE">India (NSE / BSE)</option>
-                  <option value="Crypto">Crypto</option>
-                  <option value="Physical">Gold / Physical</option>
+                  <option value="US" data-currency="USD">United States (USD) — NYSE / NASDAQ</option>
+                  <option value="UAE" data-currency="AED">United Arab Emirates (AED) — DFM / ADX</option>
+                  <option value="IN" data-currency="INR">India (INR) — NSE / BSE</option>
+                  <option value="UK" data-currency="GBP">United Kingdom (GBP) — LSE</option>
+                  <option value="SA" data-currency="SAR">Saudi Arabia (SAR) — Tadawul</option>
+                  <option value="CN" data-currency="CNY">China (CNY) — SSE / SZSE</option>
+                  <option value="JP" data-currency="JPY">Japan (JPY) — TSE</option>
+                  <option value="HK" data-currency="HKD">Hong Kong (HKD) — HKEX</option>
+                  <option value="CRYPTO" data-currency="USD">Crypto (USD)</option>
+                  <option value="GOLD" data-currency="AED">Gold / Physical (AED)</option>
                 </select>
               </div>
               <div>
@@ -193,8 +198,9 @@
                 <input id="assetShares" type="number" step="any" placeholder="10" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]" />
               </div>
               <div>
-                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Average Purchase Price (AED)</label>
-                <input id="assetPrice" type="number" step="0.01" placeholder="100.00" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]" />
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Average Purchase Price <span id="priceCurrencyLabel" class="text-brand-700">(USD)</span></label>
+                <input id="assetPrice" type="number" step="any" placeholder="Price in market currency" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]" />
+                <p class="text-[11px] text-zinc-400 mt-1.5">Enter cost in the market&apos;s local currency. Dashboard totals convert to AED.</p>
               </div>
               <button id="saveAssetBtn" class="w-full rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[14px] font-semibold px-5 py-3 shadow transition">Save to Portfolio</button>
             </div>
@@ -265,6 +271,20 @@
       });
 
       // Save Asset
+      
+      // Update price currency label when market changes
+      const marketEl = document.getElementById('assetMarket');
+      const priceLabel = document.getElementById('priceCurrencyLabel');
+      function syncCurrencyLabel() {
+        if (!marketEl || !priceLabel) return;
+        const cur = marketEl.options[marketEl.selectedIndex].getAttribute('data-currency') || 'USD';
+        priceLabel.textContent = '(' + cur + ')';
+      }
+      if (marketEl) {
+        marketEl.addEventListener('change', syncCurrencyLabel);
+        syncCurrencyLabel();
+      }
+
       document.getElementById('saveAssetBtn').addEventListener('click', async () => {
         if (!currentUser) return;
 
@@ -278,6 +298,9 @@
           return;
         }
 
+        const marketSelect = document.getElementById('assetMarket');
+        const currency = marketSelect.options[marketSelect.selectedIndex].getAttribute('data-currency') || 'USD';
+
         const { error } = await supabaseClient.from('holdings').insert([{
           user_id: currentUser.id,
           symbol,
@@ -285,7 +308,7 @@
           asset_type: 'stocks',
           shares,
           avg_buy_price,
-          currency: 'AED'
+          currency
         }]);
 
         if (error) {
@@ -339,13 +362,14 @@
           holdings.forEach(item => {
             const itemVal = item.shares * item.avg_buy_price;
             totalVal += itemVal;
+            const cur = item.currency || 'AED';
             tbody.innerHTML += `
               <tr class="hover:bg-zinc-50/50">
                 <td class="px-5 py-4 font-medium text-zinc-900">${item.symbol}</td>
-                <td class="px-5 py-4 text-zinc-500">${item.market}</td>
-                <td class="px-5 py-4 text-right tabular-nums">${item.shares.toLocaleString()}</td>
-                <td class="px-5 py-4 text-right tabular-nums">${item.avg_buy_price.toFixed(2)}</td>
-                <td class="px-5 py-4 text-right tabular-nums font-semibold">${itemVal.toLocaleString(undefined, { minimumFractionDigits: 2 })} AED</td>
+                <td class="px-5 py-4 text-zinc-500">${item.market} <span class="text-zinc-400">· ${cur}</span></td>
+                <td class="px-5 py-4 text-right tabular-nums">${Number(item.shares).toLocaleString()}</td>
+                <td class="px-5 py-4 text-right tabular-nums">${Number(item.avg_buy_price).toFixed(2)} <span class="text-zinc-400 text-xs">${cur}</span></td>
+                <td class="px-5 py-4 text-right tabular-nums font-semibold">${itemVal.toLocaleString(undefined, { minimumFractionDigits: 2 })} <span class="text-zinc-400 text-xs">${cur}</span></td>
               </tr>
             `;
           });
