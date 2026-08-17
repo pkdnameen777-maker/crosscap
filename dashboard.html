@@ -128,7 +128,7 @@
             <div class="bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft">
               <p class="text-[12px] font-medium text-zinc-400 mb-1">Total Net Worth</p>
               <p id="totalNetWorthCard" class="font-display text-[26px] font-semibold tracking-tight text-zinc-900">AED 0.00</p>
-              <p class="text-[13px] font-semibold text-emerald-600 mt-1.5">Live Portfolio Valuation</p>
+              <p class="text-[13px] font-semibold text-emerald-600 mt-1.5">All assets converted to AED</p>
             </div>
             <div class="bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft">
               <p class="text-[12px] font-medium text-zinc-400 mb-1">Real Estate Assets</p>
@@ -139,6 +139,14 @@
               <p class="text-[12px] font-medium text-amber-700/80 mb-1">Total Holdings</p>
               <p id="holdingsCountCard" class="font-display text-[24px] font-semibold tracking-tight text-zinc-900">0 Assets</p>
               <p class="text-[13px] font-semibold text-amber-600 mt-1.5">Tracked in Portfolio</p>
+            </div>
+          </div>
+
+          <!-- Currency exposure (sub totals) -->
+          <div class="mb-2">
+            <h3 class="text-[13px] font-semibold text-zinc-500 mb-3">Currency exposure (before FX to AED)</h3>
+            <div id="currencyBreakdown" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              <div class="bg-white rounded-xl border border-zinc-100 p-4 text-sm text-zinc-400">No foreign currency holdings yet</div>
             </div>
           </div>
         </div>
@@ -159,7 +167,7 @@
                   <th class="px-5 py-3.5 font-medium">Market</th>
                   <th class="px-5 py-3.5 font-medium text-right">Quantity</th>
                   <th class="px-5 py-3.5 font-medium text-right">Avg Cost</th>
-                  <th class="px-5 py-3.5 font-medium text-right">Total Value</th>
+                  <th class="px-5 py-3.5 font-medium text-right">Total (AED)</th>
                 </tr>
               </thead>
               <tbody id="portfolioTableBody" class="divide-y divide-zinc-50"></tbody>
@@ -350,26 +358,67 @@
         }
       });
 
-      // Load Holdings
+      // FX rates → AED (cached briefly)
+      let fxCache = null;
+      async function getRatesToAed() {
+        if (fxCache) return fxCache;
+        try {
+          // Free API: rates vs USD, then derive to AED
+          const res = await fetch('https://open.er-api.com/v6/latest/USD');
+          const data = await res.json();
+          const rates = data.rates || {};
+          const usdToAed = rates.AED || 3.6725; // fallback peg
+          // Convert: 1 UNIT = (USD per unit) * AED per USD
+          // rates[X] = how many X per 1 USD → 1 X = 1/rates[X] USD
+          const toAed = { AED: 1, USD: usdToAed };
+          ['INR','GBP','SAR','CNY','JPY','HKD','EUR'].forEach(c => {
+            if (rates[c]) toAed[c] = usdToAed / rates[c];
+          });
+          fxCache = toAed;
+          return toAed;
+        } catch (e) {
+          console.warn('FX fetch failed, using fallbacks', e);
+          // Approximate fallbacks
+          return {
+            AED: 1, USD: 3.6725, INR: 0.044, GBP: 4.65,
+            SAR: 0.979, CNY: 0.51, JPY: 0.024, HKD: 0.47, EUR: 4.0
+          };
+        }
+      }
+
+      // Load Holdings — convert everything to AED
       async function loadPortfolio() {
         const { data: holdings } = await supabaseClient.from('holdings').select('*');
         const tbody = document.getElementById('portfolioTableBody');
         tbody.innerHTML = '';
-        let totalVal = 0;
+        let totalAed = 0;
+        const byCurrency = {}; // local totals before FX
+
+        const rates = await getRatesToAed();
 
         if (holdings && holdings.length > 0) {
           document.getElementById('holdingsCountCard').textContent = `${holdings.length} Assets`;
           holdings.forEach(item => {
-            const itemVal = item.shares * item.avg_buy_price;
-            totalVal += itemVal;
-            const cur = item.currency || 'AED';
+            const cur = (item.currency || 'AED').toUpperCase();
+            const shares = Number(item.shares) || 0;
+            const avg = Number(item.avg_buy_price) || 0;
+            const localVal = shares * avg;
+            const rate = rates[cur] != null ? rates[cur] : 1;
+            const aedVal = localVal * rate;
+            totalAed += aedVal;
+
+            byCurrency[cur] = (byCurrency[cur] || 0) + localVal;
+
             tbody.innerHTML += `
               <tr class="hover:bg-zinc-50/50">
                 <td class="px-5 py-4 font-medium text-zinc-900">${item.symbol}</td>
                 <td class="px-5 py-4 text-zinc-500">${item.market} <span class="text-zinc-400">· ${cur}</span></td>
-                <td class="px-5 py-4 text-right tabular-nums">${Number(item.shares).toLocaleString()}</td>
-                <td class="px-5 py-4 text-right tabular-nums">${Number(item.avg_buy_price).toFixed(2)} <span class="text-zinc-400 text-xs">${cur}</span></td>
-                <td class="px-5 py-4 text-right tabular-nums font-semibold">${itemVal.toLocaleString(undefined, { minimumFractionDigits: 2 })} <span class="text-zinc-400 text-xs">${cur}</span></td>
+                <td class="px-5 py-4 text-right tabular-nums">${shares.toLocaleString()}</td>
+                <td class="px-5 py-4 text-right tabular-nums">${avg.toFixed(2)} <span class="text-zinc-400 text-xs">${cur}</span></td>
+                <td class="px-5 py-4 text-right">
+                  <div class="font-semibold tabular-nums">${aedVal.toLocaleString(undefined, { minimumFractionDigits: 2 })} <span class="text-zinc-400 text-xs font-normal">AED</span></div>
+                  <div class="text-[11px] text-zinc-400 tabular-nums">${localVal.toLocaleString(undefined, { minimumFractionDigits: 2 })} ${cur}</div>
+                </td>
               </tr>
             `;
           });
@@ -377,7 +426,29 @@
           document.getElementById('holdingsCountCard').textContent = '0 Assets';
         }
 
-        document.getElementById('totalNetWorthCard').textContent = `AED ${totalVal.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+        document.getElementById('totalNetWorthCard').textContent =
+          `AED ${totalAed.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+
+        // Currency sub-boxes
+        const box = document.getElementById('currencyBreakdown');
+        if (box) {
+          const entries = Object.entries(byCurrency);
+          if (entries.length === 0) {
+            box.innerHTML = '<div class="bg-white rounded-xl border border-zinc-100 p-4 text-sm text-zinc-400">No foreign currency holdings yet</div>';
+          } else {
+            box.innerHTML = entries.map(([cur, local]) => {
+              const rate = rates[cur] != null ? rates[cur] : 1;
+              const aed = local * rate;
+              return `
+                <div class="bg-white rounded-xl border border-zinc-100 p-4 shadow-soft">
+                  <p class="text-[11px] font-medium text-zinc-400 mb-1">${cur} exposure</p>
+                  <p class="font-display text-[18px] font-semibold text-zinc-900 tabular-nums">${local.toLocaleString(undefined, { minimumFractionDigits: 2 })} <span class="text-sm font-medium text-zinc-500">${cur}</span></p>
+                  <p class="text-[12px] text-emerald-600 mt-1 tabular-nums">≈ AED ${aed.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                </div>
+              `;
+            }).join('');
+          }
+        }
       }
 
       // Load Real Estate
