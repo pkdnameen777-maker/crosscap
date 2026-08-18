@@ -245,6 +245,7 @@
                   <th class="px-5 py-3.5 font-medium text-right">Quantity</th>
                   <th class="px-5 py-3.5 font-medium text-right">Avg Cost</th>
                   <th class="px-5 py-3.5 font-medium text-right">Total (AED)</th>
+                  <th class="px-5 py-3.5 font-medium text-right">Actions</th>
                 </tr>
               </thead>
               <tbody id="portfolioTableBody" class="divide-y divide-zinc-50"></tbody>
@@ -275,7 +276,10 @@
                   <option value="JP" data-currency="JPY">Japan (JPY) — TSE</option>
                   <option value="HK" data-currency="HKD">Hong Kong (HKD) — HKEX</option>
                   <option value="CRYPTO" data-currency="USD">Crypto (USD)</option>
-                  <option value="GOLD" data-currency="AED">Gold / Physical (AED)</option>
+                  <option value="GOLD_AED" data-currency="AED">Gold (AED)</option>
+                  <option value="GOLD_INR" data-currency="INR">Gold (INR)</option>
+                  <option value="SILVER_AED" data-currency="AED">Silver (AED)</option>
+                  <option value="SILVER_INR" data-currency="INR">Silver (INR)</option>
                 </select>
               </div>
               <div>
@@ -646,11 +650,42 @@
         else loadProperties();
       }
 
+      async function deleteHolding(id) {
+        if (!confirm('Delete this holding?')) return;
+        const { error } = await supabaseClient.from('holdings').delete().eq('id', id);
+        if (error) alert(error.message);
+        else loadPortfolio();
+      }
+
+      async function editHolding(id, symbol, market, shares, avg, currency) {
+        const newSymbol = prompt('Symbol', symbol);
+        if (newSymbol === null) return;
+        const newShares = prompt('Quantity / shares', shares);
+        if (newShares === null) return;
+        const newAvg = prompt('Average cost (' + (currency || '') + ')', avg);
+        if (newAvg === null) return;
+        const sharesN = parseFloat(newShares);
+        const avgN = parseFloat(newAvg);
+        if (!newSymbol.trim() || isNaN(sharesN) || isNaN(avgN)) {
+          alert('Invalid values');
+          return;
+        }
+        const { error } = await supabaseClient.from('holdings').update({
+          symbol: newSymbol.trim().toUpperCase(),
+          shares: sharesN,
+          avg_buy_price: avgN
+        }).eq('id', id);
+        if (error) alert(error.message);
+        else loadPortfolio();
+      }
+
       window.markInstallment = markInstallment;
       window.deleteInstallment = deleteInstallment;
       window.updateInstallmentDate = updateInstallmentDate;
       window.deleteProperty = deleteProperty;
       window.addInstallmentToProperty = addInstallmentToProperty;
+      window.deleteHolding = deleteHolding;
+      window.editHolding = editHolding;
 
 
       // FX rates → AED (cached briefly)
@@ -690,7 +725,7 @@
       const MARKET_LABELS = {
         US: '🇺🇸 United States', UAE: '🇦🇪 UAE', IN: '🇮🇳 India', UK: '🇬🇧 United Kingdom',
         SA: '🇸🇦 Saudi Arabia', CN: '🇨🇳 China', JP: '🇯🇵 Japan', HK: '🇭🇰 Hong Kong',
-        CRYPTO: 'Crypto', GOLD: 'Gold', DFM: '🇦🇪 UAE', NSE: '🇮🇳 India'
+        CRYPTO: 'Crypto', GOLD: 'Gold', GOLD_AED: 'Gold (AED)', GOLD_INR: 'Gold (INR)', SILVER_AED: 'Silver (AED)', SILVER_INR: 'Silver (INR)', DFM: '🇦🇪 UAE', NSE: '🇮🇳 India'
       };
       const ALLOC_COLORS = ['#7e22ce','#a855f7','#c084fc','#22c55e','#f59e0b','#3b82f6','#ef4444','#14b8a6','#ec4899','#64748b'];
 
@@ -930,6 +965,7 @@
 
             byCurrency[cur] = (byCurrency[cur] || 0) + localVal;
             lastHoldingsAed.push({
+              id: item.id,
               symbol: item.symbol,
               market: item.market || 'OTHER',
               currency: cur,
@@ -946,6 +982,10 @@
                 <td class="px-5 py-4 text-right">
                   <div class="font-semibold tabular-nums">${aedVal.toLocaleString(undefined, { minimumFractionDigits: 2 })} <span class="text-zinc-400 text-xs font-normal">AED</span></div>
                   <div class="text-[11px] text-zinc-400 tabular-nums">${localVal.toLocaleString(undefined, { minimumFractionDigits: 2 })} ${cur}</div>
+                </td>
+                <td class="px-5 py-4 text-right whitespace-nowrap">
+                  <button onclick="editHolding('${item.id}', '${String(item.symbol).replace(/'/g, "\\'")}', '${item.market || ''}', ${shares}, ${avg}, '${cur}')" class="text-[11px] font-semibold text-brand-700 hover:underline mr-2">Edit</button>
+                  <button onclick="deleteHolding('${item.id}')" class="text-[11px] font-semibold text-rose-500 hover:underline">Delete</button>
                 </td>
               </tr>
             `;
