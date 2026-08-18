@@ -1,507 +1,1395 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CrossCap | Dashboard</title>
+  <title>Dashboard — CrossCap</title>
+  <meta name="theme-color" content="#7e22ce" />
+  <link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="icon" href="assets/icon.png" type="image/png" sizes="512x512" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" sizes="180x180" />
+  <link rel="manifest" href="manifest.webmanifest" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script>
     tailwind.config = {
-      darkMode: 'class',
       theme: {
         extend: {
           colors: {
             brand: {
-              50: '#f0fdf4',
-              500: '#22c55e',
-              600: '#16a34a',
-              700: '#15803d',
-              900: '#14532d'
-            },
-            surface: {
-              800: '#1e293b',
-              900: '#0f172a',
-              950: '#020617'
+              50:  '#faf5ff',
+              100: '#f3e8ff',
+              200: '#e9d5ff',
+              300: '#d8b4fe',
+              400: '#c084fc',
+              500: '#a855f7',
+              600: '#9333ea',
+              700: '#7e22ce',
+              800: '#6b21a8',
+              900: '#581c87',
+              950: '#3b0764',
             }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"SF Pro Display"', '"Segoe UI"', 'Roboto', 'sans-serif'],
+            display: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', '"Segoe UI"', 'Roboto', 'sans-serif']
+          },
+          boxShadow: {
+            'soft': '0 4px 20px -4px rgba(88, 28, 135, 0.06), 0 2px 6px -2px rgba(0,0,0,0.04)',
+            'card': '0 8px 30px -8px rgba(88, 28, 135, 0.1), 0 4px 12px -4px rgba(0,0,0,0.04)',
           }
         }
       }
-    };
+    }
   </script>
   <style>
-    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+      letter-spacing: -0.011em;
+    }
+    .font-display, h1, h2, h3 {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      letter-spacing: -0.025em;
+    }
+    .sidebar-link { transition: all 0.15s ease; }
+    .sidebar-link.active {
+      background: #faf5ff;
+      color: #6b21a8;
+      font-weight: 600;
+    }
+    .view { display: none; }
+    .view.active { display: block; }
+    #sidebar {
+      transition: transform 0.25s ease;
+    }
+    #sidebar.mobile-open {
+      transform: translateX(0);
+    }
+    @media (max-width: 1023px) {
+      #sidebar {
+        transform: translateX(-100%);
+        display: flex !important;
+      }
+      #sidebar.mobile-open {
+        transform: translateX(0);
+      }
+    }
+    #sidebarBackdrop {
+      display: none;
+    }
+    #sidebarBackdrop.show {
+      display: block;
+    }
   </style>
 </head>
-<body class="bg-surface-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-black">
+<body class="bg-zinc-50/80 text-zinc-900 min-h-screen">
 
-  <!-- Navigation Bar -->
-  <header class="border-b border-slate-800 bg-surface-900/80 backdrop-blur sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-emerald-400 flex items-center justify-center font-black text-black text-xl shadow-lg shadow-brand-500/20">
-          C
+  <div class="flex min-h-screen">
+    <!-- Mobile backdrop -->
+    <div id="sidebarBackdrop" class="fixed inset-0 bg-black/30 z-40 lg:hidden" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-[260px] bg-white border-r border-zinc-100 flex flex-col lg:flex">
+      <div class="h-16 flex items-center justify-between gap-2.5 px-5 border-b border-zinc-100">
+        <div class="flex items-center gap-2.5">
+          <img src="assets/logo.png" alt="CrossCap" class="w-8 h-8 rounded-lg object-contain shrink-0" width="32" height="32" />
+          <span class="font-display font-semibold text-[16px] tracking-tight">CrossCap</span>
         </div>
-        <span class="font-bold text-lg tracking-tight text-white">Cross<span class="text-brand-500">Cap</span></span>
+        <button type="button" class="lg:hidden p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-500" onclick="closeSidebar()" aria-label="Close menu">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
       </div>
 
-      <div class="flex items-center space-x-4">
-        <span id="user-email-display" class="text-xs text-slate-400 hidden sm:inline-block">Authenticating...</span>
-        <button onclick="handleSignOut()" class="px-3 py-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 text-xs font-medium text-slate-300 transition">
+      <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+        <p class="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Main</p>
+        <button data-view="overview" class="sidebar-link active w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-left">
+          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+          Overview
+        </button>
+        <button data-view="portfolio" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
+          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/></svg>
+          Portfolio
+        </button>
+        <button data-view="add-asset" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
+          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+          Add Asset
+        </button>
+        <button data-view="real-estate" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
+          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/></svg>
+          Real Estate
+        </button>
+
+        <p class="px-3 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Insights</p>
+        <button data-view="ai-insights" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
+          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/></svg>
+          AI Insights
+        </button>
+        <button data-view="goals" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
+          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Goals
+        </button>
+        <button data-view="reports" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
+          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+          Reports
+        </button>
+
+        <p class="px-3 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Account</p>
+        <button data-view="settings" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
+          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Settings
+        </button>
+      </nav>
+
+      <div class="p-3 border-t border-zinc-100 space-y-1">
+        <div class="px-3 py-2">
+          <p id="sidebarUserName" class="text-[13px] font-semibold text-zinc-800 truncate">—</p>
+          <p id="sidebarUserEmail" class="text-[11px] text-zinc-400 truncate"></p>
+        </div>
+        <button id="signOutBtn" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-zinc-500 hover:bg-zinc-50 transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
           Sign Out
         </button>
       </div>
-    </div>
-  </header>
+    </aside>
 
-  <!-- Main Content -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-    
-    <!-- Top Action Bar -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div>
-        <h1 class="text-2xl font-bold text-white tracking-tight">Real Estate & Assets</h1>
-        <p class="text-sm text-slate-400">Track contracts, installments, and payment schedules</p>
-      </div>
-      <button onclick="openAddPropertyModal()" class="inline-flex items-center justify-center space-x-2 bg-brand-500 hover:bg-brand-600 text-black font-semibold px-4 py-2.5 rounded-xl shadow-lg shadow-brand-500/20 transition active:scale-95">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-        <span>Add Property / SPA</span>
-      </button>
-    </div>
+    <!-- Main Content -->
+    <div class="flex-1 lg:pl-[260px]">
+      <header class="sticky top-0 z-30 h-14 sm:h-16 bg-white/90 backdrop-blur-md border-b border-zinc-100 flex items-center justify-between gap-3 px-3 sm:px-6 lg:px-8">
+        <div class="flex items-center gap-2 min-w-0">
+          <button type="button" id="menuBtn" class="lg:hidden p-2 -ml-1 rounded-xl hover:bg-zinc-100 text-zinc-700 shrink-0" aria-label="Open menu">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+          </button>
+          <div class="min-w-0">
+            <h1 id="userGreeting" class="font-display text-[15px] sm:text-[17px] font-semibold tracking-tight text-zinc-900 truncate">Good morning</h1>
+            <p id="userEmailDisplay" class="hidden sm:block text-[11px] text-zinc-400 truncate max-w-[220px]"></p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-700 ring-2 ring-white"></div>
+        </div>
+      </header>
 
-    <!-- Stats Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-      <div class="bg-surface-900 border border-slate-800 p-5 rounded-2xl">
-        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Committed Value</p>
-        <p id="stat-total-value" class="text-2xl font-black text-white mt-2">AED 0.00</p>
-      </div>
-      <div class="bg-surface-900 border border-slate-800 p-5 rounded-2xl">
-        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Upcoming Installments</p>
-        <p id="stat-upcoming-count" class="text-2xl font-black text-emerald-400 mt-2">0 Due</p>
-      </div>
-      <div class="bg-surface-900 border border-slate-800 p-5 rounded-2xl">
-        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Active Units</p>
-        <p id="stat-properties-count" class="text-2xl font-black text-white mt-2">0</p>
-      </div>
-    </div>
+      <main class="p-4 sm:p-6 lg:p-8 max-w-[1400px]">
+      <main class="p-4 sm:p-6 lg:p-8 max-w-[1400px]">
 
-    <!-- Property Table -->
-    <div class="bg-surface-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-      <div class="p-5 border-b border-slate-800 flex justify-between items-center">
-        <h2 class="font-semibold text-white">Your Properties</h2>
-        <span id="property-table-status" class="text-xs text-slate-400">Loading...</span>
-      </div>
-      <div class="overflow-x-auto custom-scrollbar">
-        <table class="w-full text-left text-sm text-slate-300">
-          <thead class="bg-surface-950/60 text-xs uppercase text-slate-400 border-b border-slate-800">
-            <tr>
-              <th class="px-6 py-3.5">Project / Unit</th>
-              <th class="px-6 py-3.5">Developer</th>
-              <th class="px-6 py-3.5">Total Value (AED)</th>
-              <th class="px-6 py-3.5">Type</th>
-              <th class="px-6 py-3.5">Installments</th>
-              <th class="px-6 py-3.5 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="properties-tbody" class="divide-y divide-slate-800/60">
-            <tr>
-              <td colspan="6" class="px-6 py-8 text-center text-slate-500">Loading properties...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </main>
+        <!-- OVERVIEW -->
+        <div id="view-overview" class="view active">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div>
+              <h2 class="font-display text-xl font-semibold tracking-tight text-zinc-900">Portfolio overview</h2>
+              <p class="text-[13px] text-zinc-500 mt-0.5">Real-time consolidated net worth in AED</p>
+            </div>
+            <button data-view="add-asset" class="inline-flex items-center gap-2 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13.5px] font-semibold px-4 py-2.5 shadow-soft transition">
+              + Add Asset
+            </button>
+          </div>
 
-  <!-- ADD PROPERTY / SPA MODAL -->
-  <div id="add-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="bg-surface-900 border border-slate-800 w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
-      
-      <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-        <h3 class="text-lg font-bold text-white">Add Property & Payment Schedule</h3>
-        <button onclick="closeAddPropertyModal()" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
-      </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div class="bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft">
+              <p class="text-[12px] font-medium text-zinc-400 mb-1">Total Net Worth</p>
+              <p id="totalNetWorthCard" class="font-display text-[26px] font-semibold tracking-tight text-zinc-900">AED 0.00</p>
+              <p class="text-[13px] font-semibold text-emerald-600 mt-1.5">All assets converted to AED</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft">
+              <p class="text-[12px] font-medium text-zinc-400 mb-1">Real Estate Assets</p>
+              <p id="reAssetsCard" class="font-display text-[26px] font-semibold tracking-tight text-zinc-900">AED 0.00</p>
+              <p class="text-[13px] font-semibold text-brand-600 mt-1.5">Total Property Value</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-amber-100 p-5 shadow-soft bg-amber-50/40">
+              <p class="text-[12px] font-medium text-amber-700/80 mb-1">Total Holdings</p>
+              <p id="holdingsCountCard" class="font-display text-[24px] font-semibold tracking-tight text-zinc-900">0 Assets</p>
+              <p class="text-[13px] font-semibold text-amber-600 mt-1.5">Tracked in Portfolio</p>
+            </div>
+          </div>
 
-      <div class="p-6 overflow-y-auto custom-scrollbar space-y-6 flex-1">
-        
-        <!-- SPA Upload Area -->
-        <div class="p-5 rounded-xl border-2 border-dashed border-slate-700 bg-surface-950/70 text-center hover:border-brand-500 transition cursor-pointer relative group">
-          <input 
-            type="file" 
-            id="spa-file-input" 
-            accept=".pdf,image/png,image/jpeg,image/webp" 
-            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            onchange="handleSpaUpload(event)"
-          />
-          <div class="flex flex-col items-center justify-center space-y-2 pointer-events-none">
-            <div id="spa-spinner" class="hidden animate-spin rounded-full h-8 w-8 border-2 border-brand-500 border-t-transparent mb-1"></div>
-            <svg id="spa-upload-icon" class="w-8 h-8 text-brand-500 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-            <span id="spa-upload-label" class="text-sm font-semibold text-brand-400 group-hover:text-brand-300">
-              Upload SPA / Payment Schedule (PDF or Photo)
-            </span>
-            <span class="text-xs text-slate-400">AI extracts unit details and payment milestones automatically</span>
+          <!-- 30-Day Installment Radar (Overview) -->
+          <div id="overviewRadar" class="mb-6 hidden">
+            <div class="rounded-2xl border border-amber-200 bg-amber-50/60 p-5">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                <h3 class="text-[14px] font-semibold text-amber-900">30-Day Installment Radar</h3>
+              </div>
+              <div id="overviewRadarList" class="space-y-2"></div>
+            </div>
+          </div>
+
+          <!-- Portfolio performance -->
+          <div class="bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+              <div>
+                <h3 class="text-[15px] font-semibold text-zinc-900">Portfolio performance</h3>
+                <p class="text-[12px] text-zinc-400">Invested cost basis vs current value (AED)</p>
+              </div>
+              <div id="perfRangeBtns" class="flex flex-wrap gap-1.5">
+                <button data-range="1D" class="perf-range text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-zinc-200 text-zinc-500 hover:bg-zinc-50">1D</button>
+                <button data-range="1W" class="perf-range text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-zinc-200 text-zinc-500 hover:bg-zinc-50">1W</button>
+                <button data-range="1M" class="perf-range text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-zinc-200 text-zinc-500 hover:bg-zinc-50">1M</button>
+                <button data-range="3M" class="perf-range text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-zinc-200 text-zinc-500 hover:bg-zinc-50">3M</button>
+                <button data-range="1Y" class="perf-range text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-zinc-200 text-zinc-500 hover:bg-zinc-50">1Y</button>
+                <button data-range="ALL" class="perf-range text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-brand-200 bg-brand-50 text-brand-700">All</button>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-3 mb-4">
+              <div>
+                <p class="text-[11px] text-zinc-400">Invested</p>
+                <p id="perfInvested" class="text-[15px] font-semibold text-zinc-800 tabular-nums">AED 0</p>
+              </div>
+              <div>
+                <p class="text-[11px] text-zinc-400">Current value</p>
+                <p id="perfCurrent" class="text-[15px] font-semibold text-zinc-800 tabular-nums">AED 0</p>
+              </div>
+              <div>
+                <p class="text-[11px] text-zinc-400">P / L</p>
+                <p id="perfPnL" class="text-[15px] font-semibold tabular-nums text-zinc-800">AED 0</p>
+              </div>
+            </div>
+            <div class="h-56 relative">
+              <canvas id="perfChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Asset allocation -->
+          <div class="grid lg:grid-cols-2 gap-4 mb-6">
+            <div class="bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft">
+              <h3 class="text-[15px] font-semibold text-zinc-900 mb-1">Portfolio allocation</h3>
+              <p class="text-[12px] text-zinc-400 mb-4">By market · share of liquid holdings (AED)</p>
+              <div class="flex flex-col sm:flex-row items-center gap-6">
+                <div class="relative w-40 h-40 shrink-0">
+                  <canvas id="allocChart"></canvas>
+                </div>
+                <div id="allocMarketList" class="flex-1 w-full space-y-2 text-[13px]">
+                  <p class="text-zinc-400">No holdings yet</p>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft">
+              <div class="flex items-center justify-between mb-3">
+                <div>
+                  <h3 class="text-[15px] font-semibold text-zinc-900">Holdings breakdown</h3>
+                  <p class="text-[12px] text-zinc-400">By stock · % of liquid portfolio</p>
+                </div>
+                <select id="allocMarketFilter" class="text-[12px] rounded-lg border border-zinc-200 px-2 py-1.5">
+                  <option value="ALL">All markets</option>
+                </select>
+              </div>
+              <div id="allocStockList" class="space-y-2 max-h-64 overflow-y-auto">
+                <p class="text-zinc-400 text-[13px]">No holdings yet</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Currency exposure (sub totals) -->
+          <div class="mb-2">
+            <h3 class="text-[13px] font-semibold text-zinc-500 mb-3">Currency exposure (before FX to AED)</h3>
+            <div id="currencyBreakdown" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              <div class="bg-white rounded-xl border border-zinc-100 p-4 text-sm text-zinc-400">No foreign currency holdings yet</div>
+            </div>
           </div>
         </div>
 
-        <!-- Form Inputs -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1.5">Project / Building Name *</label>
-            <input type="text" id="form-project-name" required placeholder="e.g. Burj Crown" class="w-full px-3.5 py-2.5 bg-surface-950 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-brand-500" />
+        <!-- PORTFOLIO -->
+        <div id="view-portfolio" class="view">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="font-display text-xl font-semibold tracking-tight">Portfolio Holdings</h2>
+            <button data-view="add-asset" class="inline-flex items-center gap-2 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13.5px] font-semibold px-4 py-2.5">
+              + Add Asset
+            </button>
           </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1.5">Developer</label>
-            <input type="text" id="form-developer" placeholder="e.g. Emaar, Sobha, Damac" class="w-full px-3.5 py-2.5 bg-surface-950 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-brand-500" />
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1.5">Unit Number</label>
-            <input type="text" id="form-unit-number" placeholder="e.g. Unit 1402" class="w-full px-3.5 py-2.5 bg-surface-950 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-brand-500" />
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1.5">Total Contract Price (AED) *</label>
-            <input type="number" id="form-total-price" required placeholder="1850000" class="w-full px-3.5 py-2.5 bg-surface-950 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-brand-500" />
-          </div>
-          <div class="md:col-span-2">
-            <label class="flex items-center space-x-2 cursor-pointer">
-              <input type="checkbox" id="form-is-offplan" checked class="w-4 h-4 rounded text-brand-500 bg-surface-950 border-slate-700 focus:ring-brand-500" />
-              <span class="text-xs text-slate-300 font-medium">Off-plan Property (Under Construction)</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Milestones Table -->
-        <div class="space-y-3 pt-2 border-t border-slate-800">
-          <div class="flex items-center justify-between">
-            <h4 class="text-sm font-semibold text-white">Payment Milestones & Installments</h4>
-            <button type="button" onclick="addInstallmentRow()" class="text-xs font-semibold text-brand-400 hover:text-brand-300">+ Add Milestone</button>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full text-xs text-left">
-              <thead class="text-slate-400 uppercase bg-surface-950/60 border border-slate-800">
-                <tr>
-                  <th class="p-2.5">Milestone / Stage</th>
-                  <th class="p-2.5">Due Date</th>
-                  <th class="p-2.5">Amount (AED)</th>
-                  <th class="p-2.5">%</th>
-                  <th class="p-2.5 w-8"></th>
+          <div class="bg-white rounded-2xl border border-zinc-100 shadow-soft overflow-hidden">
+            <table class="w-full text-left text-[13.5px]">
+              <thead>
+                <tr class="text-[11px] text-zinc-400 uppercase tracking-wider border-b border-zinc-100">
+                  <th class="px-5 py-3.5 font-medium">Asset</th>
+                  <th class="px-5 py-3.5 font-medium">Market</th>
+                  <th class="px-5 py-3.5 font-medium text-right">Quantity</th>
+                  <th class="px-5 py-3.5 font-medium text-right">Avg Cost</th>
+                  <th class="px-5 py-3.5 font-medium text-right">Total (AED)</th>
+                  <th class="px-5 py-3.5 font-medium text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody id="installments-container" class="divide-y divide-slate-800"></tbody>
+              <tbody id="portfolioTableBody" class="divide-y divide-zinc-50"></tbody>
             </table>
           </div>
         </div>
 
-      </div>
+        <!-- ADD ASSET -->
+        <div id="view-add-asset" class="view">
+          <h2 class="font-display text-xl font-semibold tracking-tight mb-2">Add Asset</h2>
+          <p class="text-[14px] text-zinc-500 mb-6">Log your stocks, gold, or crypto assets</p>
 
-      <div class="px-6 py-4 border-t border-slate-800 flex items-center justify-end space-x-3 bg-surface-950/40">
-        <button onclick="closeAddPropertyModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white">Cancel</button>
-        <button id="save-property-btn" onclick="savePropertyAndInstallments()" class="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-black font-bold text-xs rounded-xl transition">
-          Confirm & Save Property
-        </button>
-      </div>
+          <div class="bg-white rounded-2xl border border-zinc-100 p-6 shadow-soft max-w-xl">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Ticker Symbol / Name</label>
+                <input id="assetSymbol" type="text" placeholder="e.g. AAPL, EMAAR, BTC" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
+              </div>
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Market</label>
+                <select id="assetMarket" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]">
+                  <option value="US" data-currency="USD">United States (USD) — NYSE / NASDAQ</option>
+                  <option value="UAE" data-currency="AED">United Arab Emirates (AED) — DFM / ADX</option>
+                  <option value="IN" data-currency="INR">India (INR) — NSE / BSE</option>
+                  <option value="UK" data-currency="GBP">United Kingdom (GBP) — LSE</option>
+                  <option value="SA" data-currency="SAR">Saudi Arabia (SAR) — Tadawul</option>
+                  <option value="CN" data-currency="CNY">China (CNY) — SSE / SZSE</option>
+                  <option value="JP" data-currency="JPY">Japan (JPY) — TSE</option>
+                  <option value="HK" data-currency="HKD">Hong Kong (HKD) — HKEX</option>
+                  <option value="CRYPTO" data-currency="USD">Crypto (USD)</option>
+                  <option value="GOLD_AED" data-currency="AED">Gold (AED)</option>
+                  <option value="GOLD_INR" data-currency="INR">Gold (INR)</option>
+                  <option value="SILVER_AED" data-currency="AED">Silver (AED)</option>
+                  <option value="SILVER_INR" data-currency="INR">Silver (INR)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Quantity / Shares</label>
+                <input id="assetShares" type="number" step="any" placeholder="10" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]" />
+              </div>
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Average Purchase Price <span id="priceCurrencyLabel" class="text-brand-700">(USD)</span></label>
+                <input id="assetPrice" type="number" step="any" placeholder="Price in market currency" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]" />
+                <p class="text-[11px] text-zinc-400 mt-1.5">Enter cost in the market&apos;s local currency. Dashboard totals convert to AED.</p>
+              </div>
+              <button id="saveAssetBtn" class="w-full rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[14px] font-semibold px-5 py-3 shadow transition">Save to Portfolio</button>
+            </div>
+          </div>
+        </div>
 
+        <!-- REAL ESTATE -->
+        <div id="view-real-estate" class="view">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div>
+              <h2 class="font-display text-xl font-semibold tracking-tight">Real Estate</h2>
+              <p class="text-[13px] text-zinc-500 mt-0.5">Off-Plan installments &amp; Ready properties · UAE</p>
+            </div>
+            <button id="togglePropertyForm" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13px] font-semibold px-4 py-2.5">+ Add Property</button>
+          </div>
+
+          <!-- 30-day Installment Radar -->
+          <div id="installmentRadar" class="mb-6 hidden">
+            <div class="rounded-2xl border border-amber-200 bg-amber-50/60 p-5">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                <h3 class="text-[14px] font-semibold text-amber-900">30-Day Installment Radar</h3>
+              </div>
+              <div id="radarList" class="space-y-2"></div>
+            </div>
+          </div>
+
+          <!-- Add Property Form -->
+          <div id="form-property" class="bg-white rounded-2xl border border-zinc-100 p-6 shadow-soft hidden mb-6 max-w-2xl">
+            <h3 class="font-semibold text-base mb-4">Add UAE Property</h3>
+            <div class="space-y-4">
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Status</label>
+                  <select id="reStatus" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]">
+                    <option value="offplan">Off-Plan</option>
+                    <option value="ready">Ready</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Use type</label>
+                  <select id="reUseType" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]">
+                    <option value="residential">Residential</option>
+                    <option value="commercial">Commercial</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Property type</label>
+                  <select id="rePropType" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]"></select>
+                </div>
+                <div id="bedsWrap">
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Bedrooms</label>
+                  <select id="reBeds" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]">
+                    <option value="">—</option>
+                    <option value="studio">Studio</option>
+                    <option value="1">1 Bed</option>
+                    <option value="2">2 Beds</option>
+                    <option value="3">3 Beds</option>
+                    <option value="4">4 Beds</option>
+                    <option value="5">5 Beds</option>
+                    <option value="6">6 Beds</option>
+                    <option value="7">7+ Beds</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Project / Property name</label>
+                <input id="reName" type="text" placeholder="e.g. Binghatti Crest Unit 1204" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]" />
+              </div>
+
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Location / Area</label>
+                  <input id="reLocation" type="text" placeholder="e.g. Dubai Hills, JVC, Business Bay" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]" />
+                </div>
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Developer (optional)</label>
+                  <input id="reDeveloper" type="text" placeholder="e.g. Emaar, Binghatti" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]" />
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Total contract / value (AED)</label>
+                <input id="rePrice" type="number" step="any" placeholder="1480000" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]" />
+              </div>
+
+              <!-- Off-plan installments builder -->
+              <div id="installmentsBuilder" class="border border-zinc-100 rounded-xl p-4 bg-zinc-50/50">
+                <div class="flex items-center justify-between mb-3">
+                  <p class="text-[13px] font-semibold text-zinc-800">Payment plan installments</p>
+                  <button type="button" id="addInstallmentRow" class="text-[12px] font-semibold text-brand-700 hover:text-brand-800">+ Add row</button>
+                </div>
+                <div id="installmentRows" class="space-y-2"></div>
+                <p class="text-[11px] text-zinc-400 mt-2">Add each milestone with due date and amount. You can edit or mark paid later.</p>
+              </div>
+
+              <button id="savePropertyBtn" class="w-full bg-brand-700 hover:bg-brand-800 text-white font-semibold py-3 rounded-xl text-[14px]">Save Property</button>
+            </div>
+          </div>
+
+          <div id="propertiesList" class="space-y-4"></div>
+        </div>
+
+
+        <!-- AI INSIGHTS -->
+        <div id="view-ai-insights" class="view">
+          <h2 class="font-display text-xl font-semibold tracking-tight mb-2">AI Insights</h2>
+          <p class="text-[14px] text-zinc-500 mb-6">Smart notes on concentration, cash flow, and upcoming risk.</p>
+          <div class="bg-white rounded-2xl border border-zinc-100 p-6 shadow-soft max-w-xl">
+            <p class="text-sm text-zinc-500">Coming soon — portfolio concentration alerts, installment risk, and Golden Visa progress tips will appear here.</p>
+          </div>
+        </div>
+
+        <!-- GOALS -->
+        <div id="view-goals" class="view">
+          <h2 class="font-display text-xl font-semibold tracking-tight mb-2">Goals</h2>
+          <p class="text-[14px] text-zinc-500 mb-6">Golden Visa and net-worth targets based on UAE property only.</p>
+
+          <div class="bg-white rounded-2xl border border-zinc-100 p-6 shadow-soft max-w-xl">
+            <div class="flex items-start justify-between gap-3 mb-4">
+              <div>
+                <p class="text-[11px] font-semibold uppercase tracking-wider text-brand-600 mb-1">UAE Golden Visa</p>
+                <h3 class="font-display text-lg font-semibold text-zinc-900">AED 2,000,000 property target</h3>
+                <p class="text-[13px] text-zinc-500 mt-1">Only UAE real estate counts — stocks and overseas assets are excluded.</p>
+              </div>
+              <span id="gvBadge" class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-600 shrink-0">In progress</span>
+            </div>
+
+            <div class="mb-2 flex justify-between text-[13px]">
+              <span class="text-zinc-500">UAE property value</span>
+              <span id="gvCurrent" class="font-semibold tabular-nums text-zinc-900">AED 0</span>
+            </div>
+            <div class="h-3 rounded-full bg-zinc-100 overflow-hidden mb-2">
+              <div id="gvBar" class="h-full rounded-full bg-brand-600 transition-all duration-500" style="width:0%"></div>
+            </div>
+            <div class="flex justify-between text-[12px] mb-5">
+              <span id="gvPct" class="font-semibold text-brand-700">0% complete</span>
+              <span id="gvRemaining" class="text-zinc-500">AED 2,000,000 to go</span>
+            </div>
+
+            <div id="gvEligibleBox" class="hidden rounded-xl border border-emerald-200 bg-emerald-50 p-4 mb-4">
+              <p class="text-[14px] font-semibold text-emerald-800 mb-1">You may be eligible</p>
+              <p class="text-[13px] text-emerald-700 mb-3">Your UAE property total has reached the AED 2M threshold. Confirm eligibility on the official ICP portal.</p>
+              <a href="https://smartservices.icp.gov.ae/echannels/web/client/guest/index.html#/checkEligibility" target="_blank" rel="noopener noreferrer"
+                class="inline-flex items-center justify-center gap-2 w-full sm:w-auto rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[13.5px] font-semibold px-5 py-3 transition">
+                Check eligibility on ICP
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+              </a>
+            </div>
+
+            <div id="gvProgressNote" class="rounded-xl bg-zinc-50 border border-zinc-100 p-3 text-[12px] text-zinc-500">
+              Add UAE off-plan or ready properties under Real Estate. Progress updates automatically from their contract values.
+            </div>
+          </div>
+        </div>
+
+        <!-- REPORTS -->
+        <div id="view-reports" class="view">
+          <h2 class="font-display text-xl font-semibold tracking-tight mb-2">Reports</h2>
+          <p class="text-[14px] text-zinc-500 mb-6">Monthly statements and allocation summaries.</p>
+          <div class="bg-white rounded-2xl border border-zinc-100 p-6 shadow-soft max-w-xl">
+            <p class="text-sm text-zinc-500">Coming soon — exportable monthly net-worth and cash-flow reports.</p>
+          </div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div id="view-settings" class="view">
+          <h2 class="font-display text-xl font-semibold tracking-tight mb-2">Settings</h2>
+          <p class="text-[14px] text-zinc-500 mb-6">Profile, currency base, and notification preferences.</p>
+          <div class="bg-white rounded-2xl border border-zinc-100 p-6 shadow-soft max-w-xl space-y-3">
+            <div>
+              <p class="text-[12px] text-zinc-400 mb-1">Signed in as</p>
+              <p id="settingsEmail" class="text-sm font-medium text-zinc-800 break-all">—</p>
+            </div>
+            <p class="text-sm text-zinc-500">Base currency: <span class="font-semibold text-zinc-800">AED</span></p>
+            <p class="text-[12px] text-zinc-400">More settings (WhatsApp alerts, email reminders) will be added here.</p>
+          </div>
+        </div>
+
+      </main>
     </div>
   </div>
 
-  <!-- SINGLE SCRIPT BLOCK -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script>
-    const SUPABASE_URL = "https://mbweotdviwxmutxdjlpj.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1id2VvdGR2aXd4bXV0eGRqbHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MTAxNDQsImV4cCI6MjEwMjM4NjE0NH0.2hbHdyxS7zqiP-CexUsu8hI0nsgkdjCBeIKcQrmJCAw";
+    document.addEventListener('DOMContentLoaded', () => {
+      const SUPABASE_URL = 'https://mbweotdviwxmutxdjlpj.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1id2VvdGR2aXd4bXV0eGRqbHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MTAxNDQsImV4cCI6MjEwMjM4NjE0NH0.2hbHdyxS7zqiP-CexUsu8hI0nsgkdjCBeIKcQrmJCAw';
 
-    // Single global Supabase instance
-    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        flowType: 'implicit'
-      }
-    });
+      const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      let currentUser = null;
 
-    let currentUser = null;
-    let localProperties = [];
-
-    async function initDashboard() {
-      try {
-        window.supabaseClient.auth.onAuthStateChange(async (event, session) => {
-          if (session?.user) {
-            currentUser = session.user;
-            document.getElementById('user-email-display').innerText = currentUser.email || 'Logged In';
-
-            if (window.location.hash.includes('access_token')) {
-              window.history.replaceState(null, '', window.location.pathname);
-            }
-            await loadProperties();
-          } else if (event === 'SIGNED_OUT') {
-            window.location.href = 'login.html';
-          }
-        });
-
-        const { data: { session }, error: sessionError } = await window.supabaseClient.auth.getSession();
-        if (sessionError) throw sessionError;
-
-        if (session?.user) {
-          currentUser = session.user;
-          document.getElementById('user-email-display').innerText = currentUser.email || 'Logged In';
-          if (window.location.hash.includes('access_token')) {
-            window.history.replaceState(null, '', window.location.pathname);
-          }
-          await loadProperties();
-        } else if (!window.location.hash.includes('access_token')) {
+      // Handle auth session from OAuth token
+      supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (!session) {
           window.location.href = 'login.html';
+          return;
         }
-      } catch (err) {
-        console.error("Auth init error:", err);
-        document.getElementById('user-email-display').innerText = 'Auth Error';
-      }
-    }
 
-    async function handleSignOut() {
-      await window.supabaseClient.auth.signOut();
-      window.location.href = 'login.html';
-    }
+        currentUser = session.user;
+        const name = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
+        const hour = new Date().getHours(); // user's local timezone
+        let wish = 'Good evening';
+        if (hour < 12) wish = 'Good morning';
+        else if (hour < 17) wish = 'Good afternoon';
+        document.getElementById('userGreeting').textContent = `${wish}, ${name}`;
+        const emailEl = document.getElementById('userEmailDisplay');
+        if (emailEl) emailEl.textContent = currentUser.email;
+        const sn = document.getElementById('sidebarUserName');
+        const se = document.getElementById('sidebarUserEmail');
+        if (sn) sn.textContent = name;
+        if (se) se.textContent = currentUser.email || '';
+        const setE = document.getElementById('settingsEmail');
+        if (setE) setE.textContent = currentUser.email || '';
 
-    async function loadProperties() {
-      if (!currentUser) return;
-      const statusEl = document.getElementById('property-table-status');
-      statusEl.innerText = 'Refreshing...';
+        loadPortfolio();
+        loadProperties();
+      });
+
+      // Mobile sidebar
+      window.openSidebar = function() {
+        document.getElementById('sidebar')?.classList.add('mobile-open');
+        document.getElementById('sidebarBackdrop')?.classList.add('show');
+        document.body.style.overflow = 'hidden';
+      };
+      window.closeSidebar = function() {
+        document.getElementById('sidebar')?.classList.remove('mobile-open');
+        document.getElementById('sidebarBackdrop')?.classList.remove('show');
+        document.body.style.overflow = '';
+      };
+      document.getElementById('menuBtn')?.addEventListener('click', openSidebar);
+
+      // Sign Out
+      document.getElementById('signOutBtn').addEventListener('click', async () => {
+        await supabaseClient.auth.signOut();
+        window.location.href = 'login.html';
+      });
+
+      // Save Asset
       
-      const { data, error } = await window.supabaseClient
-        .from('properties')
-        .select(`
-          id, project_name, developer, unit_number, total_price_aed, is_offplan,
-          installments ( id, milestone, due_date, amount_aed, percentage, is_paid )
-        `)
-        .eq('user_id', currentUser.id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error("Database query failed:", error);
-        statusEl.innerText = 'Database unready';
-        document.getElementById('properties-tbody').innerHTML = `
-          <tr><td colspan="6" class="px-6 py-8 text-center text-rose-400">Database connection error: ${error.message}</td></tr>
-        `;
-        return;
+      // Update price currency label when market changes
+      const marketEl = document.getElementById('assetMarket');
+      const priceLabel = document.getElementById('priceCurrencyLabel');
+      function syncCurrencyLabel() {
+        if (!marketEl || !priceLabel) return;
+        const cur = marketEl.options[marketEl.selectedIndex].getAttribute('data-currency') || 'USD';
+        priceLabel.textContent = '(' + cur + ')';
+      }
+      if (marketEl) {
+        marketEl.addEventListener('change', syncCurrencyLabel);
+        syncCurrencyLabel();
       }
 
-      localProperties = data || [];
-      renderPropertiesTable(localProperties);
-      calculateStats(localProperties);
-      statusEl.innerText = `${localProperties.length} records`;
-    }
+      document.getElementById('saveAssetBtn').addEventListener('click', async () => {
+        if (!currentUser) return;
 
-    function calculateStats(properties) {
-      let totalValue = 0;
-      let upcomingInstallments = 0;
-      const today = new Date().toISOString().split('T')[0];
+        const symbol = document.getElementById('assetSymbol').value.trim().toUpperCase();
+        const market = document.getElementById('assetMarket').value;
+        const shares = parseFloat(document.getElementById('assetShares').value);
+        const avg_buy_price = parseFloat(document.getElementById('assetPrice').value);
 
-      properties.forEach(p => {
-        totalValue += Number(p.total_price_aed || 0);
-        if (p.installments) {
-          p.installments.forEach(inst => {
-            if (!inst.is_paid && inst.due_date && inst.due_date >= today) {
-              upcomingInstallments++;
-            }
-          });
+        if (!symbol || isNaN(shares) || isNaN(avg_buy_price)) {
+          alert('Please enter valid asset details.');
+          return;
+        }
+
+        const marketSelect = document.getElementById('assetMarket');
+        const currency = marketSelect.options[marketSelect.selectedIndex].getAttribute('data-currency') || 'USD';
+
+        const { error } = await supabaseClient.from('holdings').insert([{
+          user_id: currentUser.id,
+          symbol,
+          market,
+          asset_type: 'stocks',
+          shares,
+          avg_buy_price,
+          currency
+        }]);
+
+        if (error) {
+          alert('Error saving asset: ' + error.message);
+        } else {
+          document.getElementById('assetSymbol').value = '';
+          document.getElementById('assetShares').value = '';
+          document.getElementById('assetPrice').value = '';
+          showView('portfolio');
+          loadPortfolio();
         }
       });
 
-      document.getElementById('stat-total-value').innerText = `AED ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
-      document.getElementById('stat-upcoming-count').innerText = `${upcomingInstallments} Due`;
-      document.getElementById('stat-properties-count').innerText = properties.length;
-    }
+      // ---- Real Estate helpers ----
+      const RESIDENTIAL_TYPES = ['Apartment', 'Villa', 'Townhouse', 'Penthouse', 'Land'];
+      const COMMERCIAL_TYPES = ['Retail Shop', 'Office Space', 'Warehouse', 'Factory', 'Land'];
 
-    function renderPropertiesTable(properties) {
-      const tbody = document.getElementById('properties-tbody');
-      if (!properties || properties.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">No properties recorded yet. Click "Add Property / SPA" to add one.</td></tr>`;
-        return;
+      function fillPropTypes() {
+        const use = document.getElementById('reUseType').value;
+        const sel = document.getElementById('rePropType');
+        const list = use === 'commercial' ? COMMERCIAL_TYPES : RESIDENTIAL_TYPES;
+        sel.innerHTML = list.map(t => `<option value="${t}">${t}</option>`).join('');
+        document.getElementById('bedsWrap').style.display = use === 'residential' ? '' : 'none';
       }
 
-      tbody.innerHTML = properties.map(p => {
-        const instCount = p.installments ? p.installments.length : 0;
-        return `
-          <tr class="hover:bg-slate-800/40 transition">
-            <td class="px-6 py-4 font-semibold text-white">${p.project_name} <span class="text-xs text-slate-400 font-normal">(${p.unit_number || 'N/A'})</span></td>
-            <td class="px-6 py-4">${p.developer || '—'}</td>
-            <td class="px-6 py-4 text-emerald-400 font-mono font-medium">${Number(p.total_price_aed || 0).toLocaleString()}</td>
-            <td class="px-6 py-4"><span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider ${p.is_offplan ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}">${p.is_offplan ? 'Off-Plan' : 'Ready'}</span></td>
-            <td class="px-6 py-4 text-slate-400 text-xs">${instCount} Milestones</td>
-            <td class="px-6 py-4 text-right">
-              <button onclick="deleteProperty('${p.id}')" class="text-xs text-rose-400 hover:text-rose-300">Delete</button>
-            </td>
-          </tr>
+      function syncInstallmentsVisibility() {
+        const status = document.getElementById('reStatus').value;
+        document.getElementById('installmentsBuilder').style.display = status === 'offplan' ? '' : 'none';
+      }
+
+      function addInstallmentRow(stage = '', due = '', amount = '') {
+        const wrap = document.getElementById('installmentRows');
+        const row = document.createElement('div');
+        row.className = 'grid grid-cols-12 gap-2 items-center installment-row';
+        row.innerHTML = `
+          <input type="text" placeholder="Stage e.g. 10% Booking" value="${stage}" class="col-span-4 rounded-lg border border-zinc-200 px-2.5 py-2 text-[13px] stage-input" />
+          <input type="date" value="${due}" class="col-span-3 rounded-lg border border-zinc-200 px-2.5 py-2 text-[13px] due-input" />
+          <input type="number" step="any" placeholder="Amount AED" value="${amount}" class="col-span-4 rounded-lg border border-zinc-200 px-2.5 py-2 text-[13px] amt-input" />
+          <button type="button" class="col-span-1 text-rose-500 hover:text-rose-700 text-lg leading-none remove-inst">&times;</button>
         `;
-      }).join('');
-    }
+        row.querySelector('.remove-inst').onclick = () => row.remove();
+        wrap.appendChild(row);
+      }
 
-    async function handleSpaUpload(event) {
-      const file = event.target.files?.[0];
-      if (!file) return;
+      document.getElementById('togglePropertyForm')?.addEventListener('click', () => {
+        const f = document.getElementById('form-property');
+        f.classList.toggle('hidden');
+        if (!f.classList.contains('hidden') && document.getElementById('installmentRows').children.length === 0) {
+          addInstallmentRow('Booking / Down payment', '', '');
+          addInstallmentRow('', '', '');
+        }
+      });
+      document.getElementById('reUseType')?.addEventListener('change', fillPropTypes);
+      document.getElementById('reStatus')?.addEventListener('change', syncInstallmentsVisibility);
+      document.getElementById('addInstallmentRow')?.addEventListener('click', () => addInstallmentRow());
+      fillPropTypes();
+      syncInstallmentsVisibility();
 
-      const labelEl = document.getElementById('spa-upload-label');
-      const iconEl = document.getElementById('spa-upload-icon');
-      const spinnerEl = document.getElementById('spa-spinner');
+      // Save Property + installments
+      document.getElementById('savePropertyBtn').addEventListener('click', async () => {
+        if (!currentUser) return;
+        const name = document.getElementById('reName').value.trim();
+        const total_price = parseFloat(document.getElementById('rePrice').value);
+        const status = document.getElementById('reStatus').value;
+        const use_type = document.getElementById('reUseType').value;
+        const prop_type = document.getElementById('rePropType').value;
+        const bedrooms = document.getElementById('reBeds').value || null;
+        const location = document.getElementById('reLocation').value.trim() || null;
+        const developer = document.getElementById('reDeveloper').value.trim() || null;
 
-      try {
-        iconEl.classList.add('hidden');
-        spinnerEl.classList.remove('hidden');
-        labelEl.innerText = "Uploading document to vault...";
-
-        const fileExt = file.name.split('.').pop();
-        const filePath = `${currentUser.id}/${Date.now()}.${fileExt}`;
-
-        const { error: uploadError } = await window.supabaseClient.storage
-          .from('spa-uploads')
-          .upload(filePath, file);
-
-        if (uploadError) throw uploadError;
-
-        labelEl.innerText = "Extracting contract details with AI...";
-
-        const { data: extracted, error: fnError } = await window.supabaseClient.functions.invoke('parse-spa', {
-          body: { filePath }
-        });
-
-        if (fnError) throw fnError;
-
-        if (extracted.project_name) document.getElementById('form-project-name').value = extracted.project_name;
-        if (extracted.developer) document.getElementById('form-developer').value = extracted.developer;
-        if (extracted.unit_number) document.getElementById('form-unit-number').value = extracted.unit_number;
-        if (extracted.total_price_aed) document.getElementById('form-total-price').value = extracted.total_price_aed;
-        if (typeof extracted.is_offplan === 'boolean') document.getElementById('form-is-offplan').checked = extracted.is_offplan;
-
-        if (Array.isArray(extracted.installments)) {
-          const container = document.getElementById('installments-container');
-          container.innerHTML = '';
-          extracted.installments.forEach(inst => addInstallmentRow(inst));
+        if (!name || isNaN(total_price)) {
+          alert('Please enter property name and total value (AED).');
+          return;
         }
 
-        labelEl.innerText = "✓ SPA Extracted! Review details below.";
-      } catch (err) {
-        console.error("Extraction error:", err);
-        alert(`Extraction Failed: ${err.message}`);
-        labelEl.innerText = "Upload failed. Click to try again.";
-      } finally {
-        spinnerEl.classList.add('hidden');
-        iconEl.classList.remove('hidden');
-      }
-    }
-
-    function addInstallmentRow(data = {}) {
-      const container = document.getElementById('installments-container');
-      const tr = document.createElement('tr');
-      tr.className = 'installment-row border-b border-slate-800';
-      tr.innerHTML = `
-        <td class="p-2"><input type="text" class="inst-milestone w-full bg-surface-950 border border-slate-700 rounded px-2 py-1 text-white" value="${data.milestone || ''}" placeholder="e.g. Booking / 20% Construction" /></td>
-        <td class="p-2"><input type="date" class="inst-date bg-surface-950 border border-slate-700 rounded px-2 py-1 text-white" value="${data.due_date || ''}" /></td>
-        <td class="p-2"><input type="number" class="inst-amount w-full bg-surface-950 border border-slate-700 rounded px-2 py-1 text-white" value="${data.amount_aed || ''}" placeholder="100000" /></td>
-        <td class="p-2"><input type="number" class="inst-percent w-16 bg-surface-950 border border-slate-700 rounded px-2 py-1 text-white" value="${data.percentage || ''}" placeholder="10" /></td>
-        <td class="p-2 text-center"><button type="button" onclick="this.closest('tr').remove()" class="text-rose-400 hover:text-rose-300 font-bold">&times;</button></td>
-      `;
-      container.appendChild(tr);
-    }
-
-    async function savePropertyAndInstallments() {
-      const btn = document.getElementById('save-property-btn');
-      const projectName = document.getElementById('form-project-name').value.trim();
-      const totalPrice = parseFloat(document.getElementById('form-total-price').value);
-
-      if (!projectName || isNaN(totalPrice)) {
-        alert("Please enter a valid Project Name and Total Price.");
-        return;
-      }
-
-      try {
-        btn.disabled = true;
-        btn.innerText = "Saving...";
-
-        const propertyPayload = {
+        const { data: prop, error } = await supabaseClient.from('properties').insert([{
           user_id: currentUser.id,
-          project_name: projectName,
-          developer: document.getElementById('form-developer').value.trim(),
-          unit_number: document.getElementById('form-unit-number').value.trim(),
-          total_price_aed: totalPrice,
-          is_offplan: document.getElementById('form-is-offplan').checked
-        };
+          name,
+          property_type: status === 'offplan' ? 'OFF_PLAN' : 'READY',
+          use_type,
+          prop_subtype: prop_type,
+          bedrooms,
+          location,
+          developer,
+          total_price
+        }]).select().single();
 
-        const { data: propData, error: propError } = await window.supabaseClient
-          .from('properties')
-          .insert([propertyPayload])
-          .select()
-          .single();
+        if (error) {
+          alert('Error saving property: ' + error.message);
+          return;
+        }
 
-        if (propError) throw propError;
-
-        const rows = document.querySelectorAll('.installment-row');
-        const installmentsPayload = [];
-
-        rows.forEach(row => {
-          const milestone = row.querySelector('.inst-milestone').value.trim();
-          const dueDate = row.querySelector('.inst-date').value || null;
-          const amount = parseFloat(row.querySelector('.inst-amount').value) || 0;
-          const percentage = parseFloat(row.querySelector('.inst-percent').value) || null;
-
-          if (milestone || amount > 0) {
-            installmentsPayload.push({
-              property_id: propData.id,
+        if (status === 'offplan' && prop) {
+          const rows = [...document.querySelectorAll('.installment-row')];
+          const installs = rows.map(r => {
+            const stage = r.querySelector('.stage-input').value.trim();
+            const due_date = r.querySelector('.due-input').value;
+            const amount = parseFloat(r.querySelector('.amt-input').value);
+            if (!due_date || isNaN(amount)) return null;
+            return {
+              property_id: prop.id,
               user_id: currentUser.id,
-              milestone: milestone || 'Payment Milestone',
-              due_date: dueDate,
-              amount_aed: amount,
-              percentage: percentage
-            });
+              stage: stage || 'Installment',
+              due_date,
+              amount,
+              status: 'scheduled'
+            };
+          }).filter(Boolean);
+
+          if (installs.length) {
+            const { error: iErr } = await supabaseClient.from('installments').insert(installs);
+            if (iErr) alert('Property saved, but installments error: ' + iErr.message);
+          }
+        }
+
+        // reset form
+        document.getElementById('reName').value = '';
+        document.getElementById('rePrice').value = '';
+        document.getElementById('reLocation').value = '';
+        document.getElementById('reDeveloper').value = '';
+        document.getElementById('installmentRows').innerHTML = '';
+        document.getElementById('form-property').classList.add('hidden');
+        loadProperties();
+      });
+
+      function daysUntil(dateStr) {
+        const d = new Date(dateStr + 'T00:00:00');
+        const now = new Date();
+        now.setHours(0,0,0,0);
+        return Math.round((d - now) / 86400000);
+      }
+
+      async function markInstallment(id, status) {
+        const { error } = await supabaseClient.from('installments').update({ status }).eq('id', id);
+        if (error) alert(error.message);
+        else loadProperties();
+      }
+
+      async function deleteInstallment(id) {
+        if (!confirm('Delete this installment?')) return;
+        const { error } = await supabaseClient.from('installments').delete().eq('id', id);
+        if (error) alert(error.message);
+        else loadProperties();
+      }
+
+      async function updateInstallmentDate(id, due_date) {
+        const { error } = await supabaseClient.from('installments').update({ due_date }).eq('id', id);
+        if (error) alert(error.message);
+        else loadProperties();
+      }
+
+      async function deleteProperty(id) {
+        if (!confirm('Delete this property and all its installments?')) return;
+        const { error } = await supabaseClient.from('properties').delete().eq('id', id);
+        if (error) alert(error.message);
+        else loadProperties();
+      }
+
+      async function addInstallmentToProperty(propertyId) {
+        const stage = prompt('Stage name (e.g. 20% Construction)');
+        if (stage === null) return;
+        const due = prompt('Due date (YYYY-MM-DD)', new Date().toISOString().slice(0,10));
+        if (!due) return;
+        const amountStr = prompt('Amount in AED');
+        const amount = parseFloat(amountStr);
+        if (isNaN(amount)) { alert('Invalid amount'); return; }
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        const { error } = await supabaseClient.from('installments').insert([{
+          property_id: propertyId,
+          user_id: user.id,
+          stage: stage || 'Installment',
+          due_date: due,
+          amount,
+          status: 'scheduled'
+        }]);
+        if (error) alert(error.message);
+        else loadProperties();
+      }
+
+      async function deleteHolding(id) {
+        if (!confirm('Delete this holding?')) return;
+        const { error } = await supabaseClient.from('holdings').delete().eq('id', id);
+        if (error) alert(error.message);
+        else loadPortfolio();
+      }
+
+      async function editHolding(id, symbol, market, shares, avg, currency) {
+        const newSymbol = prompt('Symbol', symbol);
+        if (newSymbol === null) return;
+        const newShares = prompt('Quantity / shares', shares);
+        if (newShares === null) return;
+        const newAvg = prompt('Average cost (' + (currency || '') + ')', avg);
+        if (newAvg === null) return;
+        const sharesN = parseFloat(newShares);
+        const avgN = parseFloat(newAvg);
+        if (!newSymbol.trim() || isNaN(sharesN) || isNaN(avgN)) {
+          alert('Invalid values');
+          return;
+        }
+        const { error } = await supabaseClient.from('holdings').update({
+          symbol: newSymbol.trim().toUpperCase(),
+          shares: sharesN,
+          avg_buy_price: avgN
+        }).eq('id', id);
+        if (error) alert(error.message);
+        else loadPortfolio();
+      }
+
+      window.markInstallment = markInstallment;
+      window.deleteInstallment = deleteInstallment;
+      window.updateInstallmentDate = updateInstallmentDate;
+      window.deleteProperty = deleteProperty;
+      window.addInstallmentToProperty = addInstallmentToProperty;
+      window.deleteHolding = deleteHolding;
+      window.editHolding = editHolding;
+
+
+      // FX rates → AED (cached briefly)
+      let fxCache = null;
+      async function getRatesToAed() {
+        if (fxCache) return fxCache;
+        try {
+          // Free API: rates vs USD, then derive to AED
+          const res = await fetch('https://open.er-api.com/v6/latest/USD');
+          const data = await res.json();
+          const rates = data.rates || {};
+          const usdToAed = rates.AED || 3.6725; // fallback peg
+          // Convert: 1 UNIT = (USD per unit) * AED per USD
+          // rates[X] = how many X per 1 USD → 1 X = 1/rates[X] USD
+          const toAed = { AED: 1, USD: usdToAed };
+          ['INR','GBP','SAR','CNY','JPY','HKD','EUR'].forEach(c => {
+            if (rates[c]) toAed[c] = usdToAed / rates[c];
+          });
+          fxCache = toAed;
+          return toAed;
+        } catch (e) {
+          console.warn('FX fetch failed, using fallbacks', e);
+          // Approximate fallbacks
+          return {
+            AED: 1, USD: 3.6725, INR: 0.044, GBP: 4.65,
+            SAR: 0.979, CNY: 0.51, JPY: 0.024, HKD: 0.47, EUR: 4.0
+          };
+        }
+      }
+
+      // ---- Charts state ----
+      let allocChartInst = null;
+      let perfChartInst = null;
+      let lastHoldingsAed = []; // {symbol, market, currency, localVal, aedVal}
+      let perfRange = 'ALL';
+
+      const MARKET_LABELS = {
+        US: '🇺🇸 United States', UAE: '🇦🇪 UAE', IN: '🇮🇳 India', UK: '🇬🇧 United Kingdom',
+        SA: '🇸🇦 Saudi Arabia', CN: '🇨🇳 China', JP: '🇯🇵 Japan', HK: '🇭🇰 Hong Kong',
+        CRYPTO: 'Crypto', GOLD: 'Gold', GOLD_AED: 'Gold (AED)', GOLD_INR: 'Gold (INR)', SILVER_AED: 'Silver (AED)', SILVER_INR: 'Silver (INR)', DFM: '🇦🇪 UAE', NSE: '🇮🇳 India'
+      };
+      const ALLOC_COLORS = ['#7e22ce','#a855f7','#c084fc','#22c55e','#f59e0b','#3b82f6','#ef4444','#14b8a6','#ec4899','#64748b'];
+
+      function marketLabel(code) {
+        return MARKET_LABELS[code] || code;
+      }
+
+      function renderAllocation(rows) {
+        const byMarket = {};
+        const bySymbol = {};
+        let total = 0;
+        rows.forEach(r => {
+          const m = r.market || 'OTHER';
+          byMarket[m] = (byMarket[m] || 0) + r.aedVal;
+          const key = r.symbol + '|' + m;
+          bySymbol[key] = (bySymbol[key] || 0) + r.aedVal;
+          total += r.aedVal;
+        });
+
+        const markets = Object.entries(byMarket).sort((a,b) => b[1]-a[1]);
+        const list = document.getElementById('allocMarketList');
+        const filter = document.getElementById('allocMarketFilter');
+        if (list) {
+          if (!markets.length) {
+            list.innerHTML = '<p class="text-zinc-400">No holdings yet</p>';
+          } else {
+            list.innerHTML = markets.map(([m, v], i) => {
+              const pct = total > 0 ? (v / total * 100) : 0;
+              return `<div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${ALLOC_COLORS[i % ALLOC_COLORS.length]}"></span>
+                <span class="flex-1 text-zinc-700">${marketLabel(m)}</span>
+                <span class="font-semibold tabular-nums text-zinc-900">${pct.toFixed(1)}%</span>
+              </div>`;
+            }).join('');
+          }
+        }
+        if (filter) {
+          const cur = filter.value;
+          filter.innerHTML = '<option value="ALL">All markets</option>' +
+            markets.map(([m]) => `<option value="${m}">${marketLabel(m)}</option>`).join('');
+          filter.value = [...filter.options].some(o => o.value === cur) ? cur : 'ALL';
+        }
+
+        // Donut
+        const ctx = document.getElementById('allocChart');
+        if (ctx && window.Chart) {
+          if (allocChartInst) allocChartInst.destroy();
+          allocChartInst = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+              labels: markets.map(([m]) => marketLabel(m)),
+              datasets: [{
+                data: markets.map(([,v]) => v),
+                backgroundColor: markets.map((_,i) => ALLOC_COLORS[i % ALLOC_COLORS.length]),
+                borderWidth: 0,
+                hoverOffset: 4
+              }]
+            },
+            options: {
+              cutout: '68%',
+              plugins: { legend: { display: false }, tooltip: {
+                callbacks: {
+                  label: (c) => {
+                    const v = c.raw || 0;
+                    const pct = total > 0 ? (v/total*100).toFixed(1) : 0;
+                    return ` AED ${Number(v).toLocaleString(undefined,{maximumFractionDigits:0})} (${pct}%)`;
+                  }
+                }
+              }}
+            }
+          });
+        }
+
+        renderStockBreakdown(rows, total, filter ? filter.value : 'ALL');
+      }
+
+      function renderStockBreakdown(rows, total, marketFilter) {
+        const el = document.getElementById('allocStockList');
+        if (!el) return;
+        let filtered = rows;
+        if (marketFilter && marketFilter !== 'ALL') {
+          filtered = rows.filter(r => r.market === marketFilter);
+        }
+        const bySym = {};
+        let subTotal = 0;
+        filtered.forEach(r => {
+          bySym[r.symbol] = (bySym[r.symbol] || 0) + r.aedVal;
+          subTotal += r.aedVal;
+        });
+        const items = Object.entries(bySym).sort((a,b) => b[1]-a[1]);
+        const base = marketFilter === 'ALL' ? total : subTotal;
+        if (!items.length) {
+          el.innerHTML = '<p class="text-zinc-400 text-[13px]">No holdings in this market</p>';
+          return;
+        }
+        el.innerHTML = items.map(([sym, v], i) => {
+          const pct = base > 0 ? (v / base * 100) : 0;
+          return `<div>
+            <div class="flex justify-between text-[13px] mb-1">
+              <span class="font-medium text-zinc-800">${sym}</span>
+              <span class="tabular-nums text-zinc-600">${pct.toFixed(1)}% · AED ${v.toLocaleString(undefined,{maximumFractionDigits:0})}</span>
+            </div>
+            <div class="h-1.5 rounded-full bg-zinc-100 overflow-hidden">
+              <div class="h-full rounded-full" style="width:${Math.min(100,pct)}%;background:${ALLOC_COLORS[i % ALLOC_COLORS.length]}"></div>
+            </div>
+          </div>`;
+        }).join('');
+      }
+
+      function savePortfolioSnapshot(invested, current) {
+        try {
+          const key = 'crosscap_perf_history';
+          const hist = JSON.parse(localStorage.getItem(key) || '[]');
+          const today = new Date().toISOString().slice(0, 10);
+          const last = hist[hist.length - 1];
+          if (last && last.d === today) {
+            last.invested = invested;
+            last.value = current;
+          } else {
+            hist.push({ d: today, invested, value: current });
+          }
+          // keep ~400 days
+          while (hist.length > 400) hist.shift();
+          localStorage.setItem(key, JSON.stringify(hist));
+        } catch (e) {}
+      }
+
+      function filterHistory(range) {
+        try {
+          const hist = JSON.parse(localStorage.getItem('crosscap_perf_history') || '[]');
+          if (!hist.length) return [];
+          if (range === 'ALL') return hist;
+          const days = { '1D': 1, '1W': 7, '1M': 30, '3M': 90, '1Y': 365 }[range] || 3650;
+          const cutoff = new Date();
+          cutoff.setDate(cutoff.getDate() - days);
+          const cs = cutoff.toISOString().slice(0, 10);
+          return hist.filter(h => h.d >= cs);
+        } catch (e) { return []; }
+      }
+
+      function renderPerformance(invested, current) {
+        savePortfolioSnapshot(invested, current);
+        const pnl = current - invested;
+        const pnlEl = document.getElementById('perfPnL');
+        document.getElementById('perfInvested').textContent = 'AED ' + invested.toLocaleString(undefined, { maximumFractionDigits: 0 });
+        document.getElementById('perfCurrent').textContent = 'AED ' + current.toLocaleString(undefined, { maximumFractionDigits: 0 });
+        if (pnlEl) {
+          pnlEl.textContent = (pnl >= 0 ? '+' : '') + 'AED ' + pnl.toLocaleString(undefined, { maximumFractionDigits: 0 });
+          pnlEl.className = 'text-[15px] font-semibold tabular-nums ' + (pnl >= 0 ? 'text-emerald-600' : 'text-rose-600');
+        }
+
+        let hist = filterHistory(perfRange);
+        if (!hist.length) {
+          hist = [{ d: new Date().toISOString().slice(0,10), invested, value: current }];
+        }
+        const ctx = document.getElementById('perfChart');
+        if (!ctx || !window.Chart) return;
+        if (perfChartInst) perfChartInst.destroy();
+        perfChartInst = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: hist.map(h => h.d),
+            datasets: [
+              {
+                label: 'Portfolio value',
+                data: hist.map(h => h.value),
+                borderColor: '#7e22ce',
+                backgroundColor: 'rgba(126,34,206,0.08)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: hist.length < 20 ? 3 : 0,
+                borderWidth: 2
+              },
+              {
+                label: 'Invested',
+                data: hist.map(h => h.invested),
+                borderColor: '#a1a1aa',
+                borderDash: [5, 5],
+                fill: false,
+                tension: 0.2,
+                pointRadius: 0,
+                borderWidth: 1.5
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } },
+            scales: {
+              x: { grid: { display: false }, ticks: { maxTicksLimit: 6, font: { size: 10 } } },
+              y: { grid: { color: '#f4f4f5' }, ticks: { font: { size: 10 }, callback: v => 'AED ' + Number(v).toLocaleString() } }
+            }
           }
         });
+      }
 
-        if (installmentsPayload.length > 0) {
-          const { error: instError } = await window.supabaseClient
-            .from('installments')
-            .insert(installmentsPayload);
+      document.getElementById('allocMarketFilter')?.addEventListener('change', (e) => {
+        const total = lastHoldingsAed.reduce((s, r) => s + r.aedVal, 0);
+        renderStockBreakdown(lastHoldingsAed, total, e.target.value);
+      });
 
-          if (instError) throw instError;
+      document.querySelectorAll('.perf-range').forEach(btn => {
+        btn.addEventListener('click', () => {
+          perfRange = btn.getAttribute('data-range');
+          document.querySelectorAll('.perf-range').forEach(b => {
+            b.className = 'perf-range text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-zinc-200 text-zinc-500 hover:bg-zinc-50';
+          });
+          btn.className = 'perf-range text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-brand-200 bg-brand-50 text-brand-700';
+          const inv = lastHoldingsAed.reduce((s, r) => s + r.aedVal, 0);
+          renderPerformance(inv, inv); // value ≈ cost until live prices
+        });
+      });
+
+            // Load Holdings — convert everything to AED
+      async function loadPortfolio() {
+        const { data: holdings } = await supabaseClient.from('holdings').select('*');
+        const tbody = document.getElementById('portfolioTableBody');
+        tbody.innerHTML = '';
+        let totalAed = 0;
+        const byCurrency = {}; // local totals before FX
+
+        const rates = await getRatesToAed();
+        lastHoldingsAed = [];
+
+        if (holdings && holdings.length > 0) {
+          document.getElementById('holdingsCountCard').textContent = `${holdings.length} Assets`;
+          holdings.forEach(item => {
+            const cur = (item.currency || 'AED').toUpperCase();
+            const shares = Number(item.shares) || 0;
+            const avg = Number(item.avg_buy_price) || 0;
+            const localVal = shares * avg;
+            const rate = rates[cur] != null ? rates[cur] : 1;
+            const aedVal = localVal * rate;
+            totalAed += aedVal;
+
+            byCurrency[cur] = (byCurrency[cur] || 0) + localVal;
+            lastHoldingsAed.push({
+              id: item.id,
+              symbol: item.symbol,
+              market: item.market || 'OTHER',
+              currency: cur,
+              localVal,
+              aedVal
+            });
+
+            tbody.innerHTML += `
+              <tr class="hover:bg-zinc-50/50">
+                <td class="px-5 py-4 font-medium text-zinc-900">${item.symbol}</td>
+                <td class="px-5 py-4 text-zinc-500">${item.market} <span class="text-zinc-400">· ${cur}</span></td>
+                <td class="px-5 py-4 text-right tabular-nums">${shares.toLocaleString()}</td>
+                <td class="px-5 py-4 text-right tabular-nums">${avg.toFixed(2)} <span class="text-zinc-400 text-xs">${cur}</span></td>
+                <td class="px-5 py-4 text-right">
+                  <div class="font-semibold tabular-nums">${aedVal.toLocaleString(undefined, { minimumFractionDigits: 2 })} <span class="text-zinc-400 text-xs font-normal">AED</span></div>
+                  <div class="text-[11px] text-zinc-400 tabular-nums">${localVal.toLocaleString(undefined, { minimumFractionDigits: 2 })} ${cur}</div>
+                </td>
+                <td class="px-5 py-4 text-right whitespace-nowrap">
+                  <button onclick="editHolding('${item.id}', '${String(item.symbol).replace(/'/g, "\\'")}', '${item.market || ''}', ${shares}, ${avg}, '${cur}')" class="text-[11px] font-semibold text-brand-700 hover:underline mr-2">Edit</button>
+                  <button onclick="deleteHolding('${item.id}')" class="text-[11px] font-semibold text-rose-500 hover:underline">Delete</button>
+                </td>
+              </tr>
+            `;
+          });
+        } else {
+          document.getElementById('holdingsCountCard').textContent = '0 Assets';
         }
 
-        closeAddPropertyModal();
-        await loadProperties();
-      } catch (err) {
-        console.error("Save error:", err);
-        alert(`Failed to save: ${err.message}`);
-      } finally {
-        btn.disabled = false;
-        btn.innerText = "Confirm & Save Property";
+        document.getElementById('totalNetWorthCard').textContent =
+          `AED ${totalAed.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+
+        // Allocation + performance (cost basis used as value until live prices)
+        renderAllocation(lastHoldingsAed);
+        renderPerformance(totalAed, totalAed);
+
+        // Currency sub-boxes
+        const box = document.getElementById('currencyBreakdown');
+        if (box) {
+          const entries = Object.entries(byCurrency);
+          if (entries.length === 0) {
+            box.innerHTML = '<div class="bg-white rounded-xl border border-zinc-100 p-4 text-sm text-zinc-400">No foreign currency holdings yet</div>';
+          } else {
+            box.innerHTML = entries.map(([cur, local]) => {
+              const rate = rates[cur] != null ? rates[cur] : 1;
+              const aed = local * rate;
+              return `
+                <div class="bg-white rounded-xl border border-zinc-100 p-4 shadow-soft">
+                  <p class="text-[11px] font-medium text-zinc-400 mb-1">${cur} exposure</p>
+                  <p class="font-display text-[18px] font-semibold text-zinc-900 tabular-nums">${local.toLocaleString(undefined, { minimumFractionDigits: 2 })} <span class="text-sm font-medium text-zinc-500">${cur}</span></p>
+                  <p class="text-[12px] text-emerald-600 mt-1 tabular-nums">≈ AED ${aed.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                </div>
+              `;
+            }).join('');
+          }
+        }
       }
-    }
 
-    async function deleteProperty(id) {
-      if (!confirm("Are you sure you want to delete this property and all associated installments?")) return;
-      const { error } = await window.supabaseClient.from('properties').delete().eq('id', id);
-      if (error) alert(error.message);
-      else await loadProperties();
-    }
+      const GOLDEN_VISA_TARGET = 2000000; // AED
 
-    function openAddPropertyModal() {
-      document.getElementById('form-project-name').value = '';
-      document.getElementById('form-developer').value = '';
-      document.getElementById('form-unit-number').value = '';
-      document.getElementById('form-total-price').value = '';
-      document.getElementById('installments-container').innerHTML = '';
-      document.getElementById('spa-upload-label').innerText = 'Upload SPA / Payment Schedule (PDF or Photo)';
-      document.getElementById('add-modal').classList.remove('hidden');
-    }
+      function updateGoldenVisaProgress(uaePropertyAed) {
+        const current = Number(uaePropertyAed) || 0;
+        const pct = Math.min(100, (current / GOLDEN_VISA_TARGET) * 100);
+        const remaining = Math.max(0, GOLDEN_VISA_TARGET - current);
+        const eligible = current >= GOLDEN_VISA_TARGET;
 
-    function closeAddPropertyModal() {
-      document.getElementById('add-modal').classList.add('hidden');
-    }
+        const bar = document.getElementById('gvBar');
+        const pctEl = document.getElementById('gvPct');
+        const curEl = document.getElementById('gvCurrent');
+        const remEl = document.getElementById('gvRemaining');
+        const badge = document.getElementById('gvBadge');
+        const box = document.getElementById('gvEligibleBox');
+        const note = document.getElementById('gvProgressNote');
 
-    window.addEventListener('DOMContentLoaded', initDashboard);
+        if (bar) bar.style.width = pct.toFixed(1) + '%';
+        if (pctEl) pctEl.textContent = pct.toFixed(1) + '% complete';
+        if (curEl) curEl.textContent = 'AED ' + current.toLocaleString(undefined, { maximumFractionDigits: 0 });
+        if (remEl) {
+          remEl.textContent = eligible
+            ? 'Target reached'
+            : 'AED ' + remaining.toLocaleString(undefined, { maximumFractionDigits: 0 }) + ' to go';
+        }
+        if (badge) {
+          if (eligible) {
+            badge.textContent = 'Eligible to check';
+            badge.className = 'text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 shrink-0';
+          } else {
+            badge.textContent = 'In progress';
+            badge.className = 'text-[11px] font-semibold px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-600 shrink-0';
+          }
+        }
+        if (box) box.classList.toggle('hidden', !eligible);
+        if (note) {
+          note.classList.toggle('hidden', eligible);
+          if (!eligible) {
+            note.innerHTML = current > 0
+              ? `You have <span class="font-semibold text-zinc-700">${pct.toFixed(1)}%</span> of the AED 2M UAE property threshold. Add more UAE real estate to close the gap.`
+              : 'Add UAE off-plan or ready properties under Real Estate. Progress updates automatically from their contract values.';
+          }
+        }
+      }
+
+      // Load Real Estate + installments + 30-day radar
+      async function loadProperties() {
+        const { data: properties } = await supabaseClient.from('properties').select('*').order('created_at', { ascending: false });
+        const container = document.getElementById('propertiesList');
+        container.innerHTML = '';
+        let totalReVal = 0;
+        const radarItems = [];
+
+        if (properties && properties.length > 0) {
+          for (const p of properties) {
+            totalReVal += parseFloat(p.total_price || 0);
+            const isOffplan = (p.property_type || '').toUpperCase().includes('OFF');
+            let instHtml = '';
+
+            if (isOffplan) {
+              const { data: insts, error: instErr } = await supabaseClient
+                .from('installments')
+                .select('*')
+                .eq('property_id', p.id)
+                .order('due_date', { ascending: true });
+
+              if (instErr) console.warn('Installments load error', instErr);
+
+              instHtml = `<div class="mt-4 border-t border-zinc-100 pt-3 space-y-2">
+                <div class="flex items-center justify-between mb-2">
+                  <p class="text-[12px] font-semibold text-zinc-500">Installment schedule</p>
+                  <button onclick="addInstallmentToProperty('${p.id}')" class="text-[11px] font-semibold text-brand-700 hover:underline">+ Add installment</button>
+                </div>`;
+
+              if (insts && insts.length) {
+                for (const i of insts) {
+                  const days = daysUntil(i.due_date);
+                  const st = (i.status || 'scheduled').toLowerCase();
+                  let badge = 'bg-zinc-100 text-zinc-600';
+                  let label = 'Scheduled';
+                  if (st === 'paid') { badge = 'bg-emerald-50 text-emerald-700'; label = 'Paid'; }
+                  else if (days < 0) { badge = 'bg-rose-50 text-rose-700'; label = 'Overdue'; }
+                  else if (days <= 30) { badge = 'bg-amber-50 text-amber-800'; label = days + 'd left'; }
+
+                  if (st !== 'paid' && days <= 30) {
+                    radarItems.push({ name: p.name, stage: i.stage, due: i.due_date, amount: i.amount, days });
+                  }
+
+                  instHtml += `
+                    <div class="flex flex-wrap items-center gap-2 text-[13px] bg-zinc-50 rounded-xl px-3 py-2">
+                      <span class="font-medium text-zinc-800 flex-1 min-w-[100px]">${i.stage || 'Installment'}</span>
+                      <input type="date" value="${i.due_date}" class="rounded-lg border border-zinc-200 px-2 py-1 text-[12px]"
+                        onchange="updateInstallmentDate('${i.id}', this.value)" />
+                      <span class="tabular-nums text-zinc-600">AED ${Number(i.amount).toLocaleString()}</span>
+                      <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full ${badge}">${label}</span>
+                      ${st !== 'paid' ? `<button onclick="markInstallment('${i.id}','paid')" class="text-[11px] font-semibold text-emerald-700 hover:underline">Mark paid</button>` : `<button onclick="markInstallment('${i.id}','scheduled')" class="text-[11px] text-zinc-500 hover:underline">Undo</button>`}
+                      <button onclick="deleteInstallment('${i.id}')" class="text-[11px] text-rose-500 hover:underline">Delete</button>
+                    </div>`;
+                }
+              } else {
+                instHtml += `<p class="text-[12px] text-zinc-400">No installments yet. Click "+ Add installment".</p>`;
+              }
+              instHtml += '</div>';
+            }
+
+            const meta = [
+              p.prop_subtype || p.property_type,
+              p.use_type,
+              p.bedrooms ? (p.bedrooms === 'studio' ? 'Studio' : p.bedrooms + ' BR') : null,
+              p.location
+            ].filter(Boolean).join(' · ');
+
+            container.innerHTML += `
+              <div class="bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft">
+                <div class="flex justify-between items-start gap-3">
+                  <div>
+                    <p class="font-semibold text-zinc-900">${p.name}</p>
+                    <p class="text-[12px] text-zinc-500 mt-0.5">${meta}</p>
+                    ${p.developer ? `<p class="text-[12px] text-zinc-400">Developer: ${p.developer}</p>` : ''}
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <span class="text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full font-medium">${isOffplan ? 'Off-Plan' : 'Ready'}</span>
+                    <button onclick="deleteProperty('${p.id}')" class="text-[11px] text-rose-500 hover:underline">Delete</button>
+                  </div>
+                </div>
+                <p class="text-sm font-semibold text-zinc-800 mt-3">AED ${parseFloat(p.total_price).toLocaleString()}</p>
+                ${instHtml}
+              </div>
+            `;
+          }
+        } else {
+          container.innerHTML = '<p class="text-sm text-zinc-400">No properties yet. Add your first off-plan or ready unit.</p>';
+        }
+
+        document.getElementById('reAssetsCard').textContent =
+          `AED ${totalReVal.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+
+        // Golden Visa goal (UAE property only = all logged properties are UAE-focused)
+        updateGoldenVisaProgress(totalReVal);
+
+        // Radar (Real Estate page + Overview)
+        const radarHtml = radarItems.length
+          ? radarItems.sort((a,b) => a.days - b.days).map(r => `
+                <div class="flex flex-wrap items-center justify-between gap-2 text-[13px] bg-white/80 rounded-xl px-3 py-2 border border-amber-100">
+                  <div>
+                    <span class="font-semibold text-zinc-900">${r.name}</span>
+                    <span class="text-zinc-500"> · ${r.stage}</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span class="tabular-nums text-zinc-700">AED ${Number(r.amount).toLocaleString()}</span>
+                    <span class="text-[11px] font-bold ${r.days < 0 ? 'text-rose-600' : 'text-amber-700'}">
+                      ${r.days < 0 ? ('Overdue by ' + Math.abs(r.days) + 'd') : (r.days + ' days left')}
+                    </span>
+                    <span class="text-[11px] text-zinc-400">${r.due}</span>
+                  </div>
+                </div>
+              `).join('')
+          : '';
+
+        const radar = document.getElementById('installmentRadar');
+        const radarList = document.getElementById('radarList');
+        if (radar && radarList) {
+          if (radarItems.length) {
+            radar.classList.remove('hidden');
+            radarList.innerHTML = radarHtml;
+          } else {
+            radar.classList.add('hidden');
+            radarList.innerHTML = '';
+          }
+        }
+        const oRadar = document.getElementById('overviewRadar');
+        const oList = document.getElementById('overviewRadarList');
+        if (oRadar && oList) {
+          if (radarItems.length) {
+            oRadar.classList.remove('hidden');
+            oList.innerHTML = radarHtml;
+          } else {
+            oRadar.classList.add('hidden');
+            oList.innerHTML = '';
+          }
+        }
+      }
+
+      // View Switcher
+      function showView(name) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.sidebar-link').forEach(l => {
+          l.classList.remove('active');
+          l.classList.add('text-zinc-500');
+        });
+        const target = document.getElementById('view-' + name);
+        if (target) target.classList.add('active');
+        document.querySelectorAll(`[data-view="${name}"]`).forEach(btn => {
+          if (btn.classList.contains('sidebar-link')) {
+            btn.classList.add('active');
+            btn.classList.remove('text-zinc-500');
+          }
+        });
+      }
+
+      document.querySelectorAll('[data-view]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          showView(btn.getAttribute('data-view'));
+          if (window.innerWidth < 1024) closeSidebar();
+        });
+      });
+    });
   </script>
 </body>
 </html>
