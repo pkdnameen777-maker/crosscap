@@ -210,12 +210,13 @@
     </div>
   </div>
 
-  <!-- SCRIPT LOGIC -->
+  <!-- SINGLE SCRIPT BLOCK -->
   <script>
     const SUPABASE_URL = "https://mbweotdviwxmutxdjlpj.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1id2VvdGR2aXd4bXV0eGRqbHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MTAxNDQsImV4cCI6MjEwMjM4NjE0NH0.2hbHdyxS7zqiP-CexUsu8hI0nsgkdjCBeIKcQrmJCAw";
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    // Single global Supabase instance
+    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
@@ -229,7 +230,7 @@
 
     async function initDashboard() {
       try {
-        supabase.auth.onAuthStateChange(async (event, session) => {
+        window.supabaseClient.auth.onAuthStateChange(async (event, session) => {
           if (session?.user) {
             currentUser = session.user;
             document.getElementById('user-email-display').innerText = currentUser.email || 'Logged In';
@@ -243,7 +244,7 @@
           }
         });
 
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await window.supabaseClient.auth.getSession();
         if (sessionError) throw sessionError;
 
         if (session?.user) {
@@ -263,7 +264,7 @@
     }
 
     async function handleSignOut() {
-      await supabase.auth.signOut();
+      await window.supabaseClient.auth.signOut();
       window.location.href = 'login.html';
     }
 
@@ -272,7 +273,7 @@
       const statusEl = document.getElementById('property-table-status');
       statusEl.innerText = 'Refreshing...';
       
-      const { data, error } = await supabase
+      const { data, error } = await window.supabaseClient
         .from('properties')
         .select(`
           id, project_name, developer, unit_number, total_price_aed, is_offplan,
@@ -357,7 +358,7 @@
         const fileExt = file.name.split('.').pop();
         const filePath = `${currentUser.id}/${Date.now()}.${fileExt}`;
 
-        const { error: uploadError } = await supabase.storage
+        const { error: uploadError } = await window.supabaseClient.storage
           .from('spa-uploads')
           .upload(filePath, file);
 
@@ -365,7 +366,7 @@
 
         labelEl.innerText = "Extracting contract details with AI...";
 
-        const { data: extracted, error: fnError } = await supabase.functions.invoke('parse-spa', {
+        const { data: extracted, error: fnError } = await window.supabaseClient.functions.invoke('parse-spa', {
           body: { filePath }
         });
 
@@ -431,7 +432,7 @@
           is_offplan: document.getElementById('form-is-offplan').checked
         };
 
-        const { data: propData, error: propError } = await supabase
+        const { data: propData, error: propError } = await window.supabaseClient
           .from('properties')
           .insert([propertyPayload])
           .select()
@@ -461,7 +462,7 @@
         });
 
         if (installmentsPayload.length > 0) {
-          const { error: instError } = await supabase
+          const { error: instError } = await window.supabaseClient
             .from('installments')
             .insert(installmentsPayload);
 
@@ -481,7 +482,7 @@
 
     async function deleteProperty(id) {
       if (!confirm("Are you sure you want to delete this property and all associated installments?")) return;
-      const { error } = await supabase.from('properties').delete().eq('id', id);
+      const { error } = await window.supabaseClient.from('properties').delete().eq('id', id);
       if (error) alert(error.message);
       else await loadProperties();
     }
