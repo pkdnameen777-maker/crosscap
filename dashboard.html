@@ -109,7 +109,7 @@
           </thead>
           <tbody id="properties-tbody" class="divide-y divide-slate-800/60">
             <tr>
-              <td colspan="6" class="px-6 py-8 text-center text-slate-500">No properties recorded yet. Click "Add Property / SPA" to add one.</td>
+              <td colspan="6" class="px-6 py-8 text-center text-slate-500">Loading properties...</td>
             </tr>
           </tbody>
         </table>
@@ -217,24 +217,44 @@
 
   <!-- APPLICATION JAVASCRIPT -->
   <script>
-    // --- 1. Supabase Initialization ---
-    const SUPABASE_URL = "https://mbweotdviwxmutxdjlpj.supabase.co"; // Replace with your URL if different
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."; // Replace with your anon key
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // --- 1. Supabase Initialization with Key ---
+    const SUPABASE_URL = "https://mbweotdviwxmutxdjlpj.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1id2VvdGR2aXd4bXV0eGRqbHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MTAxNDQsImV4cCI6MjEwMjM4NjE0NH0.2hbHdyxS7zqiP-CexUsu8hI0nsgkdjCBeIKcQrmJCAw";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
 
     let currentUser = null;
     let localProperties = [];
 
     // --- 2. Auth & Initialization ---
     async function initDashboard() {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error || !user) {
-        window.location.href = 'login.html';
-        return;
+      supabase.auth.onAuthStateChange(async (event, session) => {
+        if (session && session.user) {
+          currentUser = session.user;
+          document.getElementById('user-email-display').innerText = currentUser.email || 'Logged In';
+          
+          if (window.location.hash.includes('access_token')) {
+            window.history.replaceState(null, '', window.location.pathname);
+          }
+          
+          loadProperties();
+        } else if (event === 'SIGNED_OUT' || (!session && !window.location.hash)) {
+          window.location.href = 'login.html';
+        }
+      });
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session && session.user) {
+        currentUser = session.user;
+        document.getElementById('user-email-display').innerText = currentUser.email || 'Logged In';
+        loadProperties();
       }
-      currentUser = user;
-      document.getElementById('user-email-display').innerText = user.email;
-      loadProperties();
     }
 
     async function handleSignOut() {
@@ -244,6 +264,7 @@
 
     // --- 3. Load & Render Data ---
     async function loadProperties() {
+      if (!currentUser) return;
       document.getElementById('property-table-status').innerText = 'Refreshing...';
       
       const { data, error } = await supabase
@@ -290,7 +311,7 @@
 
     function renderPropertiesTable(properties) {
       const tbody = document.getElementById('properties-tbody');
-      if (properties.length === 0) {
+      if (!properties || properties.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">No properties recorded yet. Click "Add Property / SPA" to add one.</td></tr>`;
         return;
       }
@@ -326,7 +347,6 @@
         spinnerEl.classList.remove('hidden');
         labelEl.innerText = "Uploading document to vault...";
 
-        // 1. Upload file into user's scoped folder in spa-uploads
         const fileExt = file.name.split('.').pop();
         const filePath = `${currentUser.id}/${Date.now()}.${fileExt}`;
 
@@ -338,21 +358,18 @@
 
         labelEl.innerText = "Extracting contract details with AI...";
 
-        // 2. Invoke Supabase Edge Function
         const { data: extracted, error: fnError } = await supabase.functions.invoke('parse-spa', {
           body: { filePath }
         });
 
         if (fnError) throw fnError;
 
-        // 3. Pre-fill form fields
         if (extracted.project_name) document.getElementById('form-project-name').value = extracted.project_name;
         if (extracted.developer) document.getElementById('form-developer').value = extracted.developer;
         if (extracted.unit_number) document.getElementById('form-unit-number').value = extracted.unit_number;
         if (extracted.total_price_aed) document.getElementById('form-total-price').value = extracted.total_price_aed;
         if (typeof extracted.is_offplan === 'boolean') document.getElementById('form-is-offplan').checked = extracted.is_offplan;
 
-        // 4. Pre-fill Installment Milestones
         if (Array.isArray(extracted.installments)) {
           const container = document.getElementById('installments-container');
           container.innerHTML = '';
@@ -399,7 +416,6 @@
         btn.disabled = true;
         btn.innerText = "Saving...";
 
-        // 1. Insert Property
         const propertyPayload = {
           user_id: currentUser.id,
           project_name: projectName,
@@ -417,7 +433,6 @@
 
         if (propError) throw propError;
 
-        // 2. Gather Installments
         const rows = document.querySelectorAll('.installment-row');
         const installmentsPayload = [];
 
@@ -439,7 +454,6 @@
           }
         });
 
-        // 3. Insert Installments in bulk
         if (installmentsPayload.length > 0) {
           const { error: instError } = await supabase
             .from('installments')
@@ -466,7 +480,6 @@
       else loadProperties();
     }
 
-    // --- Modal Toggles ---
     function openAddPropertyModal() {
       document.getElementById('form-project-name').value = '';
       document.getElementById('form-developer').value = '';
@@ -481,7 +494,6 @@
       document.getElementById('add-modal').classList.add('hidden');
     }
 
-    // Initialize application on load
     window.addEventListener('DOMContentLoaded', initDashboard);
   </script>
 </body>
