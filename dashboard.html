@@ -217,30 +217,103 @@
 
         <!-- REAL ESTATE -->
         <div id="view-real-estate" class="view">
-          <div class="flex items-center justify-between mb-6">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
               <h2 class="font-display text-xl font-semibold tracking-tight">Real Estate</h2>
-              <p class="text-[13px] text-zinc-500 mt-0.5">Off-Plan & Ready Properties</p>
+              <p class="text-[13px] text-zinc-500 mt-0.5">Off-Plan installments &amp; Ready properties · UAE</p>
             </div>
-            <button onclick="document.getElementById('form-offplan').classList.toggle('hidden')" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13px] font-semibold px-4 py-2.5">+ Add Property</button>
+            <button id="togglePropertyForm" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13px] font-semibold px-4 py-2.5">+ Add Property</button>
           </div>
 
-          <div id="form-offplan" class="bg-white rounded-2xl border border-zinc-100 p-6 shadow-soft hidden mb-6 max-w-xl">
-            <h3 class="font-semibold text-base mb-4">Add Off-Plan Property</h3>
-            <div class="space-y-3">
-              <div>
-                <label class="block text-[12px] text-zinc-500">Property / Project Name</label>
-                <input id="reName" type="text" placeholder="e.g. Binghatti Crest Unit 1204" class="w-full rounded-xl border border-zinc-200 px-3 py-2 text-[14px]" />
+          <!-- 30-day Installment Radar -->
+          <div id="installmentRadar" class="mb-6 hidden">
+            <div class="rounded-2xl border border-amber-200 bg-amber-50/60 p-5">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                <h3 class="text-[14px] font-semibold text-amber-900">30-Day Installment Radar</h3>
               </div>
-              <div>
-                <label class="block text-[12px] text-zinc-500">Total Contract Price (AED)</label>
-                <input id="rePrice" type="number" placeholder="1480000" class="w-full rounded-xl border border-zinc-200 px-3 py-2 text-[14px]" />
-              </div>
-              <button id="savePropertyBtn" class="w-full bg-brand-700 text-white font-semibold py-2.5 rounded-xl text-[14px]">Save Property</button>
+              <div id="radarList" class="space-y-2"></div>
             </div>
           </div>
 
-          <div id="propertiesList" class="grid sm:grid-cols-2 gap-4"></div>
+          <!-- Add Property Form -->
+          <div id="form-property" class="bg-white rounded-2xl border border-zinc-100 p-6 shadow-soft hidden mb-6 max-w-2xl">
+            <h3 class="font-semibold text-base mb-4">Add UAE Property</h3>
+            <div class="space-y-4">
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Status</label>
+                  <select id="reStatus" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]">
+                    <option value="offplan">Off-Plan</option>
+                    <option value="ready">Ready</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Use type</label>
+                  <select id="reUseType" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]">
+                    <option value="residential">Residential</option>
+                    <option value="commercial">Commercial</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Property type</label>
+                  <select id="rePropType" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]"></select>
+                </div>
+                <div id="bedsWrap">
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Bedrooms</label>
+                  <select id="reBeds" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]">
+                    <option value="">—</option>
+                    <option value="studio">Studio</option>
+                    <option value="1">1 Bed</option>
+                    <option value="2">2 Beds</option>
+                    <option value="3">3 Beds</option>
+                    <option value="4">4 Beds</option>
+                    <option value="5">5 Beds</option>
+                    <option value="6">6 Beds</option>
+                    <option value="7">7+ Beds</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Project / Property name</label>
+                <input id="reName" type="text" placeholder="e.g. Binghatti Crest Unit 1204" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]" />
+              </div>
+
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Location / Area</label>
+                  <input id="reLocation" type="text" placeholder="e.g. Dubai Hills, JVC, Business Bay" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]" />
+                </div>
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Developer (optional)</label>
+                  <input id="reDeveloper" type="text" placeholder="e.g. Emaar, Binghatti" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]" />
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Total contract / value (AED)</label>
+                <input id="rePrice" type="number" step="any" placeholder="1480000" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]" />
+              </div>
+
+              <!-- Off-plan installments builder -->
+              <div id="installmentsBuilder" class="border border-zinc-100 rounded-xl p-4 bg-zinc-50/50">
+                <div class="flex items-center justify-between mb-3">
+                  <p class="text-[13px] font-semibold text-zinc-800">Payment plan installments</p>
+                  <button type="button" id="addInstallmentRow" class="text-[12px] font-semibold text-brand-700 hover:text-brand-800">+ Add row</button>
+                </div>
+                <div id="installmentRows" class="space-y-2"></div>
+                <p class="text-[11px] text-zinc-400 mt-2">Add each milestone with due date and amount. You can edit or mark paid later.</p>
+              </div>
+
+              <button id="savePropertyBtn" class="w-full bg-brand-700 hover:bg-brand-800 text-white font-semibold py-3 rounded-xl text-[14px]">Save Property</button>
+            </div>
+          </div>
+
+          <div id="propertiesList" class="space-y-4"></div>
         </div>
 
       </main>
@@ -330,33 +403,148 @@
         }
       });
 
-      // Save Property
+      // ---- Real Estate helpers ----
+      const RESIDENTIAL_TYPES = ['Apartment', 'Villa', 'Townhouse', 'Penthouse', 'Land'];
+      const COMMERCIAL_TYPES = ['Retail Shop', 'Office Space', 'Warehouse', 'Factory', 'Land'];
+
+      function fillPropTypes() {
+        const use = document.getElementById('reUseType').value;
+        const sel = document.getElementById('rePropType');
+        const list = use === 'commercial' ? COMMERCIAL_TYPES : RESIDENTIAL_TYPES;
+        sel.innerHTML = list.map(t => `<option value="${t}">${t}</option>`).join('');
+        document.getElementById('bedsWrap').style.display = use === 'residential' ? '' : 'none';
+      }
+
+      function syncInstallmentsVisibility() {
+        const status = document.getElementById('reStatus').value;
+        document.getElementById('installmentsBuilder').style.display = status === 'offplan' ? '' : 'none';
+      }
+
+      function addInstallmentRow(stage = '', due = '', amount = '') {
+        const wrap = document.getElementById('installmentRows');
+        const row = document.createElement('div');
+        row.className = 'grid grid-cols-12 gap-2 items-center installment-row';
+        row.innerHTML = `
+          <input type="text" placeholder="Stage e.g. 10% Booking" value="${stage}" class="col-span-4 rounded-lg border border-zinc-200 px-2.5 py-2 text-[13px] stage-input" />
+          <input type="date" value="${due}" class="col-span-3 rounded-lg border border-zinc-200 px-2.5 py-2 text-[13px] due-input" />
+          <input type="number" step="any" placeholder="Amount AED" value="${amount}" class="col-span-4 rounded-lg border border-zinc-200 px-2.5 py-2 text-[13px] amt-input" />
+          <button type="button" class="col-span-1 text-rose-500 hover:text-rose-700 text-lg leading-none remove-inst">&times;</button>
+        `;
+        row.querySelector('.remove-inst').onclick = () => row.remove();
+        wrap.appendChild(row);
+      }
+
+      document.getElementById('togglePropertyForm')?.addEventListener('click', () => {
+        const f = document.getElementById('form-property');
+        f.classList.toggle('hidden');
+        if (!f.classList.contains('hidden') && document.getElementById('installmentRows').children.length === 0) {
+          addInstallmentRow('Booking / Down payment', '', '');
+          addInstallmentRow('', '', '');
+        }
+      });
+      document.getElementById('reUseType')?.addEventListener('change', fillPropTypes);
+      document.getElementById('reStatus')?.addEventListener('change', syncInstallmentsVisibility);
+      document.getElementById('addInstallmentRow')?.addEventListener('click', () => addInstallmentRow());
+      fillPropTypes();
+      syncInstallmentsVisibility();
+
+      // Save Property + installments
       document.getElementById('savePropertyBtn').addEventListener('click', async () => {
         if (!currentUser) return;
         const name = document.getElementById('reName').value.trim();
         const total_price = parseFloat(document.getElementById('rePrice').value);
+        const status = document.getElementById('reStatus').value;
+        const use_type = document.getElementById('reUseType').value;
+        const prop_type = document.getElementById('rePropType').value;
+        const bedrooms = document.getElementById('reBeds').value || null;
+        const location = document.getElementById('reLocation').value.trim() || null;
+        const developer = document.getElementById('reDeveloper').value.trim() || null;
 
         if (!name || isNaN(total_price)) {
-          alert('Please enter valid property details.');
+          alert('Please enter property name and total value (AED).');
           return;
         }
 
-        const { error } = await supabaseClient.from('properties').insert([{
+        const { data: prop, error } = await supabaseClient.from('properties').insert([{
           user_id: currentUser.id,
           name,
-          property_type: 'OFF_PLAN',
+          property_type: status === 'offplan' ? 'OFF_PLAN' : 'READY',
+          use_type,
+          prop_subtype: prop_type,
+          bedrooms,
+          location,
+          developer,
           total_price
-        }]);
+        }]).select().single();
 
         if (error) {
           alert('Error saving property: ' + error.message);
-        } else {
-          document.getElementById('reName').value = '';
-          document.getElementById('rePrice').value = '';
-          document.getElementById('form-offplan').classList.add('hidden');
-          loadProperties();
+          return;
         }
+
+        if (status === 'offplan' && prop) {
+          const rows = [...document.querySelectorAll('.installment-row')];
+          const installs = rows.map(r => {
+            const stage = r.querySelector('.stage-input').value.trim();
+            const due_date = r.querySelector('.due-input').value;
+            const amount = parseFloat(r.querySelector('.amt-input').value);
+            if (!due_date || isNaN(amount)) return null;
+            return {
+              property_id: prop.id,
+              user_id: currentUser.id,
+              stage: stage || 'Installment',
+              due_date,
+              amount,
+              status: 'scheduled'
+            };
+          }).filter(Boolean);
+
+          if (installs.length) {
+            const { error: iErr } = await supabaseClient.from('installments').insert(installs);
+            if (iErr) alert('Property saved, but installments error: ' + iErr.message);
+          }
+        }
+
+        // reset form
+        document.getElementById('reName').value = '';
+        document.getElementById('rePrice').value = '';
+        document.getElementById('reLocation').value = '';
+        document.getElementById('reDeveloper').value = '';
+        document.getElementById('installmentRows').innerHTML = '';
+        document.getElementById('form-property').classList.add('hidden');
+        loadProperties();
       });
+
+      function daysUntil(dateStr) {
+        const d = new Date(dateStr + 'T00:00:00');
+        const now = new Date();
+        now.setHours(0,0,0,0);
+        return Math.round((d - now) / 86400000);
+      }
+
+      async function markInstallment(id, status) {
+        const { error } = await supabaseClient.from('installments').update({ status }).eq('id', id);
+        if (error) alert(error.message);
+        else loadProperties();
+      }
+
+      async function deleteInstallment(id) {
+        if (!confirm('Delete this installment?')) return;
+        const { error } = await supabaseClient.from('installments').delete().eq('id', id);
+        if (error) alert(error.message);
+        else loadProperties();
+      }
+
+      async function updateInstallmentDate(id, due_date) {
+        const { error } = await supabaseClient.from('installments').update({ due_date }).eq('id', id);
+        if (error) alert(error.message);
+        else loadProperties();
+      }
+
+      window.markInstallment = markInstallment;
+      window.deleteInstallment = deleteInstallment;
+      window.updateInstallmentDate = updateInstallmentDate;
+
 
       // FX rates → AED (cached briefly)
       let fxCache = null;
@@ -451,29 +639,115 @@
         }
       }
 
-      // Load Real Estate
+      // Load Real Estate + installments + 30-day radar
       async function loadProperties() {
-        const { data: properties } = await supabaseClient.from('properties').select('*');
+        const { data: properties } = await supabaseClient.from('properties').select('*').order('created_at', { ascending: false });
         const container = document.getElementById('propertiesList');
         container.innerHTML = '';
         let totalReVal = 0;
+        const radarItems = [];
 
         if (properties && properties.length > 0) {
-          properties.forEach(p => {
+          for (const p of properties) {
             totalReVal += parseFloat(p.total_price || 0);
+            const isOffplan = (p.property_type || '').toUpperCase().includes('OFF');
+            let instHtml = '';
+
+            if (isOffplan) {
+              const { data: insts } = await supabaseClient
+                .from('installments')
+                .select('*')
+                .eq('property_id', p.id)
+                .order('due_date', { ascending: true });
+
+              if (insts && insts.length) {
+                instHtml = `<div class="mt-4 border-t border-zinc-100 pt-3 space-y-2">
+                  <p class="text-[12px] font-semibold text-zinc-500 mb-2">Installment schedule</p>`;
+                for (const i of insts) {
+                  const days = daysUntil(i.due_date);
+                  const st = (i.status || 'scheduled').toLowerCase();
+                  let badge = 'bg-zinc-100 text-zinc-600';
+                  let label = 'Scheduled';
+                  if (st === 'paid') { badge = 'bg-emerald-50 text-emerald-700'; label = 'Paid'; }
+                  else if (days < 0) { badge = 'bg-rose-50 text-rose-700'; label = 'Overdue'; }
+                  else if (days <= 30) { badge = 'bg-amber-50 text-amber-800'; label = days + 'd left'; }
+
+                  if (st !== 'paid' && days <= 30) {
+                    radarItems.push({ name: p.name, stage: i.stage, due: i.due_date, amount: i.amount, days });
+                  }
+
+                  instHtml += `
+                    <div class="flex flex-wrap items-center gap-2 text-[13px] bg-zinc-50 rounded-xl px-3 py-2">
+                      <span class="font-medium text-zinc-800 flex-1 min-w-[100px]">${i.stage || 'Installment'}</span>
+                      <input type="date" value="${i.due_date}" class="rounded-lg border border-zinc-200 px-2 py-1 text-[12px]"
+                        onchange="updateInstallmentDate('${i.id}', this.value)" />
+                      <span class="tabular-nums text-zinc-600">AED ${Number(i.amount).toLocaleString()}</span>
+                      <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full ${badge}">${label}</span>
+                      ${st !== 'paid' ? `<button onclick="markInstallment('${i.id}','paid')" class="text-[11px] font-semibold text-emerald-700 hover:underline">Mark paid</button>` : `<button onclick="markInstallment('${i.id}','scheduled')" class="text-[11px] text-zinc-500 hover:underline">Undo</button>`}
+                      <button onclick="deleteInstallment('${i.id}')" class="text-[11px] text-rose-500 hover:underline">Delete</button>
+                    </div>`;
+                }
+                instHtml += '</div>';
+              }
+            }
+
+            const meta = [
+              p.prop_subtype || p.property_type,
+              p.use_type,
+              p.bedrooms ? (p.bedrooms === 'studio' ? 'Studio' : p.bedrooms + ' BR') : null,
+              p.location
+            ].filter(Boolean).join(' · ');
+
             container.innerHTML += `
               <div class="bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft">
-                <div class="flex justify-between items-start mb-2">
-                  <p class="font-semibold text-zinc-900">${p.name}</p>
-                  <span class="text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full font-medium">${p.property_type}</span>
+                <div class="flex justify-between items-start gap-3">
+                  <div>
+                    <p class="font-semibold text-zinc-900">${p.name}</p>
+                    <p class="text-[12px] text-zinc-500 mt-0.5">${meta}</p>
+                    ${p.developer ? `<p class="text-[12px] text-zinc-400">Developer: ${p.developer}</p>` : ''}
+                  </div>
+                  <span class="text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full font-medium shrink-0">${isOffplan ? 'Off-Plan' : 'Ready'}</span>
                 </div>
-                <p class="text-sm text-zinc-500">Contract: AED ${parseFloat(p.total_price).toLocaleString()}</p>
+                <p class="text-sm font-semibold text-zinc-800 mt-3">AED ${parseFloat(p.total_price).toLocaleString()}</p>
+                ${instHtml}
               </div>
             `;
-          });
+          }
+        } else {
+          container.innerHTML = '<p class="text-sm text-zinc-400">No properties yet. Add your first off-plan or ready unit.</p>';
         }
 
-        document.getElementById('reAssetsCard').textContent = `AED ${totalReVal.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+        document.getElementById('reAssetsCard').textContent =
+          `AED ${totalReVal.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+
+        // Radar
+        const radar = document.getElementById('installmentRadar');
+        const radarList = document.getElementById('radarList');
+        if (radar && radarList) {
+          if (radarItems.length) {
+            radar.classList.remove('hidden');
+            radarList.innerHTML = radarItems
+              .sort((a,b) => a.days - b.days)
+              .map(r => `
+                <div class="flex flex-wrap items-center justify-between gap-2 text-[13px] bg-white/80 rounded-xl px-3 py-2 border border-amber-100">
+                  <div>
+                    <span class="font-semibold text-zinc-900">${r.name}</span>
+                    <span class="text-zinc-500"> · ${r.stage}</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span class="tabular-nums text-zinc-700">AED ${Number(r.amount).toLocaleString()}</span>
+                    <span class="text-[11px] font-bold ${r.days < 0 ? 'text-rose-600' : 'text-amber-700'}">
+                      ${r.days < 0 ? ('Overdue by ' + Math.abs(r.days) + 'd') : (r.days + ' days left')}
+                    </span>
+                    <span class="text-[11px] text-zinc-400">${r.due}</span>
+                  </div>
+                </div>
+              `).join('');
+          } else {
+            radar.classList.add('hidden');
+            radarList.innerHTML = '';
+          }
+        }
       }
 
       // View Switcher
