@@ -541,9 +541,39 @@
         else loadProperties();
       }
 
+      async function deleteProperty(id) {
+        if (!confirm('Delete this property and all its installments?')) return;
+        const { error } = await supabaseClient.from('properties').delete().eq('id', id);
+        if (error) alert(error.message);
+        else loadProperties();
+      }
+
+      async function addInstallmentToProperty(propertyId) {
+        const stage = prompt('Stage name (e.g. 20% Construction)');
+        if (stage === null) return;
+        const due = prompt('Due date (YYYY-MM-DD)', new Date().toISOString().slice(0,10));
+        if (!due) return;
+        const amountStr = prompt('Amount in AED');
+        const amount = parseFloat(amountStr);
+        if (isNaN(amount)) { alert('Invalid amount'); return; }
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        const { error } = await supabaseClient.from('installments').insert([{
+          property_id: propertyId,
+          user_id: user.id,
+          stage: stage || 'Installment',
+          due_date: due,
+          amount,
+          status: 'scheduled'
+        }]);
+        if (error) alert(error.message);
+        else loadProperties();
+      }
+
       window.markInstallment = markInstallment;
       window.deleteInstallment = deleteInstallment;
       window.updateInstallmentDate = updateInstallmentDate;
+      window.deleteProperty = deleteProperty;
+      window.addInstallmentToProperty = addInstallmentToProperty;
 
 
       // FX rates → AED (cached briefly)
@@ -654,15 +684,21 @@
             let instHtml = '';
 
             if (isOffplan) {
-              const { data: insts } = await supabaseClient
+              const { data: insts, error: instErr } = await supabaseClient
                 .from('installments')
                 .select('*')
                 .eq('property_id', p.id)
                 .order('due_date', { ascending: true });
 
+              if (instErr) console.warn('Installments load error', instErr);
+
+              instHtml = `<div class="mt-4 border-t border-zinc-100 pt-3 space-y-2">
+                <div class="flex items-center justify-between mb-2">
+                  <p class="text-[12px] font-semibold text-zinc-500">Installment schedule</p>
+                  <button onclick="addInstallmentToProperty('${p.id}')" class="text-[11px] font-semibold text-brand-700 hover:underline">+ Add installment</button>
+                </div>`;
+
               if (insts && insts.length) {
-                instHtml = `<div class="mt-4 border-t border-zinc-100 pt-3 space-y-2">
-                  <p class="text-[12px] font-semibold text-zinc-500 mb-2">Installment schedule</p>`;
                 for (const i of insts) {
                   const days = daysUntil(i.due_date);
                   const st = (i.status || 'scheduled').toLowerCase();
@@ -687,8 +723,10 @@
                       <button onclick="deleteInstallment('${i.id}')" class="text-[11px] text-rose-500 hover:underline">Delete</button>
                     </div>`;
                 }
-                instHtml += '</div>';
+              } else {
+                instHtml += `<p class="text-[12px] text-zinc-400">No installments yet. Click "+ Add installment".</p>`;
               }
+              instHtml += '</div>';
             }
 
             const meta = [
@@ -706,7 +744,10 @@
                     <p class="text-[12px] text-zinc-500 mt-0.5">${meta}</p>
                     ${p.developer ? `<p class="text-[12px] text-zinc-400">Developer: ${p.developer}</p>` : ''}
                   </div>
-                  <span class="text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full font-medium shrink-0">${isOffplan ? 'Off-Plan' : 'Ready'}</span>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <span class="text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full font-medium">${isOffplan ? 'Off-Plan' : 'Ready'}</span>
+                    <button onclick="deleteProperty('${p.id}')" class="text-[11px] text-rose-500 hover:underline">Delete</button>
+                  </div>
                 </div>
                 <p class="text-sm font-semibold text-zinc-800 mt-3">AED ${parseFloat(p.total_price).toLocaleString()}</p>
                 ${instHtml}
