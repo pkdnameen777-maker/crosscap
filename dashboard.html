@@ -10,6 +10,7 @@
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" sizes="180x180" />
   <link rel="manifest" href="manifest.webmanifest" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -139,6 +140,82 @@
               <p class="text-[12px] font-medium text-amber-700/80 mb-1">Total Holdings</p>
               <p id="holdingsCountCard" class="font-display text-[24px] font-semibold tracking-tight text-zinc-900">0 Assets</p>
               <p class="text-[13px] font-semibold text-amber-600 mt-1.5">Tracked in Portfolio</p>
+            </div>
+          </div>
+
+          <!-- 30-Day Installment Radar (Overview) -->
+          <div id="overviewRadar" class="mb-6 hidden">
+            <div class="rounded-2xl border border-amber-200 bg-amber-50/60 p-5">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                <h3 class="text-[14px] font-semibold text-amber-900">30-Day Installment Radar</h3>
+              </div>
+              <div id="overviewRadarList" class="space-y-2"></div>
+            </div>
+          </div>
+
+          <!-- Portfolio performance -->
+          <div class="bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+              <div>
+                <h3 class="text-[15px] font-semibold text-zinc-900">Portfolio performance</h3>
+                <p class="text-[12px] text-zinc-400">Invested cost basis vs current value (AED)</p>
+              </div>
+              <div id="perfRangeBtns" class="flex flex-wrap gap-1.5">
+                <button data-range="1D" class="perf-range text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-zinc-200 text-zinc-500 hover:bg-zinc-50">1D</button>
+                <button data-range="1W" class="perf-range text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-zinc-200 text-zinc-500 hover:bg-zinc-50">1W</button>
+                <button data-range="1M" class="perf-range text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-zinc-200 text-zinc-500 hover:bg-zinc-50">1M</button>
+                <button data-range="3M" class="perf-range text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-zinc-200 text-zinc-500 hover:bg-zinc-50">3M</button>
+                <button data-range="1Y" class="perf-range text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-zinc-200 text-zinc-500 hover:bg-zinc-50">1Y</button>
+                <button data-range="ALL" class="perf-range text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-brand-200 bg-brand-50 text-brand-700">All</button>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-3 mb-4">
+              <div>
+                <p class="text-[11px] text-zinc-400">Invested</p>
+                <p id="perfInvested" class="text-[15px] font-semibold text-zinc-800 tabular-nums">AED 0</p>
+              </div>
+              <div>
+                <p class="text-[11px] text-zinc-400">Current value</p>
+                <p id="perfCurrent" class="text-[15px] font-semibold text-zinc-800 tabular-nums">AED 0</p>
+              </div>
+              <div>
+                <p class="text-[11px] text-zinc-400">P / L</p>
+                <p id="perfPnL" class="text-[15px] font-semibold tabular-nums text-zinc-800">AED 0</p>
+              </div>
+            </div>
+            <div class="h-56 relative">
+              <canvas id="perfChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Asset allocation -->
+          <div class="grid lg:grid-cols-2 gap-4 mb-6">
+            <div class="bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft">
+              <h3 class="text-[15px] font-semibold text-zinc-900 mb-1">Portfolio allocation</h3>
+              <p class="text-[12px] text-zinc-400 mb-4">By market · share of liquid holdings (AED)</p>
+              <div class="flex flex-col sm:flex-row items-center gap-6">
+                <div class="relative w-40 h-40 shrink-0">
+                  <canvas id="allocChart"></canvas>
+                </div>
+                <div id="allocMarketList" class="flex-1 w-full space-y-2 text-[13px]">
+                  <p class="text-zinc-400">No holdings yet</p>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft">
+              <div class="flex items-center justify-between mb-3">
+                <div>
+                  <h3 class="text-[15px] font-semibold text-zinc-900">Holdings breakdown</h3>
+                  <p class="text-[12px] text-zinc-400">By stock · % of liquid portfolio</p>
+                </div>
+                <select id="allocMarketFilter" class="text-[12px] rounded-lg border border-zinc-200 px-2 py-1.5">
+                  <option value="ALL">All markets</option>
+                </select>
+              </div>
+              <div id="allocStockList" class="space-y-2 max-h-64 overflow-y-auto">
+                <p class="text-zinc-400 text-[13px]">No holdings yet</p>
+              </div>
             </div>
           </div>
 
@@ -604,7 +681,232 @@
         }
       }
 
-      // Load Holdings — convert everything to AED
+      // ---- Charts state ----
+      let allocChartInst = null;
+      let perfChartInst = null;
+      let lastHoldingsAed = []; // {symbol, market, currency, localVal, aedVal}
+      let perfRange = 'ALL';
+
+      const MARKET_LABELS = {
+        US: '🇺🇸 United States', UAE: '🇦🇪 UAE', IN: '🇮🇳 India', UK: '🇬🇧 United Kingdom',
+        SA: '🇸🇦 Saudi Arabia', CN: '🇨🇳 China', JP: '🇯🇵 Japan', HK: '🇭🇰 Hong Kong',
+        CRYPTO: 'Crypto', GOLD: 'Gold', DFM: '🇦🇪 UAE', NSE: '🇮🇳 India'
+      };
+      const ALLOC_COLORS = ['#7e22ce','#a855f7','#c084fc','#22c55e','#f59e0b','#3b82f6','#ef4444','#14b8a6','#ec4899','#64748b'];
+
+      function marketLabel(code) {
+        return MARKET_LABELS[code] || code;
+      }
+
+      function renderAllocation(rows) {
+        const byMarket = {};
+        const bySymbol = {};
+        let total = 0;
+        rows.forEach(r => {
+          const m = r.market || 'OTHER';
+          byMarket[m] = (byMarket[m] || 0) + r.aedVal;
+          const key = r.symbol + '|' + m;
+          bySymbol[key] = (bySymbol[key] || 0) + r.aedVal;
+          total += r.aedVal;
+        });
+
+        const markets = Object.entries(byMarket).sort((a,b) => b[1]-a[1]);
+        const list = document.getElementById('allocMarketList');
+        const filter = document.getElementById('allocMarketFilter');
+        if (list) {
+          if (!markets.length) {
+            list.innerHTML = '<p class="text-zinc-400">No holdings yet</p>';
+          } else {
+            list.innerHTML = markets.map(([m, v], i) => {
+              const pct = total > 0 ? (v / total * 100) : 0;
+              return `<div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${ALLOC_COLORS[i % ALLOC_COLORS.length]}"></span>
+                <span class="flex-1 text-zinc-700">${marketLabel(m)}</span>
+                <span class="font-semibold tabular-nums text-zinc-900">${pct.toFixed(1)}%</span>
+              </div>`;
+            }).join('');
+          }
+        }
+        if (filter) {
+          const cur = filter.value;
+          filter.innerHTML = '<option value="ALL">All markets</option>' +
+            markets.map(([m]) => `<option value="${m}">${marketLabel(m)}</option>`).join('');
+          filter.value = [...filter.options].some(o => o.value === cur) ? cur : 'ALL';
+        }
+
+        // Donut
+        const ctx = document.getElementById('allocChart');
+        if (ctx && window.Chart) {
+          if (allocChartInst) allocChartInst.destroy();
+          allocChartInst = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+              labels: markets.map(([m]) => marketLabel(m)),
+              datasets: [{
+                data: markets.map(([,v]) => v),
+                backgroundColor: markets.map((_,i) => ALLOC_COLORS[i % ALLOC_COLORS.length]),
+                borderWidth: 0,
+                hoverOffset: 4
+              }]
+            },
+            options: {
+              cutout: '68%',
+              plugins: { legend: { display: false }, tooltip: {
+                callbacks: {
+                  label: (c) => {
+                    const v = c.raw || 0;
+                    const pct = total > 0 ? (v/total*100).toFixed(1) : 0;
+                    return ` AED ${Number(v).toLocaleString(undefined,{maximumFractionDigits:0})} (${pct}%)`;
+                  }
+                }
+              }}
+            }
+          });
+        }
+
+        renderStockBreakdown(rows, total, filter ? filter.value : 'ALL');
+      }
+
+      function renderStockBreakdown(rows, total, marketFilter) {
+        const el = document.getElementById('allocStockList');
+        if (!el) return;
+        let filtered = rows;
+        if (marketFilter && marketFilter !== 'ALL') {
+          filtered = rows.filter(r => r.market === marketFilter);
+        }
+        const bySym = {};
+        let subTotal = 0;
+        filtered.forEach(r => {
+          bySym[r.symbol] = (bySym[r.symbol] || 0) + r.aedVal;
+          subTotal += r.aedVal;
+        });
+        const items = Object.entries(bySym).sort((a,b) => b[1]-a[1]);
+        const base = marketFilter === 'ALL' ? total : subTotal;
+        if (!items.length) {
+          el.innerHTML = '<p class="text-zinc-400 text-[13px]">No holdings in this market</p>';
+          return;
+        }
+        el.innerHTML = items.map(([sym, v], i) => {
+          const pct = base > 0 ? (v / base * 100) : 0;
+          return `<div>
+            <div class="flex justify-between text-[13px] mb-1">
+              <span class="font-medium text-zinc-800">${sym}</span>
+              <span class="tabular-nums text-zinc-600">${pct.toFixed(1)}% · AED ${v.toLocaleString(undefined,{maximumFractionDigits:0})}</span>
+            </div>
+            <div class="h-1.5 rounded-full bg-zinc-100 overflow-hidden">
+              <div class="h-full rounded-full" style="width:${Math.min(100,pct)}%;background:${ALLOC_COLORS[i % ALLOC_COLORS.length]}"></div>
+            </div>
+          </div>`;
+        }).join('');
+      }
+
+      function savePortfolioSnapshot(invested, current) {
+        try {
+          const key = 'crosscap_perf_history';
+          const hist = JSON.parse(localStorage.getItem(key) || '[]');
+          const today = new Date().toISOString().slice(0, 10);
+          const last = hist[hist.length - 1];
+          if (last && last.d === today) {
+            last.invested = invested;
+            last.value = current;
+          } else {
+            hist.push({ d: today, invested, value: current });
+          }
+          // keep ~400 days
+          while (hist.length > 400) hist.shift();
+          localStorage.setItem(key, JSON.stringify(hist));
+        } catch (e) {}
+      }
+
+      function filterHistory(range) {
+        try {
+          const hist = JSON.parse(localStorage.getItem('crosscap_perf_history') || '[]');
+          if (!hist.length) return [];
+          if (range === 'ALL') return hist;
+          const days = { '1D': 1, '1W': 7, '1M': 30, '3M': 90, '1Y': 365 }[range] || 3650;
+          const cutoff = new Date();
+          cutoff.setDate(cutoff.getDate() - days);
+          const cs = cutoff.toISOString().slice(0, 10);
+          return hist.filter(h => h.d >= cs);
+        } catch (e) { return []; }
+      }
+
+      function renderPerformance(invested, current) {
+        savePortfolioSnapshot(invested, current);
+        const pnl = current - invested;
+        const pnlEl = document.getElementById('perfPnL');
+        document.getElementById('perfInvested').textContent = 'AED ' + invested.toLocaleString(undefined, { maximumFractionDigits: 0 });
+        document.getElementById('perfCurrent').textContent = 'AED ' + current.toLocaleString(undefined, { maximumFractionDigits: 0 });
+        if (pnlEl) {
+          pnlEl.textContent = (pnl >= 0 ? '+' : '') + 'AED ' + pnl.toLocaleString(undefined, { maximumFractionDigits: 0 });
+          pnlEl.className = 'text-[15px] font-semibold tabular-nums ' + (pnl >= 0 ? 'text-emerald-600' : 'text-rose-600');
+        }
+
+        let hist = filterHistory(perfRange);
+        if (!hist.length) {
+          hist = [{ d: new Date().toISOString().slice(0,10), invested, value: current }];
+        }
+        const ctx = document.getElementById('perfChart');
+        if (!ctx || !window.Chart) return;
+        if (perfChartInst) perfChartInst.destroy();
+        perfChartInst = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: hist.map(h => h.d),
+            datasets: [
+              {
+                label: 'Portfolio value',
+                data: hist.map(h => h.value),
+                borderColor: '#7e22ce',
+                backgroundColor: 'rgba(126,34,206,0.08)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: hist.length < 20 ? 3 : 0,
+                borderWidth: 2
+              },
+              {
+                label: 'Invested',
+                data: hist.map(h => h.invested),
+                borderColor: '#a1a1aa',
+                borderDash: [5, 5],
+                fill: false,
+                tension: 0.2,
+                pointRadius: 0,
+                borderWidth: 1.5
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } },
+            scales: {
+              x: { grid: { display: false }, ticks: { maxTicksLimit: 6, font: { size: 10 } } },
+              y: { grid: { color: '#f4f4f5' }, ticks: { font: { size: 10 }, callback: v => 'AED ' + Number(v).toLocaleString() } }
+            }
+          }
+        });
+      }
+
+      document.getElementById('allocMarketFilter')?.addEventListener('change', (e) => {
+        const total = lastHoldingsAed.reduce((s, r) => s + r.aedVal, 0);
+        renderStockBreakdown(lastHoldingsAed, total, e.target.value);
+      });
+
+      document.querySelectorAll('.perf-range').forEach(btn => {
+        btn.addEventListener('click', () => {
+          perfRange = btn.getAttribute('data-range');
+          document.querySelectorAll('.perf-range').forEach(b => {
+            b.className = 'perf-range text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-zinc-200 text-zinc-500 hover:bg-zinc-50';
+          });
+          btn.className = 'perf-range text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-brand-200 bg-brand-50 text-brand-700';
+          const inv = lastHoldingsAed.reduce((s, r) => s + r.aedVal, 0);
+          renderPerformance(inv, inv); // value ≈ cost until live prices
+        });
+      });
+
+            // Load Holdings — convert everything to AED
       async function loadPortfolio() {
         const { data: holdings } = await supabaseClient.from('holdings').select('*');
         const tbody = document.getElementById('portfolioTableBody');
@@ -613,6 +915,7 @@
         const byCurrency = {}; // local totals before FX
 
         const rates = await getRatesToAed();
+        lastHoldingsAed = [];
 
         if (holdings && holdings.length > 0) {
           document.getElementById('holdingsCountCard').textContent = `${holdings.length} Assets`;
@@ -626,6 +929,13 @@
             totalAed += aedVal;
 
             byCurrency[cur] = (byCurrency[cur] || 0) + localVal;
+            lastHoldingsAed.push({
+              symbol: item.symbol,
+              market: item.market || 'OTHER',
+              currency: cur,
+              localVal,
+              aedVal
+            });
 
             tbody.innerHTML += `
               <tr class="hover:bg-zinc-50/50">
@@ -646,6 +956,10 @@
 
         document.getElementById('totalNetWorthCard').textContent =
           `AED ${totalAed.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+
+        // Allocation + performance (cost basis used as value until live prices)
+        renderAllocation(lastHoldingsAed);
+        renderPerformance(totalAed, totalAed);
 
         // Currency sub-boxes
         const box = document.getElementById('currencyBreakdown');
@@ -761,15 +1075,9 @@
         document.getElementById('reAssetsCard').textContent =
           `AED ${totalReVal.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
 
-        // Radar
-        const radar = document.getElementById('installmentRadar');
-        const radarList = document.getElementById('radarList');
-        if (radar && radarList) {
-          if (radarItems.length) {
-            radar.classList.remove('hidden');
-            radarList.innerHTML = radarItems
-              .sort((a,b) => a.days - b.days)
-              .map(r => `
+        // Radar (Real Estate page + Overview)
+        const radarHtml = radarItems.length
+          ? radarItems.sort((a,b) => a.days - b.days).map(r => `
                 <div class="flex flex-wrap items-center justify-between gap-2 text-[13px] bg-white/80 rounded-xl px-3 py-2 border border-amber-100">
                   <div>
                     <span class="font-semibold text-zinc-900">${r.name}</span>
@@ -783,10 +1091,29 @@
                     <span class="text-[11px] text-zinc-400">${r.due}</span>
                   </div>
                 </div>
-              `).join('');
+              `).join('')
+          : '';
+
+        const radar = document.getElementById('installmentRadar');
+        const radarList = document.getElementById('radarList');
+        if (radar && radarList) {
+          if (radarItems.length) {
+            radar.classList.remove('hidden');
+            radarList.innerHTML = radarHtml;
           } else {
             radar.classList.add('hidden');
             radarList.innerHTML = '';
+          }
+        }
+        const oRadar = document.getElementById('overviewRadar');
+        const oList = document.getElementById('overviewRadarList');
+        if (oRadar && oList) {
+          if (radarItems.length) {
+            oRadar.classList.remove('hidden');
+            oList.innerHTML = radarHtml;
+          } else {
+            oRadar.classList.add('hidden');
+            oList.innerHTML = '';
           }
         }
       }
