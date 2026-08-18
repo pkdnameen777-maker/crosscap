@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CrossCap | Portfolio & Real Estate Dashboard</title>
+  <title>CrossCap | Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
@@ -56,7 +56,7 @@
     </div>
   </header>
 
-  <!-- Main Container -->
+  <!-- Main Content -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
     
     <!-- Top Action Bar -->
@@ -73,7 +73,7 @@
       </button>
     </div>
 
-    <!-- Stats Overview -->
+    <!-- Stats Grid -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
       <div class="bg-surface-900 border border-slate-800 p-5 rounded-2xl">
         <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Committed Value</p>
@@ -89,7 +89,7 @@
       </div>
     </div>
 
-    <!-- Properties & Payment Plans List -->
+    <!-- Property Table -->
     <div class="bg-surface-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
       <div class="p-5 border-b border-slate-800 flex justify-between items-center">
         <h2 class="font-semibold text-white">Your Properties</h2>
@@ -117,20 +117,18 @@
     </div>
   </main>
 
-  <!-- ADD PROPERTY & SPA PARSER MODAL -->
+  <!-- ADD PROPERTY / SPA MODAL -->
   <div id="add-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-surface-900 border border-slate-800 w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
       
-      <!-- Modal Header -->
       <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
         <h3 class="text-lg font-bold text-white">Add Property & Payment Schedule</h3>
         <button onclick="closeAddPropertyModal()" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
       </div>
 
-      <!-- Modal Body -->
       <div class="p-6 overflow-y-auto custom-scrollbar space-y-6 flex-1">
         
-        <!-- SPA Upload Box -->
+        <!-- SPA Upload Area -->
         <div class="p-5 rounded-xl border-2 border-dashed border-slate-700 bg-surface-950/70 text-center hover:border-brand-500 transition cursor-pointer relative group">
           <input 
             type="file" 
@@ -147,11 +145,11 @@
             <span id="spa-upload-label" class="text-sm font-semibold text-brand-400 group-hover:text-brand-300">
               Upload SPA / Payment Schedule (PDF or Photo)
             </span>
-            <span class="text-xs text-slate-400">AI will automatically parse unit details and the installment schedule</span>
+            <span class="text-xs text-slate-400">AI extracts unit details and payment milestones automatically</span>
           </div>
         </div>
 
-        <!-- Property Core Info -->
+        <!-- Form Inputs -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-medium text-slate-300 mb-1.5">Project / Building Name *</label>
@@ -177,7 +175,7 @@
           </div>
         </div>
 
-        <!-- Installments Breakdown -->
+        <!-- Milestones Table -->
         <div class="space-y-3 pt-2 border-t border-slate-800">
           <div class="flex items-center justify-between">
             <h4 class="text-sm font-semibold text-white">Payment Milestones & Installments</h4>
@@ -195,16 +193,13 @@
                   <th class="p-2.5 w-8"></th>
                 </tr>
               </thead>
-              <tbody id="installments-container" class="divide-y divide-slate-800">
-                <!-- Dynamically injected rows -->
-              </tbody>
+              <tbody id="installments-container" class="divide-y divide-slate-800"></tbody>
             </table>
           </div>
         </div>
 
       </div>
 
-      <!-- Modal Footer -->
       <div class="px-6 py-4 border-t border-slate-800 flex items-center justify-end space-x-3 bg-surface-950/40">
         <button onclick="closeAddPropertyModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white">Cancel</button>
         <button id="save-property-btn" onclick="savePropertyAndInstallments()" class="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-black font-bold text-xs rounded-xl transition">
@@ -215,9 +210,8 @@
     </div>
   </div>
 
-  <!-- APPLICATION JAVASCRIPT -->
+  <!-- SCRIPT LOGIC -->
   <script>
-    // --- 1. Supabase Initialization with Key ---
     const SUPABASE_URL = "https://mbweotdviwxmutxdjlpj.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1id2VvdGR2aXd4bXV0eGRqbHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MTAxNDQsImV4cCI6MjEwMjM4NjE0NH0.2hbHdyxS7zqiP-CexUsu8hI0nsgkdjCBeIKcQrmJCAw";
 
@@ -225,35 +219,46 @@
       auth: {
         persistSession: true,
         autoRefreshToken: true,
-        detectSessionInUrl: true
+        detectSessionInUrl: true,
+        flowType: 'implicit'
       }
     });
 
     let currentUser = null;
     let localProperties = [];
 
-    // --- 2. Auth & Initialization ---
     async function initDashboard() {
-      supabase.auth.onAuthStateChange(async (event, session) => {
-        if (session && session.user) {
+      try {
+        supabase.auth.onAuthStateChange(async (event, session) => {
+          if (session?.user) {
+            currentUser = session.user;
+            document.getElementById('user-email-display').innerText = currentUser.email || 'Logged In';
+
+            if (window.location.hash.includes('access_token')) {
+              window.history.replaceState(null, '', window.location.pathname);
+            }
+            await loadProperties();
+          } else if (event === 'SIGNED_OUT') {
+            window.location.href = 'login.html';
+          }
+        });
+
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+
+        if (session?.user) {
           currentUser = session.user;
           document.getElementById('user-email-display').innerText = currentUser.email || 'Logged In';
-          
           if (window.location.hash.includes('access_token')) {
             window.history.replaceState(null, '', window.location.pathname);
           }
-          
-          loadProperties();
-        } else if (event === 'SIGNED_OUT' || (!session && !window.location.hash)) {
+          await loadProperties();
+        } else if (!window.location.hash.includes('access_token')) {
           window.location.href = 'login.html';
         }
-      });
-
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session && session.user) {
-        currentUser = session.user;
-        document.getElementById('user-email-display').innerText = currentUser.email || 'Logged In';
-        loadProperties();
+      } catch (err) {
+        console.error("Auth init error:", err);
+        document.getElementById('user-email-display').innerText = 'Auth Error';
       }
     }
 
@@ -262,10 +267,10 @@
       window.location.href = 'login.html';
     }
 
-    // --- 3. Load & Render Data ---
     async function loadProperties() {
       if (!currentUser) return;
-      document.getElementById('property-table-status').innerText = 'Refreshing...';
+      const statusEl = document.getElementById('property-table-status');
+      statusEl.innerText = 'Refreshing...';
       
       const { data, error } = await supabase
         .from('properties')
@@ -277,15 +282,18 @@
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error("Error loading properties:", error);
-        document.getElementById('property-table-status').innerText = 'Error loading';
+        console.error("Database query failed:", error);
+        statusEl.innerText = 'Database unready';
+        document.getElementById('properties-tbody').innerHTML = `
+          <tr><td colspan="6" class="px-6 py-8 text-center text-rose-400">Database connection error: ${error.message}</td></tr>
+        `;
         return;
       }
 
       localProperties = data || [];
       renderPropertiesTable(localProperties);
       calculateStats(localProperties);
-      document.getElementById('property-table-status').innerText = `${localProperties.length} records`;
+      statusEl.innerText = `${localProperties.length} records`;
     }
 
     function calculateStats(properties) {
@@ -333,7 +341,6 @@
       }).join('');
     }
 
-    // --- 4. SPA AI Parser Integration ---
     async function handleSpaUpload(event) {
       const file = event.target.files?.[0];
       if (!file) return;
@@ -387,7 +394,6 @@
       }
     }
 
-    // --- 5. Installment Rows & Form Handling ---
     function addInstallmentRow(data = {}) {
       const container = document.getElementById('installments-container');
       const tr = document.createElement('tr');
@@ -463,7 +469,7 @@
         }
 
         closeAddPropertyModal();
-        loadProperties();
+        await loadProperties();
       } catch (err) {
         console.error("Save error:", err);
         alert(`Failed to save: ${err.message}`);
@@ -477,7 +483,7 @@
       if (!confirm("Are you sure you want to delete this property and all associated installments?")) return;
       const { error } = await supabase.from('properties').delete().eq('id', id);
       if (error) alert(error.message);
-      else loadProperties();
+      else await loadProperties();
     }
 
     function openAddPropertyModal() {
