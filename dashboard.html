@@ -524,14 +524,17 @@
               </div>
             </div>
 
-            <div id="gvHolderBox" class="hidden rounded-xl border-2 border-amber-400 bg-gradient-to-br from-amber-50 via-yellow-50 to-amber-100 p-5 mb-2">
-              <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center text-xl shadow">🏆</div>
-                <div>
-                  <p class="text-[15px] font-bold text-amber-900">Golden Visa Holder</p>
-                  <p class="text-[12px] text-amber-800/80">Goal achieved · UAE property target completed</p>
-                  <p id="gvClaimedAt" class="text-[11px] text-amber-700/70 mt-0.5"></p>
+            <div id="gvHolderBox" class="hidden relative overflow-hidden rounded-2xl border border-amber-300/80 bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 p-5 mb-2 shadow-soft">
+              <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-amber-200/40 blur-2xl pointer-events-none"></div>
+              <div class="relative flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-500 flex items-center justify-center text-2xl shadow-md ring-2 ring-white/80">🏆</div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-[11px] font-bold uppercase tracking-wider text-amber-700/90">Achievement unlocked</p>
+                  <p class="text-[17px] font-bold text-amber-950 tracking-tight">Golden Visa Holder</p>
+                  <p class="text-[12px] text-amber-900/70 mt-0.5">UAE property target of AED 2M completed</p>
+                  <p id="gvClaimedAt" class="text-[11px] text-amber-800/60 mt-1"></p>
                 </div>
+                <span class="hidden sm:inline-flex text-[11px] font-bold px-3 py-1 rounded-full bg-amber-400/90 text-amber-950 shrink-0">Completed</span>
               </div>
             </div>
 
@@ -2059,51 +2062,79 @@
           let contribHtml = '';
           (contribs || []).forEach(c => {
             const st = (c.status || 'paid').toLowerCase();
-            contribHtml += `<div class="flex flex-wrap items-center gap-2 text-[12px] bg-zinc-50 rounded-lg px-2.5 py-1.5">
+            contribHtml += `<div class="flex flex-wrap items-center gap-2 text-[12px] ${isClaimed ? 'bg-white/70 border border-amber-100' : 'bg-zinc-50'} rounded-xl px-3 py-2">
+              <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${st === 'paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-zinc-200 text-zinc-500'}">${st === 'paid' ? '✓' : '○'}</span>
               <span class="flex-1 text-zinc-700">${c.note || 'Contribution'}</span>
-              <span class="tabular-nums font-medium">AED ${Number(c.amount).toLocaleString()}</span>
+              <span class="tabular-nums font-semibold text-zinc-800">AED ${Number(c.amount).toLocaleString()}</span>
               ${st === 'paid'
-                ? `<span class="text-emerald-700 font-semibold">Paid</span>`
-                : `<button onclick="markContribution('${c.id}','paid')" class="text-brand-700 font-semibold hover:underline">Mark paid</button>`}
-              <button onclick="deleteContribution('${c.id}')" class="text-rose-500 hover:underline">Delete</button>
+                ? `<span class="text-[11px] font-semibold text-emerald-700">Paid</span>`
+                : `<button onclick="markContribution('${c.id}','paid')" class="text-[11px] text-brand-700 font-semibold hover:underline">Mark paid</button>`}
+              ${!isClaimed ? `<button onclick="deleteContribution('${c.id}')" class="text-[11px] text-rose-500 hover:underline">Delete</button>` : ''}
             </div>`;
           });
 
-          const cardClass = isClaimed
-            ? 'rounded-2xl border-2 border-amber-300 bg-gradient-to-br from-amber-50 to-yellow-50 p-5 shadow-soft'
-            : isDone
-              ? 'rounded-2xl border border-emerald-200 bg-emerald-50/40 p-5 shadow-soft'
-              : 'bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft';
+          let cardClass, badgeHtml, progressBarClass, footerHtml;
+          if (isClaimed) {
+            cardClass = 'relative overflow-hidden rounded-2xl border border-amber-300/90 bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 p-5 shadow-soft';
+            badgeHtml = `<span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-950 shadow-sm">Goal success</span>`;
+            progressBarClass = 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-400';
+            footerHtml = `
+              <div class="mt-4 flex items-center gap-3 rounded-xl bg-white/70 border border-amber-200/80 px-3 py-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center text-lg shadow-sm">🏆</div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-[13px] font-bold text-amber-950">Goal completed</p>
+                  <p class="text-[11px] text-amber-800/80">You reached AED ${target.toLocaleString(undefined,{maximumFractionDigits:0})} for ${g.title}</p>
+                  ${g.completed_at ? `<p class="text-[10px] text-amber-700/60 mt-0.5">Claimed ${new Date(g.completed_at).toLocaleDateString()}</p>` : ''}
+                </div>
+              </div>`;
+          } else if (isDone) {
+            cardClass = 'rounded-2xl border border-emerald-200 bg-gradient-to-b from-emerald-50/80 to-white p-5 shadow-soft ring-1 ring-emerald-100';
+            badgeHtml = `<span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-500 text-white shadow-sm">Ready to claim</span>`;
+            progressBarClass = 'bg-emerald-500';
+            footerHtml = `
+              <div class="mt-3 flex flex-col sm:flex-row gap-2">
+                <button onclick="claimGoal('${g.id}')" class="flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-amber-950 text-[13px] font-bold px-4 py-2.5 shadow-sm transition">
+                  Claim goal success
+                </button>
+                <button onclick="addContribution('${g.id}')" class="rounded-xl border border-zinc-200 bg-white text-[12px] font-semibold px-4 py-2.5 text-zinc-600 hover:bg-zinc-50">+ Add more</button>
+              </div>
+              <p class="text-[11px] text-emerald-700 mt-2 font-medium">Target reached — claim to mark this goal complete.</p>`;
+          } else {
+            cardClass = 'bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft';
+            badgeHtml = `<span class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-600">In progress</span>`;
+            progressBarClass = 'bg-brand-600';
+            footerHtml = `
+              <div class="mt-3">
+                <button onclick="addContribution('${g.id}')" class="text-[12px] font-semibold text-brand-700 hover:underline">+ Add contribution</button>
+              </div>`;
+          }
 
           list.innerHTML += `
             <div class="${cardClass}">
-              <div class="flex justify-between items-start gap-2 mb-3">
-                <div>
-                  <h3 class="font-semibold text-zinc-900">${g.title}</h3>
+              ${isClaimed ? '<div class="absolute -right-8 -top-8 w-28 h-28 rounded-full bg-amber-200/50 blur-2xl pointer-events-none"></div>' : ''}
+              <div class="relative flex justify-between items-start gap-2 mb-3">
+                <div class="min-w-0">
+                  <h3 class="font-semibold text-zinc-900 text-[15px]">${g.title}</h3>
                   ${g.note ? `<p class="text-[12px] text-zinc-500 mt-0.5">${g.note}</p>` : ''}
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
-                  <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full ${isClaimed ? 'bg-amber-400 text-amber-950' : isDone ? 'bg-emerald-100 text-emerald-800' : 'bg-zinc-100 text-zinc-600'}">${isClaimed ? 'Goal success' : isDone ? 'Ready to claim' : 'In progress'}</span>
-                  <button onclick="deleteGoal('${g.id}')" class="text-[11px] text-rose-500 hover:underline">Delete</button>
+                  ${badgeHtml}
+                  <button onclick="deleteGoal('${g.id}')" class="text-[11px] text-rose-500/80 hover:text-rose-600 hover:underline">Delete</button>
                 </div>
               </div>
-              <div class="flex justify-between text-[13px] mb-1">
+              <div class="relative flex justify-between text-[13px] mb-1.5">
                 <span class="text-zinc-500">Saved</span>
-                <span class="font-semibold tabular-nums">AED ${paid.toLocaleString(undefined,{maximumFractionDigits:0})} / ${target.toLocaleString(undefined,{maximumFractionDigits:0})}</span>
+                <span class="font-semibold tabular-nums text-zinc-900">AED ${paid.toLocaleString(undefined,{maximumFractionDigits:0})} <span class="text-zinc-400 font-normal">/</span> ${target.toLocaleString(undefined,{maximumFractionDigits:0})}</span>
               </div>
-              <div class="h-2.5 rounded-full bg-zinc-100 overflow-hidden mb-1">
-                <div class="h-full rounded-full ${isClaimed ? 'bg-gradient-to-r from-amber-500 to-yellow-400' : 'bg-brand-600'}" style="width:${pct.toFixed(1)}%"></div>
+              <div class="relative h-2.5 rounded-full bg-zinc-100/90 overflow-hidden mb-1.5">
+                <div class="h-full rounded-full ${progressBarClass} transition-all duration-500" style="width:${pct.toFixed(1)}%"></div>
               </div>
-              <div class="flex justify-between text-[12px] mb-3">
-                <span class="font-semibold ${isDone ? 'text-emerald-700' : 'text-brand-700'}">${pct.toFixed(1)}% complete</span>
+              <div class="relative flex justify-between text-[12px] mb-1">
+                <span class="font-semibold ${isClaimed ? 'text-amber-800' : isDone ? 'text-emerald-700' : 'text-brand-700'}">${pct.toFixed(1)}% complete</span>
                 <span class="text-zinc-500">${isDone ? 'Target reached' : ('AED ' + remaining.toLocaleString(undefined,{maximumFractionDigits:0}) + ' to go')}</span>
               </div>
-              ${!isClaimed ? `
-              <div class="flex flex-wrap gap-2 mb-3">
-                <button onclick="addContribution('${g.id}')" class="text-[12px] font-semibold text-brand-700 hover:underline">+ Add contribution</button>
-                ${isDone ? `<button onclick="claimGoal('${g.id}')" class="rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 text-amber-950 text-[12px] font-bold px-3 py-1.5">Claim goal success</button>` : ''}
-              </div>` : `<p class="text-[12px] text-amber-800 font-medium mb-2">🏆 Goal completed successfully</p>`}
-              <div class="space-y-1.5">${contribHtml || '<p class="text-[12px] text-zinc-400">No contributions yet. Add AED 1,000 (or any amount) when you set money aside.</p>'}</div>
+              ${footerHtml}
+              <div class="relative mt-3 space-y-1.5">${contribHtml || (!isClaimed ? '<p class="text-[12px] text-zinc-400">No contributions yet. Add AED 1,000 (or any amount) when you set money aside.</p>' : '')}</div>
             </div>`;
         }
       }
