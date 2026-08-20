@@ -302,8 +302,8 @@
                   <th class="px-5 py-3.5 font-medium">Asset</th>
                   <th class="px-5 py-3.5 font-medium">Market</th>
                   <th class="px-5 py-3.5 font-medium text-right">Quantity</th>
-                  <th class="px-5 py-3.5 font-medium text-right">Avg Cost</th>
-                  <th class="px-5 py-3.5 font-medium text-right">Total (AED)</th>
+                  <th class="px-5 py-3.5 font-medium text-right">Cost / Live</th>
+                  <th class="px-5 py-3.5 font-medium text-right">Value (AED)</th>
                   <th class="px-5 py-3.5 font-medium text-right">Actions</th>
                 </tr>
               </thead>
@@ -830,7 +830,8 @@
           });
           const json = await res.json().catch(() => ({}));
           if (!res.ok) {
-            throw new Error(json.error || json.message || ('HTTP ' + res.status));
+            const detailMsg = json?.detail?.error?.message || json?.detail?.message || '';
+            throw new Error((json.error || json.message || ('HTTP ' + res.status)) + (detailMsg ? (' — ' + detailMsg) : ''));
           }
           const data = json.data || json;
           applyExtractedSpa(data);
@@ -1269,12 +1270,44 @@
             b.className = 'perf-range text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-zinc-200 text-zinc-500 hover:bg-zinc-50';
           });
           btn.className = 'perf-range text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-brand-200 bg-brand-50 text-brand-700';
-          const inv = lastHoldingsAed.reduce((s, r) => s + r.aedVal, 0);
-          renderPerformance(inv, inv); // value ≈ cost until live prices
+          const inv = window.__lastCostAed || lastHoldingsAed.reduce((s, r) => s + r.aedVal, 0);
+          const cur = window.__lastLiveAed || inv;
+          renderPerformance(inv, cur);
         });
       });
 
             // Load Holdings — convert everything to AED
+      async function fetchLivePrices(holdings) {
+        try {
+          const items = (holdings || []).map(h => ({
+            symbol: h.symbol,
+            market: h.market,
+            currency: h.currency
+          }));
+          if (!items.length) return {};
+          const { data: sessionData } = await supabaseClient.auth.getSession();
+          const token = sessionData?.session?.access_token;
+          const res = await fetch(`${SUPABASE_URL}/functions/v1/fetch-prices`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token || SUPABASE_ANON_KEY}`,
+              'apikey': SUPABASE_ANON_KEY
+            },
+            body: JSON.stringify({ items })
+          });
+          const json = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            console.warn('fetch-prices error', json);
+            return {};
+          }
+          return json.prices || {};
+        } catch (e) {
+          console.warn('fetchLivePrices failed', e);
+          return {};
+        }
+      }
+
       async function loadPortfolio() {
         const { data: holdings } = await supabaseClient.from('holdings').select('*');
         const tbody = document.getElementById('portfolioTableBody');
@@ -1284,6 +1317,9 @@
 
         const rates = await getRatesToAed();
         lastHoldingsAed = [];
+        const liveMap = await fetchLivePrices(holdings || []);
+        let totalCostAed = 0;
+        let totalLiveAed = 0;
 
         if (holdings && holdings.length > 0) {
           document.getElementById('holdingsCountCard').textContent = `${holdings.length} Assets`;
@@ -1291,30 +1327,58 @@
             const cur = (item.currency || 'AED').toUpperCase();
             const shares = Number(item.shares) || 0;
             const avg = Number(item.avg_buy_price) || 0;
-            const localVal = shares * avg;
+            const costLocal = shares * avg;
             const rate = rates[cur] != null ? rates[cur] : 1;
-            const aedVal = localVal * rate;
-            totalAed += aedVal;
+            const costAed = costLocal * rate;
+            totalCostAed += costAed;
 
-            byCurrency[cur] = (byCurrency[cur] || 0) + localVal;
+            const key = `${String(item.symbol || '').toUpperCase()}|${String(item.market || '').toUpperCase()}`;
+            const live = liveMap[key];
+            let priceLocal = avg;
+            let liveOk = false;
+            if (live && typeof live.price === 'number') {
+              priceLocal = live.price;
+              liveOk = true;
+            }
+            // Gold/Silver on Yahoo is USD/oz — if user stored AED/INR cost, live still USD
+            let liveCurrency = cur;
+            if (liveOk && (String(item.market || '').toUpperCase().includes('GOLD') || String(item.market || '').toUpperCase().includes('SILVER'))) {
+              liveCurrency = 'USD';
+            }
+            if (liveOk && String(item.market || '').toUpperCase() === 'CRYPTO') {
+              liveCurrency = 'USD';
+            }
+            const liveRate = rates[liveCurrency] != null ? rates[liveCurrency] : rate;
+            const liveLocal = shares * priceLocal;
+            const liveAed = liveLocal * liveRate;
+            totalLiveAed += liveAed;
+
+            byCurrency[cur] = (byCurrency[cur] || 0) + costLocal;
             lastHoldingsAed.push({
               id: item.id,
               symbol: item.symbol,
               market: item.market || 'OTHER',
               currency: cur,
-              localVal,
-              aedVal
+              localVal: liveLocal,
+              aedVal: liveAed
             });
+
+            const pnlAed = liveAed - costAed;
+            const pnlCls = pnlAed >= 0 ? 'text-emerald-600' : 'text-rose-600';
+            const pnlSign = pnlAed >= 0 ? '+' : '';
 
             tbody.innerHTML += `
               <tr class="hover:bg-zinc-50/50">
                 <td class="px-5 py-4 font-medium text-zinc-900">${item.symbol}</td>
                 <td class="px-5 py-4 text-zinc-500">${item.market} <span class="text-zinc-400">· ${cur}</span></td>
                 <td class="px-5 py-4 text-right tabular-nums">${shares.toLocaleString()}</td>
-                <td class="px-5 py-4 text-right tabular-nums">${avg.toFixed(2)} <span class="text-zinc-400 text-xs">${cur}</span></td>
+                <td class="px-5 py-4 text-right tabular-nums">
+                  <div>${avg.toFixed(2)} <span class="text-zinc-400 text-xs">${cur}</span></div>
+                  <div class="text-[11px] ${liveOk ? 'text-zinc-500' : 'text-zinc-400'}">${liveOk ? ('Live ' + priceLocal.toFixed(2) + ' ' + liveCurrency) : 'No live price'}</div>
+                </td>
                 <td class="px-5 py-4 text-right">
-                  <div class="font-semibold tabular-nums">${aedVal.toLocaleString(undefined, { minimumFractionDigits: 2 })} <span class="text-zinc-400 text-xs font-normal">AED</span></div>
-                  <div class="text-[11px] text-zinc-400 tabular-nums">${localVal.toLocaleString(undefined, { minimumFractionDigits: 2 })} ${cur}</div>
+                  <div class="font-semibold tabular-nums">${liveAed.toLocaleString(undefined, { minimumFractionDigits: 2 })} <span class="text-zinc-400 text-xs font-normal">AED</span></div>
+                  <div class="text-[11px] tabular-nums ${pnlCls}">${pnlSign}${pnlAed.toLocaleString(undefined, { maximumFractionDigits: 0 })} AED P/L</div>
                 </td>
                 <td class="px-5 py-4 text-right whitespace-nowrap">
                   <button onclick="editHolding('${item.id}', '${String(item.symbol).replace(/'/g, "\\'")}', '${item.market || ''}', ${shares}, ${avg}, '${cur}')" class="text-[11px] font-semibold text-brand-700 hover:underline mr-2">Edit</button>
@@ -1328,11 +1392,13 @@
         }
 
         document.getElementById('totalNetWorthCard').textContent =
-          `AED ${totalAed.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+          `AED ${totalLiveAed.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
 
-        // Allocation + performance (cost basis used as value until live prices)
+        // Allocation uses live AED; performance uses cost vs live
         renderAllocation(lastHoldingsAed);
-        renderPerformance(totalAed, totalAed);
+        window.__lastCostAed = totalCostAed;
+        window.__lastLiveAed = totalLiveAed;
+        renderPerformance(totalCostAed, totalLiveAed);
 
         // Currency sub-boxes
         const box = document.getElementById('currencyBreakdown');
