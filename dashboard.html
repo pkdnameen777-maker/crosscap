@@ -171,7 +171,6 @@
       </header>
 
       <main class="p-4 sm:p-6 lg:p-8 max-w-[1400px]">
-      <main class="p-4 sm:p-6 lg:p-8 max-w-[1400px]">
 
         <!-- OVERVIEW -->
         <div id="view-overview" class="view active">
@@ -440,6 +439,15 @@
                 <input id="rePrice" type="number" step="any" placeholder="1480000" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]" />
               </div>
 
+              <!-- SPA upload -->
+              <div class="border border-dashed border-zinc-200 rounded-xl p-4 bg-zinc-50/40">
+                <p class="text-[13px] font-semibold text-zinc-800 mb-1">Sales / Purchase Agreement (optional)</p>
+                <p class="text-[11px] text-zinc-400 mb-3">Upload PDF or photo from gallery. Stored securely for this property.</p>
+                <input type="file" id="spaFile" accept="image/*,application/pdf" class="block w-full text-[13px] text-zinc-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-brand-50 file:text-brand-700 file:text-[12px] file:font-semibold" />
+                <p id="spaFileStatus" class="text-[12px] text-zinc-500 mt-2 hidden"></p>
+                <input type="hidden" id="spaFilePath" value="" />
+              </div>
+
               <!-- Off-plan installments builder -->
               <div id="installmentsBuilder" class="border border-zinc-100 rounded-xl p-4 bg-zinc-50/50">
                 <div class="flex items-center justify-between mb-3">
@@ -685,6 +693,52 @@
       });
       document.getElementById('reUseType')?.addEventListener('change', fillPropTypes);
       document.getElementById('reStatus')?.addEventListener('change', syncInstallmentsVisibility);
+
+      let spaUploading = false;
+
+      async function uploadSpaFile(file) {
+        if (!currentUser) {
+          alert('Please sign in first.');
+          return null;
+        }
+        const status = document.getElementById('spaFileStatus');
+        const pathEl = document.getElementById('spaFilePath');
+        status.classList.remove('hidden');
+        status.textContent = 'Uploading…';
+        status.className = 'text-[12px] text-zinc-500 mt-2';
+        spaUploading = true;
+
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const path = `${currentUser.id}/${Date.now()}_${safeName}`;
+
+        const { error } = await supabaseClient.storage
+          .from('spa-uploads')
+          .upload(path, file, { upsert: false, contentType: file.type || undefined });
+
+        spaUploading = false;
+        if (error) {
+          status.textContent = 'Upload failed: ' + error.message;
+          status.className = 'text-[12px] text-rose-600 mt-2';
+          pathEl.value = '';
+          return null;
+        }
+        pathEl.value = path;
+        status.textContent = 'Attached: ' + file.name;
+        status.className = 'text-[12px] text-emerald-600 mt-2';
+        return path;
+      }
+
+      document.getElementById('spaFile')?.addEventListener('change', async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        if (file.size > 20 * 1024 * 1024) {
+          alert('File too large (max 20 MB).');
+          e.target.value = '';
+          return;
+        }
+        await uploadSpaFile(file);
+      });
+
       document.getElementById('addInstallmentRow')?.addEventListener('click', () => addInstallmentRow());
       fillPropTypes();
       syncInstallmentsVisibility();
@@ -706,6 +760,13 @@
           return;
         }
 
+        if (spaUploading) {
+          alert('Please wait for the SPA upload to finish.');
+          return;
+        }
+
+        const spa_file_path = document.getElementById('spaFilePath').value.trim() || null;
+
         const { data: prop, error } = await supabaseClient.from('properties').insert([{
           user_id: currentUser.id,
           name,
@@ -715,7 +776,8 @@
           bedrooms,
           location,
           developer,
-          total_price
+          total_price,
+          spa_file_path
         }]).select().single();
 
         if (error) {
@@ -752,6 +814,11 @@
         document.getElementById('reLocation').value = '';
         document.getElementById('reDeveloper').value = '';
         document.getElementById('installmentRows').innerHTML = '';
+        const spaInput = document.getElementById('spaFile');
+        if (spaInput) spaInput.value = '';
+        document.getElementById('spaFilePath').value = '';
+        const spaStatus = document.getElementById('spaFileStatus');
+        if (spaStatus) { spaStatus.classList.add('hidden'); spaStatus.textContent = ''; }
         document.getElementById('form-property').classList.add('hidden');
         loadProperties();
       });
@@ -1301,6 +1368,7 @@
                     <p class="font-semibold text-zinc-900">${p.name}</p>
                     <p class="text-[12px] text-zinc-500 mt-0.5">${meta}</p>
                     ${p.developer ? `<p class="text-[12px] text-zinc-400">Developer: ${p.developer}</p>` : ''}
+                    ${p.spa_file_path ? `<p class="text-[11px] text-brand-600 mt-0.5">SPA document attached</p>` : ''}
                   </div>
                   <div class="flex items-center gap-2 shrink-0">
                     <span class="text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full font-medium">${isOffplan ? 'Off-Plan' : 'Ready'}</span>
