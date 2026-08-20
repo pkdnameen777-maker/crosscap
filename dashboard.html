@@ -166,7 +166,9 @@
           </div>
         </div>
         <div class="flex items-center gap-2 shrink-0">
-          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-700 ring-2 ring-white"></div>
+          <div id="headerAvatar" class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-700 ring-2 ring-white overflow-hidden shrink-0">
+            <img id="headerAvatarImg" src="" alt="" class="w-full h-full object-cover hidden" />
+          </div>
         </div>
       </header>
 
@@ -534,14 +536,125 @@
         <!-- SETTINGS -->
         <div id="view-settings" class="view">
           <h2 class="font-display text-xl font-semibold tracking-tight mb-2">Settings</h2>
-          <p class="text-[14px] text-zinc-500 mb-6">Profile, currency base, and notification preferences.</p>
-          <div class="bg-white rounded-2xl border border-zinc-100 p-6 shadow-soft max-w-xl space-y-3">
-            <div>
-              <p class="text-[12px] text-zinc-400 mb-1">Signed in as</p>
-              <p id="settingsEmail" class="text-sm font-medium text-zinc-800 break-all">—</p>
+          <p class="text-[14px] text-zinc-500 mb-6">Profile, contact details, nominee, and preferences.</p>
+
+          <div class="bg-white rounded-2xl border border-zinc-100 p-6 shadow-soft max-w-2xl space-y-6">
+            <!-- Photo -->
+            <div class="flex flex-col sm:flex-row gap-4 items-start">
+              <div class="relative">
+                <div id="settingsAvatarPreview" class="w-20 h-20 rounded-full bg-gradient-to-br from-brand-400 to-brand-700 overflow-hidden ring-2 ring-brand-100">
+                  <img id="settingsAvatarImg" src="" alt="" class="w-full h-full object-cover hidden" />
+                </div>
+              </div>
+              <div class="flex-1">
+                <p class="text-[13px] font-semibold text-zinc-800 mb-1">Profile photo</p>
+                <p class="text-[12px] text-zinc-400 mb-2">Shown in the top-right corner after you save.</p>
+                <input type="file" id="profilePhoto" accept="image/*" class="block w-full text-[12px] text-zinc-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-brand-50 file:text-brand-700 file:text-[12px] file:font-semibold" />
+                <input type="hidden" id="profileAvatarPath" value="" />
+                <p id="profilePhotoStatus" class="text-[11px] text-zinc-400 mt-1 hidden"></p>
+              </div>
             </div>
-            <p class="text-sm text-zinc-500">Base currency: <span class="font-semibold text-zinc-800">AED</span></p>
-            <p class="text-[12px] text-zinc-400">More settings (WhatsApp alerts, email reminders) will be added here.</p>
+
+            <div class="border-t border-zinc-100 pt-4">
+              <p class="text-[12px] font-semibold uppercase tracking-wider text-zinc-400 mb-3">Account</p>
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div class="sm:col-span-2">
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1">Email</label>
+                  <p id="settingsEmail" class="text-sm font-medium text-zinc-800 break-all bg-zinc-50 rounded-xl px-3 py-2.5">—</p>
+                </div>
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1">Full name</label>
+                  <input id="profileName" type="text" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" placeholder="Your name" />
+                </div>
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1">Nationality</label>
+                  <input id="profileNationality" type="text" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" placeholder="e.g. Indian" />
+                </div>
+              </div>
+            </div>
+
+            <div class="border-t border-zinc-100 pt-4">
+              <p class="text-[12px] font-semibold uppercase tracking-wider text-zinc-400 mb-3">Contact</p>
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1">Phone number</label>
+                  <input id="profilePhone" type="tel" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" placeholder="+971 50 000 0000" />
+                </div>
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1">WhatsApp number</label>
+                  <input id="profileWhatsapp" type="tel" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" placeholder="+971 50 000 0000" />
+                </div>
+                <div class="sm:col-span-2">
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1">Address</label>
+                  <textarea id="profileAddress" rows="2" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" placeholder="Building, street, area"></textarea>
+                </div>
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1">City</label>
+                  <input id="profileCity" type="text" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" placeholder="Dubai" />
+                </div>
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1">Country</label>
+                  <input id="profileCountry" type="text" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" placeholder="United Arab Emirates" />
+                </div>
+              </div>
+            </div>
+
+            <div class="border-t border-zinc-100 pt-4">
+              <p class="text-[12px] font-semibold uppercase tracking-wider text-zinc-400 mb-3">Nominee</p>
+              <p class="text-[12px] text-zinc-400 mb-3">Emergency contact for your account (optional).</p>
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1">Nominee name</label>
+                  <input id="profileNomineeName" type="text" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" placeholder="Full name" />
+                </div>
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1">Relation</label>
+                  <select id="profileNomineeRelation" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]">
+                    <option value="">Select</option>
+                    <option value="Spouse">Spouse</option>
+                    <option value="Parent">Parent</option>
+                    <option value="Sibling">Sibling</option>
+                    <option value="Child">Child</option>
+                    <option value="Friend">Friend</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div class="sm:col-span-2">
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1">Nominee phone</label>
+                  <input id="profileNomineePhone" type="tel" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" placeholder="+971 …" />
+                </div>
+              </div>
+            </div>
+
+            <div class="border-t border-zinc-100 pt-4">
+              <p class="text-[12px] font-semibold uppercase tracking-wider text-zinc-400 mb-3">Preferences</p>
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1">Base currency</label>
+                  <input type="text" value="AED" disabled class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px] bg-zinc-50 text-zinc-500" />
+                </div>
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1">Preferred language</label>
+                  <select id="profileLanguage" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]">
+                    <option value="en">English</option>
+                    <option value="ar">Arabic</option>
+                    <option value="hi">Hindi</option>
+                    <option value="ml">Malayalam</option>
+                  </select>
+                </div>
+                <div class="sm:col-span-2 flex items-center gap-2">
+                  <input type="checkbox" id="profileEmailAlerts" class="rounded border-zinc-300 text-brand-700" />
+                  <label for="profileEmailAlerts" class="text-[13px] text-zinc-700">Email me installment reminders</label>
+                </div>
+                <div class="sm:col-span-2 flex items-center gap-2">
+                  <input type="checkbox" id="profileWhatsappAlerts" class="rounded border-zinc-300 text-brand-700" />
+                  <label for="profileWhatsappAlerts" class="text-[13px] text-zinc-700">WhatsApp installment reminders (coming soon)</label>
+                </div>
+              </div>
+            </div>
+
+            <button id="saveProfileBtn" class="w-full rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[14px] font-semibold py-3 transition">Save profile</button>
+            <p id="profileSaveStatus" class="text-[12px] text-center text-zinc-400 hidden"></p>
           </div>
         </div>
 
@@ -583,6 +696,134 @@
 
         loadPortfolio();
         loadProperties();
+        loadProfile();
+      });
+
+      function setAvatarDisplay(url) {
+        const headerImg = document.getElementById('headerAvatarImg');
+        const settingsImg = document.getElementById('settingsAvatarImg');
+        [headerImg, settingsImg].forEach(img => {
+          if (!img) return;
+          if (url) {
+            img.src = url;
+            img.classList.remove('hidden');
+          } else {
+            img.src = '';
+            img.classList.add('hidden');
+          }
+        });
+      }
+
+      async function resolveAvatarUrl(path) {
+        if (!path) return null;
+        // public URL if bucket public, else signed
+        const { data } = supabaseClient.storage.from('avatars').getPublicUrl(path);
+        if (data?.publicUrl) return data.publicUrl;
+        const { data: signed } = await supabaseClient.storage.from('avatars').createSignedUrl(path, 3600 * 24);
+        return signed?.signedUrl || null;
+      }
+
+      async function loadProfile() {
+        if (!currentUser) return;
+        const { data, error } = await supabaseClient
+          .from('profiles')
+          .select('*')
+          .eq('id', currentUser.id)
+          .maybeSingle();
+        if (error) {
+          console.warn('loadProfile', error);
+          return;
+        }
+        const name = data?.full_name || currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
+        document.getElementById('profileName').value = data?.full_name || name || '';
+        document.getElementById('profileNationality').value = data?.nationality || '';
+        document.getElementById('profilePhone').value = data?.phone || '';
+        document.getElementById('profileWhatsapp').value = data?.whatsapp || '';
+        document.getElementById('profileAddress').value = data?.address || '';
+        document.getElementById('profileCity').value = data?.city || '';
+        document.getElementById('profileCountry').value = data?.country || 'United Arab Emirates';
+        document.getElementById('profileNomineeName').value = data?.nominee_name || '';
+        document.getElementById('profileNomineeRelation').value = data?.nominee_relation || '';
+        document.getElementById('profileNomineePhone').value = data?.nominee_phone || '';
+        document.getElementById('profileLanguage').value = data?.language || 'en';
+        document.getElementById('profileEmailAlerts').checked = !!data?.email_alerts;
+        document.getElementById('profileWhatsappAlerts').checked = !!data?.whatsapp_alerts;
+        document.getElementById('profileAvatarPath').value = data?.avatar_path || '';
+        if (data?.avatar_path) {
+          const url = await resolveAvatarUrl(data.avatar_path);
+          setAvatarDisplay(url);
+        }
+      }
+
+      document.getElementById('profilePhoto')?.addEventListener('change', async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file || !currentUser) return;
+        if (file.size > 5 * 1024 * 1024) {
+          alert('Photo max 5 MB');
+          return;
+        }
+        const status = document.getElementById('profilePhotoStatus');
+        status.classList.remove('hidden');
+        status.textContent = 'Uploading photo…';
+        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+        const path = `${currentUser.id}/avatar.${ext === 'png' ? 'png' : 'jpg'}`;
+        const { error } = await supabaseClient.storage.from('avatars').upload(path, file, {
+          upsert: true,
+          contentType: file.type || 'image/jpeg'
+        });
+        if (error) {
+          status.textContent = 'Upload failed: ' + error.message;
+          status.className = 'text-[11px] text-rose-600 mt-1';
+          return;
+        }
+        document.getElementById('profileAvatarPath').value = path;
+        status.textContent = 'Photo ready — click Save profile';
+        status.className = 'text-[11px] text-emerald-600 mt-1';
+        const url = await resolveAvatarUrl(path);
+        setAvatarDisplay(url);
+      });
+
+      document.getElementById('saveProfileBtn')?.addEventListener('click', async () => {
+        if (!currentUser) return;
+        const status = document.getElementById('profileSaveStatus');
+        status.classList.remove('hidden');
+        status.textContent = 'Saving…';
+        status.className = 'text-[12px] text-center text-zinc-500';
+        const row = {
+          id: currentUser.id,
+          full_name: document.getElementById('profileName').value.trim() || null,
+          nationality: document.getElementById('profileNationality').value.trim() || null,
+          phone: document.getElementById('profilePhone').value.trim() || null,
+          whatsapp: document.getElementById('profileWhatsapp').value.trim() || null,
+          address: document.getElementById('profileAddress').value.trim() || null,
+          city: document.getElementById('profileCity').value.trim() || null,
+          country: document.getElementById('profileCountry').value.trim() || null,
+          nominee_name: document.getElementById('profileNomineeName').value.trim() || null,
+          nominee_relation: document.getElementById('profileNomineeRelation').value || null,
+          nominee_phone: document.getElementById('profileNomineePhone').value.trim() || null,
+          language: document.getElementById('profileLanguage').value || 'en',
+          email_alerts: document.getElementById('profileEmailAlerts').checked,
+          whatsapp_alerts: document.getElementById('profileWhatsappAlerts').checked,
+          avatar_path: document.getElementById('profileAvatarPath').value.trim() || null,
+          updated_at: new Date().toISOString()
+        };
+        const { error } = await supabaseClient.from('profiles').upsert(row, { onConflict: 'id' });
+        if (error) {
+          status.textContent = 'Error: ' + error.message;
+          status.className = 'text-[12px] text-center text-rose-600';
+          return;
+        }
+        if (row.full_name) {
+          const hour = new Date().getHours();
+          let wish = 'Good evening';
+          if (hour < 12) wish = 'Good morning';
+          else if (hour < 17) wish = 'Good afternoon';
+          document.getElementById('userGreeting').textContent = `${wish}, ${row.full_name}`;
+          const sn = document.getElementById('sidebarUserName');
+          if (sn) sn.textContent = row.full_name;
+        }
+        status.textContent = 'Profile saved';
+        status.className = 'text-[12px] text-center text-emerald-600';
       });
 
       // Mobile sidebar
