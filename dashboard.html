@@ -527,9 +527,37 @@
         <!-- REPORTS -->
         <div id="view-reports" class="view">
           <h2 class="font-display text-xl font-semibold tracking-tight mb-2">Reports</h2>
-          <p class="text-[14px] text-zinc-500 mb-6">Monthly statements and allocation summaries.</p>
-          <div class="bg-white rounded-2xl border border-zinc-100 p-6 shadow-soft max-w-xl">
-            <p class="text-sm text-zinc-500">Coming soon — exportable monthly net-worth and cash-flow reports.</p>
+          <p class="text-[14px] text-zinc-500 mb-6">Download statements, allocation summaries, and full backup / restore.</p>
+
+          <div class="grid gap-4 max-w-2xl">
+            <!-- Statements -->
+            <div class="bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft">
+              <h3 class="text-[15px] font-semibold text-zinc-900 mb-1">Statements & summaries</h3>
+              <p class="text-[12px] text-zinc-400 mb-4">Download current portfolio and real-estate data as CSV or a monthly snapshot.</p>
+              <div class="flex flex-col sm:flex-row flex-wrap gap-2">
+                <button type="button" id="btnExportHoldingsCsv" class="rounded-xl border border-zinc-200 hover:bg-zinc-50 text-[13px] font-semibold px-4 py-2.5 text-zinc-800">Portfolio CSV</button>
+                <button type="button" id="btnExportPropertiesCsv" class="rounded-xl border border-zinc-200 hover:bg-zinc-50 text-[13px] font-semibold px-4 py-2.5 text-zinc-800">Real estate CSV</button>
+                <button type="button" id="btnExportAllocationCsv" class="rounded-xl border border-zinc-200 hover:bg-zinc-50 text-[13px] font-semibold px-4 py-2.5 text-zinc-800">Allocation CSV</button>
+                <button type="button" id="btnExportMonthly" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13px] font-semibold px-4 py-2.5">Monthly statement</button>
+              </div>
+              <p id="reportExportStatus" class="text-[12px] text-zinc-400 mt-3 hidden"></p>
+            </div>
+
+            <!-- Backup -->
+            <div class="bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft">
+              <h3 class="text-[15px] font-semibold text-zinc-900 mb-1">Backup</h3>
+              <p class="text-[12px] text-zinc-400 mb-4">Download a full JSON backup of holdings, properties, installments, and profile.</p>
+              <button type="button" id="btnBackupJson" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13px] font-semibold px-4 py-2.5">Download full backup</button>
+            </div>
+
+            <!-- Restore -->
+            <div class="bg-white rounded-2xl border border-amber-100 p-5 shadow-soft bg-amber-50/30">
+              <h3 class="text-[15px] font-semibold text-zinc-900 mb-1">Restore</h3>
+              <p class="text-[12px] text-zinc-500 mb-3">Upload a CrossCap backup JSON. This <span class="font-semibold text-amber-800">adds</span> data from the file (it does not wipe existing rows first).</p>
+              <input type="file" id="restoreFile" accept="application/json,.json" class="block w-full text-[12px] text-zinc-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-white file:text-brand-700 file:text-[12px] file:font-semibold file:border file:border-zinc-200" />
+              <button type="button" id="btnRestoreJson" class="mt-3 rounded-xl border border-amber-300 bg-white hover:bg-amber-50 text-amber-900 text-[13px] font-semibold px-4 py-2.5">Restore from file</button>
+              <p id="restoreStatus" class="text-[12px] text-zinc-500 mt-3 hidden"></p>
+            </div>
           </div>
         </div>
 
@@ -1849,6 +1877,286 @@
           }
         }
       }
+
+
+      // ---- Reports: export / backup / restore ----
+      function downloadBlob(filename, content, mime) {
+        const blob = new Blob([content], { type: mime || 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      function csvEscape(v) {
+        const s = v == null ? '' : String(v);
+        if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+        return s;
+      }
+
+      function rowsToCsv(headers, rows) {
+        const lines = [headers.map(csvEscape).join(',')];
+        rows.forEach(r => lines.push(r.map(csvEscape).join(',')));
+        return lines.join('\n');
+      }
+
+      function setReportStatus(msg, ok) {
+        const el = document.getElementById('reportExportStatus');
+        if (!el) return;
+        el.classList.remove('hidden');
+        el.textContent = msg;
+        el.className = 'text-[12px] mt-3 ' + (ok === false ? 'text-rose-600' : 'text-emerald-600');
+      }
+
+      async function exportHoldingsCsv() {
+        const { data, error } = await supabaseClient.from('holdings').select('*').order('created_at', { ascending: false });
+        if (error) { setReportStatus(error.message, false); return; }
+        const headers = ['symbol','market','currency','shares','avg_buy_price','asset_type','created_at'];
+        const rows = (data || []).map(h => [h.symbol, h.market, h.currency, h.shares, h.avg_buy_price, h.asset_type, h.created_at]);
+        const stamp = new Date().toISOString().slice(0,10);
+        downloadBlob(`crosscap-portfolio-${stamp}.csv`, rowsToCsv(headers, rows), 'text/csv;charset=utf-8');
+        setReportStatus('Portfolio CSV downloaded', true);
+      }
+
+      async function exportPropertiesCsv() {
+        const { data: props, error } = await supabaseClient.from('properties').select('*').order('created_at', { ascending: false });
+        if (error) { setReportStatus(error.message, false); return; }
+        const { data: insts } = await supabaseClient.from('installments').select('*');
+        const byProp = {};
+        (insts || []).forEach(i => {
+          if (!byProp[i.property_id]) byProp[i.property_id] = [];
+          byProp[i.property_id].push(i);
+        });
+        const headers = ['property_name','type','use_type','subtype','bedrooms','location','developer','total_price','spa_file_path','installment_stage','due_date','amount','status'];
+        const rows = [];
+        (props || []).forEach(p => {
+          const list = byProp[p.id] || [null];
+          list.forEach(i => {
+            rows.push([
+              p.name, p.property_type, p.use_type, p.prop_subtype, p.bedrooms, p.location, p.developer, p.total_price, p.spa_file_path,
+              i ? i.stage : '', i ? i.due_date : '', i ? i.amount : '', i ? i.status : ''
+            ]);
+          });
+        });
+        const stamp = new Date().toISOString().slice(0,10);
+        downloadBlob(`crosscap-real-estate-${stamp}.csv`, rowsToCsv(headers, rows), 'text/csv;charset=utf-8');
+        setReportStatus('Real estate CSV downloaded', true);
+      }
+
+      async function exportAllocationCsv() {
+        const rates = await getRatesToAed();
+        const { data: holdings } = await supabaseClient.from('holdings').select('*');
+        const byMarket = {};
+        let total = 0;
+        (holdings || []).forEach(h => {
+          const cur = (h.currency || 'AED').toUpperCase();
+          const local = (Number(h.shares)||0) * (Number(h.avg_buy_price)||0);
+          const aed = local * (rates[cur] != null ? rates[cur] : 1);
+          const m = h.market || 'OTHER';
+          byMarket[m] = (byMarket[m] || 0) + aed;
+          total += aed;
+        });
+        const headers = ['market','value_aed','percent'];
+        const rows = Object.entries(byMarket).sort((a,b)=>b[1]-a[1]).map(([m,v]) => [
+          m, v.toFixed(2), total > 0 ? ((v/total)*100).toFixed(2) : '0'
+        ]);
+        rows.push(['TOTAL', total.toFixed(2), '100']);
+        const stamp = new Date().toISOString().slice(0,10);
+        downloadBlob(`crosscap-allocation-${stamp}.csv`, rowsToCsv(headers, rows), 'text/csv;charset=utf-8');
+        setReportStatus('Allocation CSV downloaded', true);
+      }
+
+      async function exportMonthlyStatement() {
+        const rates = await getRatesToAed();
+        const { data: holdings } = await supabaseClient.from('holdings').select('*');
+        const { data: props } = await supabaseClient.from('properties').select('*');
+        const { data: insts } = await supabaseClient.from('installments').select('*').order('due_date');
+        let liquid = 0;
+        const holdLines = [];
+        (holdings || []).forEach(h => {
+          const cur = (h.currency || 'AED').toUpperCase();
+          const local = (Number(h.shares)||0) * (Number(h.avg_buy_price)||0);
+          const aed = local * (rates[cur] != null ? rates[cur] : 1);
+          liquid += aed;
+          holdLines.push(`  - ${h.symbol} (${h.market}): ${Number(h.shares)} × ${h.avg_buy_price} ${cur} ≈ AED ${aed.toFixed(2)}`);
+        });
+        let re = 0;
+        (props || []).forEach(p => { re += Number(p.total_price)||0; });
+        const now = new Date();
+        const month = now.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+        const upcoming = (insts || []).filter(i => {
+          if ((i.status||'').toLowerCase() === 'paid') return false;
+          const d = new Date(i.due_date + 'T00:00:00');
+          return d >= new Date(now.getFullYear(), now.getMonth(), 1) && d <= new Date(now.getFullYear(), now.getMonth()+2, 0);
+        });
+        const lines = [
+          'CrossCap Monthly Statement',
+          month,
+          'Generated: ' + now.toISOString(),
+          'User: ' + (currentUser?.email || ''),
+          '',
+          '=== SUMMARY (AED) ===',
+          'Liquid holdings (cost basis × FX): ' + liquid.toFixed(2),
+          'Real estate (contract value): ' + re.toFixed(2),
+          'Combined: ' + (liquid + re).toFixed(2),
+          '',
+          '=== HOLDINGS ===',
+          ...(holdLines.length ? holdLines : ['  (none)']),
+          '',
+          '=== REAL ESTATE ===',
+          ...((props||[]).map(p => `  - ${p.name}: AED ${Number(p.total_price||0).toLocaleString()} (${p.property_type})`)),
+          '',
+          '=== UPCOMING INSTALLMENTS (this month + next) ===',
+          ...(upcoming.length ? upcoming.map(i => `  - ${i.due_date} | ${i.stage || 'Installment'} | AED ${Number(i.amount).toLocaleString()} | ${i.status}`) : ['  (none)']),
+          '',
+          'Note: Liquid values use cost basis × FX. Live market prices appear in the Portfolio screen.',
+          'This statement is for personal records only — not tax or financial advice.'
+        ];
+        const stamp = now.toISOString().slice(0,10);
+        downloadBlob(`crosscap-monthly-statement-${stamp}.txt`, lines.join('\n'), 'text/plain;charset=utf-8');
+        setReportStatus('Monthly statement downloaded', true);
+      }
+
+      async function downloadFullBackup() {
+        if (!currentUser) return;
+        const [holdings, properties, installments, profile] = await Promise.all([
+          supabaseClient.from('holdings').select('*'),
+          supabaseClient.from('properties').select('*'),
+          supabaseClient.from('installments').select('*'),
+          supabaseClient.from('profiles').select('*').eq('id', currentUser.id).maybeSingle()
+        ]);
+        const payload = {
+          version: 1,
+          app: 'CrossCap',
+          exported_at: new Date().toISOString(),
+          user_email: currentUser.email,
+          holdings: holdings.data || [],
+          properties: properties.data || [],
+          installments: installments.data || [],
+          profile: profile.data || null
+        };
+        const stamp = new Date().toISOString().slice(0,10);
+        downloadBlob(`crosscap-backup-${stamp}.json`, JSON.stringify(payload, null, 2), 'application/json');
+        setReportStatus('Full backup downloaded', true);
+      }
+
+      async function restoreFromBackup(file) {
+        const status = document.getElementById('restoreStatus');
+        status.classList.remove('hidden');
+        status.textContent = 'Reading file…';
+        status.className = 'text-[12px] text-zinc-500 mt-3';
+        try {
+          const text = await file.text();
+          const data = JSON.parse(text);
+          if (!data || !Array.isArray(data.holdings)) {
+            throw new Error('Invalid backup file');
+          }
+          if (!confirm('Restore will INSERT holdings, properties, and installments from this file. Continue?')) {
+            status.textContent = 'Cancelled';
+            return;
+          }
+          status.textContent = 'Restoring…';
+          let hCount = 0, pCount = 0, iCount = 0;
+
+          // Holdings (strip id so new UUIDs)
+          for (const h of data.holdings) {
+            const row = {
+              user_id: currentUser.id,
+              symbol: h.symbol,
+              market: h.market,
+              asset_type: h.asset_type || 'stocks',
+              shares: h.shares,
+              avg_buy_price: h.avg_buy_price,
+              currency: h.currency || 'AED'
+            };
+            const { error } = await supabaseClient.from('holdings').insert([row]);
+            if (!error) hCount++;
+          }
+
+          // Map old property id → new id for installments
+          const propIdMap = {};
+          for (const p of (data.properties || [])) {
+            const row = {
+              user_id: currentUser.id,
+              name: p.name,
+              property_type: p.property_type,
+              use_type: p.use_type,
+              prop_subtype: p.prop_subtype,
+              bedrooms: p.bedrooms,
+              location: p.location,
+              developer: p.developer,
+              total_price: p.total_price,
+              spa_file_path: p.spa_file_path || null
+            };
+            const { data: created, error } = await supabaseClient.from('properties').insert([row]).select().single();
+            if (!error && created) {
+              propIdMap[p.id] = created.id;
+              pCount++;
+            }
+          }
+
+          for (const i of (data.installments || [])) {
+            const newPropId = propIdMap[i.property_id];
+            if (!newPropId) continue;
+            const row = {
+              property_id: newPropId,
+              user_id: currentUser.id,
+              stage: i.stage,
+              due_date: i.due_date,
+              amount: i.amount,
+              status: i.status || 'scheduled'
+            };
+            const { error } = await supabaseClient.from('installments').insert([row]);
+            if (!error) iCount++;
+          }
+
+          // Profile upsert (optional)
+          if (data.profile && typeof data.profile === 'object') {
+            const pr = data.profile;
+            await supabaseClient.from('profiles').upsert({
+              id: currentUser.id,
+              full_name: pr.full_name,
+              nationality: pr.nationality,
+              phone: pr.phone,
+              whatsapp: pr.whatsapp,
+              address: pr.address,
+              city: pr.city,
+              country: pr.country,
+              nominee_name: pr.nominee_name,
+              nominee_relation: pr.nominee_relation,
+              nominee_phone: pr.nominee_phone,
+              language: pr.language,
+              email_alerts: pr.email_alerts,
+              whatsapp_alerts: pr.whatsapp_alerts,
+              updated_at: new Date().toISOString()
+            }, { onConflict: 'id' });
+          }
+
+          status.textContent = `Restored: ${hCount} holdings, ${pCount} properties, ${iCount} installments`;
+          status.className = 'text-[12px] text-emerald-600 mt-3';
+          loadPortfolio();
+          loadProperties();
+          if (typeof loadProfile === 'function') loadProfile();
+        } catch (e) {
+          status.textContent = 'Restore failed: ' + (e.message || e);
+          status.className = 'text-[12px] text-rose-600 mt-3';
+        }
+      }
+
+      document.getElementById('btnExportHoldingsCsv')?.addEventListener('click', exportHoldingsCsv);
+      document.getElementById('btnExportPropertiesCsv')?.addEventListener('click', exportPropertiesCsv);
+      document.getElementById('btnExportAllocationCsv')?.addEventListener('click', exportAllocationCsv);
+      document.getElementById('btnExportMonthly')?.addEventListener('click', exportMonthlyStatement);
+      document.getElementById('btnBackupJson')?.addEventListener('click', downloadFullBackup);
+      document.getElementById('btnRestoreJson')?.addEventListener('click', () => {
+        const f = document.getElementById('restoreFile')?.files?.[0];
+        if (!f) { alert('Choose a backup JSON file first'); return; }
+        restoreFromBackup(f);
+      });
 
       // View Switcher
       function showView(name) {
