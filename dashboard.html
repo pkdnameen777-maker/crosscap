@@ -553,10 +553,17 @@
             <!-- Restore -->
             <div class="bg-white rounded-2xl border border-amber-100 p-5 shadow-soft bg-amber-50/30">
               <h3 class="text-[15px] font-semibold text-zinc-900 mb-1">Restore</h3>
-              <p class="text-[12px] text-zinc-500 mb-3">Upload a CrossCap backup JSON. This <span class="font-semibold text-amber-800">adds</span> data from the file (it does not wipe existing rows first).</p>
+              <p class="text-[12px] text-zinc-500 mb-3">Upload a CrossCap backup JSON. Matching properties (same name + price) are <span class="font-semibold text-amber-800">skipped</span> so they are not doubled.</p>
               <input type="file" id="restoreFile" accept="application/json,.json" class="block w-full text-[12px] text-zinc-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-white file:text-brand-700 file:text-[12px] file:font-semibold file:border file:border-zinc-200" />
               <button type="button" id="btnRestoreJson" class="mt-3 rounded-xl border border-amber-300 bg-white hover:bg-amber-50 text-amber-900 text-[13px] font-semibold px-4 py-2.5">Restore from file</button>
               <p id="restoreStatus" class="text-[12px] text-zinc-500 mt-3 hidden"></p>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft">
+              <h3 class="text-[15px] font-semibold text-zinc-900 mb-1">Remove duplicate properties</h3>
+              <p class="text-[12px] text-zinc-400 mb-3">If the same property appears twice (same name and price), keep the oldest and delete the rest with their installments.</p>
+              <button type="button" id="btnDedupeProperties" class="rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-800 text-[13px] font-semibold px-4 py-2.5">Clean up duplicates now</button>
+              <p id="dedupeStatus" class="text-[12px] text-zinc-400 mt-3 hidden"></p>
             </div>
           </div>
         </div>
@@ -1142,6 +1149,20 @@
         }
 
         const spa_file_path = document.getElementById('spaFilePath').value.trim() || null;
+
+        // Prevent duplicate property (same user + name + price)
+        const { data: existingProps } = await supabaseClient
+          .from('properties')
+          .select('id, name, total_price')
+          .eq('user_id', currentUser.id);
+        const dup = (existingProps || []).find(p =>
+          String(p.name || '').trim().toLowerCase() === name.toLowerCase()
+          && Number(p.total_price) === Number(total_price)
+        );
+        if (dup) {
+          alert('This property already exists (same name and price). Open it below to edit installments instead of saving again.');
+          return;
+        }
 
         const { data: prop, error } = await supabaseClient.from('properties').insert([{
           user_id: currentUser.id,
@@ -2063,7 +2084,16 @@
           let hCount = 0, pCount = 0, iCount = 0;
 
           // Holdings (strip id so new UUIDs)
+          const { data: existingHoldings } = await supabaseClient
+            .from('holdings').select('symbol, market, shares, avg_buy_price').eq('user_id', currentUser.id);
           for (const h of data.holdings) {
+            const exists = (existingHoldings || []).find(e =>
+              String(e.symbol || '').toUpperCase() === String(h.symbol || '').toUpperCase()
+              && String(e.market || '').toUpperCase() === String(h.market || '').toUpperCase()
+              && Number(e.shares) === Number(h.shares)
+              && Number(e.avg_buy_price) === Number(h.avg_buy_price)
+            );
+            if (exists) continue;
             const row = {
               user_id: currentUser.id,
               symbol: h.symbol,
@@ -2074,12 +2104,32 @@
               currency: h.currency || 'AED'
             };
             const { error } = await supabaseClient.from('holdings').insert([row]);
-            if (!error) hCount++;
+            if (!error) {
+              hCount++;
+              existingHoldings.push(row);
+            }
           }
 
-          // Map old property id → new id for installments
+          // Load existing properties to skip duplicates
+          const { data: existingProps } = await supabaseClient
+            .from('properties')
+            .select('id, name, total_price, developer')
+            .eq('user_id', currentUser.id);
+          const findExistingProp = (p) => (existingProps || []).find(e =>
+            String(e.name || '').trim().toLowerCase() === String(p.name || '').trim().toLowerCase()
+            && Number(e.total_price) === Number(p.total_price)
+          );
+
+          // Map old property id → existing or new id
           const propIdMap = {};
+          let pSkipped = 0;
           for (const p of (data.properties || [])) {
+            const already = findExistingProp(p);
+            if (already) {
+              propIdMap[p.id] = already.id;
+              pSkipped++;
+              continue;
+            }
             const row = {
               user_id: currentUser.id,
               name: p.name,
@@ -2095,13 +2145,23 @@
             const { data: created, error } = await supabaseClient.from('properties').insert([row]).select().single();
             if (!error && created) {
               propIdMap[p.id] = created.id;
+              existingProps.push({ id: created.id, name: created.name, total_price: created.total_price, developer: created.developer });
               pCount++;
             }
           }
 
+          // Installments: skip if same property already has same stage + due_date
           for (const i of (data.installments || [])) {
             const newPropId = propIdMap[i.property_id];
             if (!newPropId) continue;
+            const { data: existingInst } = await supabaseClient
+              .from('installments')
+              .select('id')
+              .eq('property_id', newPropId)
+              .eq('due_date', i.due_date)
+              .eq('stage', i.stage || 'Installment')
+              .maybeSingle();
+            if (existingInst) continue;
             const row = {
               property_id: newPropId,
               user_id: currentUser.id,
@@ -2113,6 +2173,7 @@
             const { error } = await supabaseClient.from('installments').insert([row]);
             if (!error) iCount++;
           }
+          window.__restoreSkippedProps = pSkipped;
 
           // Profile upsert (optional)
           if (data.profile && typeof data.profile === 'object') {
@@ -2136,7 +2197,7 @@
             }, { onConflict: 'id' });
           }
 
-          status.textContent = `Restored: ${hCount} holdings, ${pCount} properties, ${iCount} installments`;
+          status.textContent = `Restored: ${hCount} holdings, ${pCount} new properties (${window.__restoreSkippedProps || 0} skipped as duplicates), ${iCount} installments`;
           status.className = 'text-[12px] text-emerald-600 mt-3';
           loadPortfolio();
           loadProperties();
@@ -2152,6 +2213,49 @@
       document.getElementById('btnExportAllocationCsv')?.addEventListener('click', exportAllocationCsv);
       document.getElementById('btnExportMonthly')?.addEventListener('click', exportMonthlyStatement);
       document.getElementById('btnBackupJson')?.addEventListener('click', downloadFullBackup);
+      async function dedupeProperties() {
+        const status = document.getElementById('dedupeStatus');
+        status.classList.remove('hidden');
+        status.textContent = 'Scanning…';
+        status.className = 'text-[12px] text-zinc-500 mt-3';
+        const { data: props, error } = await supabaseClient
+          .from('properties')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .order('created_at', { ascending: true });
+        if (error) {
+          status.textContent = error.message;
+          status.className = 'text-[12px] text-rose-600 mt-3';
+          return;
+        }
+        const groups = {};
+        (props || []).forEach(p => {
+          const key = String(p.name || '').trim().toLowerCase() + '|' + Number(p.total_price);
+          if (!groups[key]) groups[key] = [];
+          groups[key].push(p);
+        });
+        let removed = 0;
+        for (const key of Object.keys(groups)) {
+          const list = groups[key];
+          if (list.length < 2) continue;
+          // keep first (oldest), delete the rest
+          for (let i = 1; i < list.length; i++) {
+            const id = list[i].id;
+            await supabaseClient.from('installments').delete().eq('property_id', id);
+            const { error: delErr } = await supabaseClient.from('properties').delete().eq('id', id);
+            if (!delErr) removed++;
+          }
+        }
+        status.textContent = removed ? `Removed ${removed} duplicate property card(s).` : 'No duplicates found.';
+        status.className = 'text-[12px] text-emerald-600 mt-3';
+        loadProperties();
+      }
+
+      document.getElementById('btnDedupeProperties')?.addEventListener('click', () => {
+        if (!confirm('Remove duplicate properties (same name + price)? The oldest copy is kept.')) return;
+        dedupeProperties();
+      });
+
       document.getElementById('btnRestoreJson')?.addEventListener('click', () => {
         const f = document.getElementById('restoreFile')?.files?.[0];
         if (!f) { alert('Choose a backup JSON file first'); return; }
