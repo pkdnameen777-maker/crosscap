@@ -215,6 +215,21 @@
             </div>
           </div>
 
+          <!-- News for your holdings -->
+          <div class="bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+              <div>
+                <h3 class="text-[15px] font-semibold text-zinc-900">News for your holdings</h3>
+                <p class="text-[12px] text-zinc-400">Only symbols and themes you own — no gold news if you don’t hold gold</p>
+              </div>
+              <button type="button" id="btnRefreshHoldingNews" class="text-[12px] font-semibold text-brand-700 hover:underline">Refresh</button>
+            </div>
+            <div id="holdingNewsList" class="space-y-2 text-[13px]">
+              <p class="text-zinc-400">Loading personalised updates…</p>
+            </div>
+            <p id="holdingNewsMeta" class="text-[11px] text-zinc-400 mt-3"></p>
+          </div>
+
           <!-- Portfolio performance -->
           <div class="bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft mb-6">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
@@ -810,6 +825,7 @@
         loadProfile();
         loadGoals();
         setTimeout(() => generateAiCfoInsights(), 800);
+        setTimeout(() => loadHoldingNews(), 1200);
       });
 
       function setAvatarDisplay(url) {
@@ -2825,6 +2841,59 @@
       });
 
 
+
+      async function loadHoldingNews() {
+        const list = document.getElementById('holdingNewsList');
+        const meta = document.getElementById('holdingNewsMeta');
+        if (!list) return;
+        list.innerHTML = '<p class="text-zinc-400">Loading personalised updates…</p>';
+        try {
+          const { data: sessionData } = await supabaseClient.auth.getSession();
+          const token = sessionData?.session?.access_token;
+          const res = await fetch(`${SUPABASE_URL}/functions/v1/holding-news`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token || SUPABASE_ANON_KEY}`,
+              'apikey': SUPABASE_ANON_KEY
+            },
+            body: JSON.stringify({})
+          });
+          const json = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(json.error || ('HTTP ' + res.status));
+          const items = json.items || [];
+          if (!items.length) {
+            list.innerHTML = '<p class="text-zinc-400">No holding-specific news yet. Add stocks with US tickers for the richest feed, or set FINNHUB_API_KEY on the server.</p>';
+          } else {
+            list.innerHTML = items.map(it => {
+              const badge = it.type === 'ex_div'
+                ? '<span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">Ex-div</span>'
+                : it.type === 'theme'
+                  ? '<span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">Theme</span>'
+                  : '<span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-brand-50 text-brand-700">News</span>';
+              const link = it.url
+                ? `<a href="${it.url}" target="_blank" rel="noopener" class="text-brand-700 font-medium hover:underline">${it.title}</a>`
+                : `<span class="text-zinc-800 font-medium">${it.title}</span>`;
+              return `<div class="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 rounded-xl border border-zinc-100 bg-zinc-50/50 px-3 py-2.5">
+                <div class="flex items-center gap-2 shrink-0">${badge}<span class="text-[11px] font-semibold text-zinc-500">${it.symbol}</span></div>
+                <div class="flex-1 min-w-0">${link}
+                  <p class="text-[11px] text-zinc-400 mt-0.5">${it.date || ''}${it.source ? ' · ' + it.source : ''}${it.market ? ' · ' + it.market : ''}</p>
+                </div>
+              </div>`;
+            }).join('');
+          }
+          if (meta) {
+            const m = json.meta || {};
+            meta.textContent = m.finnhub
+              ? `Filtered to your ${m.holdings_count || 0} holding(s). Queried: ${(m.symbols_queried || []).slice(0,6).join(', ') || '—'}`
+              : `Filtered to your holdings. Add FINNHUB_API_KEY in Supabase secrets for live company news & ex-div (US works best).`;
+          }
+        } catch (e) {
+          list.innerHTML = `<p class="text-rose-600">Could not load news: ${e.message || e}</p>`;
+        }
+      }
+      document.getElementById('btnRefreshHoldingNews')?.addEventListener('click', () => loadHoldingNews());
+
       // ---- Floating AI CFO chat ----
       async function buildChatSnapshot() {
         const rates = await getRatesToAed();
@@ -2927,6 +2996,7 @@
         });
       
         if (name === 'ai-insights') generateAiCfoInsights();
+        if (name === 'overview') loadHoldingNews();
       }
 
       document.querySelectorAll('[data-view]').forEach(btn => {
