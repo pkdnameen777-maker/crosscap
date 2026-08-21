@@ -1077,6 +1077,8 @@
       function syncInstallmentsVisibility() {
         const status = document.getElementById('reStatus').value;
         document.getElementById('installmentsBuilder').style.display = status === 'offplan' ? '' : 'none';
+        const rentBox = document.getElementById('rentIncomeFields');
+        if (rentBox) rentBox.classList.toggle('hidden', status !== 'ready');
       }
 
       function addInstallmentRow(stage = '', due = '', amount = '') {
@@ -1294,6 +1296,9 @@
           return;
         }
 
+        const monthly_rent = status === 'ready' ? (parseFloat(document.getElementById('reMonthlyRent')?.value) || null) : null;
+        const rent_due_day = status === 'ready' ? (parseInt(document.getElementById('reRentDueDay')?.value, 10) || null) : null;
+
         const { data: prop, error } = await supabaseClient.from('properties').insert([{
           user_id: currentUser.id,
           name,
@@ -1304,7 +1309,9 @@
           location,
           developer,
           total_price,
-          spa_file_path
+          spa_file_path,
+          monthly_rent,
+          rent_due_day
         }]).select().single();
 
         if (error) {
@@ -1340,6 +1347,8 @@
         document.getElementById('rePrice').value = '';
         document.getElementById('reLocation').value = '';
         document.getElementById('reDeveloper').value = '';
+        if (document.getElementById('reMonthlyRent')) document.getElementById('reMonthlyRent').value = '';
+        if (document.getElementById('reRentDueDay')) document.getElementById('reRentDueDay').value = '';
         document.getElementById('installmentRows').innerHTML = '';
         const spaInput = document.getElementById('spaFile');
         if (spaInput) spaInput.value = '';
@@ -1956,11 +1965,19 @@
 
               if (instErr) console.warn('Installments load error', instErr);
 
-              instHtml = `<div class="mt-4 border-t border-zinc-100 pt-3 space-y-2">
-                <div class="flex items-center justify-between mb-2">
+              instHtml = `<div class="mt-4 border-t border-zinc-100 pt-3">
+                <div class="flex items-center justify-between mb-3">
                   <p class="text-[12px] font-semibold text-zinc-500">Installment schedule</p>
                   <button onclick="addInstallmentToProperty('${p.id}')" class="text-[11px] font-semibold text-brand-700 hover:underline">+ Add installment</button>
-                </div>`;
+                </div>
+                <div class="hidden sm:grid sm:grid-cols-[minmax(0,1.4fr)_9.5rem_7.5rem_5.5rem_6.5rem] gap-3 px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+                  <span>Stage</span>
+                  <span>Due date</span>
+                  <span class="text-right">Amount</span>
+                  <span class="text-center">Status</span>
+                  <span class="text-right">Actions</span>
+                </div>
+                <div class="space-y-1.5">`;
 
               if (insts && insts.length) {
                 for (const i of insts) {
@@ -1976,21 +1993,24 @@
                     radarItems.push({ name: p.name, stage: i.stage, due: i.due_date, amount: i.amount, days });
                   }
 
+                  const amtStr = Number(i.amount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
                   instHtml += `
-                    <div class="flex flex-wrap items-center gap-2 text-[13px] bg-zinc-50 rounded-xl px-3 py-2">
-                      <span class="font-medium text-zinc-800 flex-1 min-w-[100px]">${i.stage || 'Installment'}</span>
-                      <input type="date" value="${i.due_date}" class="rounded-lg border border-zinc-200 px-2 py-1 text-[12px]"
+                    <div class="grid grid-cols-1 sm:grid-cols-[minmax(0,1.4fr)_9.5rem_7.5rem_5.5rem_6.5rem] gap-2 sm:gap-3 items-center text-[13px] bg-zinc-50 rounded-xl px-3 py-2.5">
+                      <span class="font-medium text-zinc-800 truncate" title="${(i.stage || 'Installment').replace(/"/g, '&quot;')}">${i.stage || 'Installment'}</span>
+                      <input type="date" value="${i.due_date}" class="w-full sm:w-[9.5rem] rounded-lg border border-zinc-200 bg-white px-2 py-1.5 text-[12px] text-zinc-700"
                         onchange="updateInstallmentDate('${i.id}', this.value)" />
-                      <span class="tabular-nums text-zinc-600">AED ${Number(i.amount).toLocaleString()}</span>
-                      <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full ${badge}">${label}</span>
-                      ${st !== 'paid' ? `<button onclick="markInstallment('${i.id}','paid')" class="text-[11px] font-semibold text-emerald-700 hover:underline">Mark paid</button>` : `<button onclick="markInstallment('${i.id}','scheduled')" class="text-[11px] text-zinc-500 hover:underline">Undo</button>`}
-                      <button onclick="deleteInstallment('${i.id}')" class="text-[11px] text-rose-500 hover:underline">Delete</button>
+                      <span class="tabular-nums font-semibold text-zinc-800 sm:text-right">AED ${amtStr}</span>
+                      <span class="justify-self-start sm:justify-self-center text-[11px] font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap ${badge}">${label}</span>
+                      <div class="flex items-center gap-2 sm:justify-end">
+                        ${st !== 'paid' ? `<button onclick="markInstallment('${i.id}','paid')" class="text-[11px] font-semibold text-emerald-700 hover:underline whitespace-nowrap">Mark paid</button>` : `<button onclick="markInstallment('${i.id}','scheduled')" class="text-[11px] text-zinc-500 hover:underline">Undo</button>`}
+                        <button onclick="deleteInstallment('${i.id}')" class="text-[11px] text-rose-500 hover:underline">Delete</button>
+                      </div>
                     </div>`;
                 }
               } else {
-                instHtml += `<p class="text-[12px] text-zinc-400">No installments yet. Click "+ Add installment".</p>`;
+                instHtml += `<p class="text-[12px] text-zinc-400 px-1">No installments yet. Click "+ Add installment".</p>`;
               }
-              instHtml += '</div>';
+              instHtml += '</div></div>';
             }
 
             const meta = [
@@ -2015,9 +2035,23 @@
                   </div>
                 </div>
                 <p class="text-sm font-semibold text-zinc-800 mt-3">AED ${parseFloat(p.total_price).toLocaleString()}</p>
+                ${!isOffplan && p.monthly_rent ? `
+                <div class="mt-3 border-t border-zinc-100 pt-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <p class="text-[12px] font-semibold text-zinc-500">Rental income</p>
+                    <button onclick="logRentReceived('${p.id}', ${Number(p.monthly_rent)}, ${Number(p.rent_due_day)||1})" class="text-[11px] font-semibold text-brand-700 hover:underline">+ Mark rent received</button>
+                  </div>
+                  <p class="text-[13px] text-zinc-700">AED ${Number(p.monthly_rent).toLocaleString()} / month · due day ${p.rent_due_day || 1}</p>
+                  <div id="rentHist-${p.id}" class="mt-2 space-y-1 text-[12px] text-zinc-500">Loading rent log…</div>
+                </div>` : (!isOffplan ? `<p class="text-[12px] text-zinc-400 mt-2">No rent schedule. Edit is not available yet — add rent when creating Ready property, or log via SQL later.</p>` : '')}
                 ${instHtml}
               </div>
             `;
+          }
+          // Load rent history for ready units
+          for (const p of properties) {
+            const isOff = (p.property_type || '').toUpperCase().includes('OFF');
+            if (!isOff && p.monthly_rent) loadRentHistory(p.id);
           }
         } else {
           container.innerHTML = '<p class="text-sm text-zinc-400">No properties yet. Add your first off-plan or ready unit.</p>';
@@ -2895,6 +2929,119 @@
         }).join('');
       }
 
+
+      // ---- Dividends & rental income ----
+      async function loadDividends() {
+        const box = document.getElementById('dividendsList');
+        if (!box || !currentUser) return;
+        const { data, error } = await supabaseClient
+          .from('dividends')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .order('pay_date', { ascending: false });
+        if (error) {
+          box.innerHTML = `<p class="text-zinc-400">Dividends table not ready — run SQL setup.</p>`;
+          return;
+        }
+        if (!data || !data.length) {
+          box.innerHTML = '<p class="text-zinc-400">No dividends logged yet. Use "+ Log received" after you get paid.</p>';
+          return;
+        }
+        box.innerHTML = data.map(d => {
+          const st = (d.status || 'received').toLowerCase();
+          const badge = st === 'received'
+            ? '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">Received</span>'
+            : st === 'expected'
+              ? '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">Expected</span>'
+              : '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600">' + st + '</span>';
+          return `<div class="flex flex-wrap items-center gap-2 rounded-xl border border-zinc-100 bg-zinc-50/60 px-3 py-2">
+            ${badge}
+            <span class="font-semibold text-zinc-900">${d.symbol}</span>
+            <span class="text-zinc-500">${d.market || ''}</span>
+            <span class="tabular-nums font-medium">AED ${Number(d.amount_aed || d.amount || 0).toLocaleString()}</span>
+            <span class="text-[11px] text-zinc-400">${d.pay_date || d.ex_date || ''}</span>
+            <button onclick="deleteDividend('${d.id}')" class="text-[11px] text-rose-500 hover:underline ml-auto">Delete</button>
+          </div>`;
+        }).join('');
+      }
+
+      document.getElementById('btnLogDividend')?.addEventListener('click', async () => {
+        if (!currentUser) return;
+        const symbol = prompt('Ticker symbol (must match a holding)', 'AAPL');
+        if (!symbol) return;
+        const amount = parseFloat(prompt('Amount received (AED)', '100'));
+        if (isNaN(amount)) { alert('Invalid amount'); return; }
+        const pay_date = prompt('Payment date (YYYY-MM-DD)', new Date().toISOString().slice(0,10));
+        if (!pay_date) return;
+        const { data: h } = await supabaseClient.from('holdings').select('market, currency').eq('user_id', currentUser.id).ilike('symbol', symbol.trim()).maybeSingle();
+        const { error } = await supabaseClient.from('dividends').insert([{
+          user_id: currentUser.id,
+          symbol: symbol.trim().toUpperCase(),
+          market: h?.market || null,
+          amount: amount,
+          amount_aed: amount,
+          currency: 'AED',
+          pay_date,
+          status: 'received',
+          source: 'manual'
+        }]);
+        if (error) alert(error.message);
+        else loadDividends();
+      });
+
+      window.deleteDividend = async function(id) {
+        if (!confirm('Delete this dividend entry?')) return;
+        const { error } = await supabaseClient.from('dividends').delete().eq('id', id);
+        if (error) alert(error.message);
+        else loadDividends();
+      };
+
+      async function loadRentHistory(propertyId) {
+        const el = document.getElementById('rentHist-' + propertyId);
+        if (!el) return;
+        const { data, error } = await supabaseClient
+          .from('rental_payments')
+          .select('*')
+          .eq('property_id', propertyId)
+          .order('due_date', { ascending: false })
+          .limit(6);
+        if (error) {
+          el.innerHTML = '<span class="text-zinc-400">Rent log unavailable (run SQL).</span>';
+          return;
+        }
+        if (!data || !data.length) {
+          el.innerHTML = '<span class="text-zinc-400">No rent marked received yet.</span>';
+          return;
+        }
+        el.innerHTML = data.map(r => {
+          const st = (r.status || 'received').toLowerCase();
+          const color = st === 'received' ? 'text-emerald-700' : st === 'overdue' ? 'text-rose-600' : 'text-amber-700';
+          return `<div class="flex justify-between gap-2"><span>${r.due_date}</span><span class="tabular-nums">AED ${Number(r.amount).toLocaleString()}</span><span class="${color} font-semibold">${st}</span></div>`;
+        }).join('');
+      }
+
+      window.logRentReceived = async function(propertyId, amount, dueDay) {
+        if (!currentUser) return;
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = now.getMonth(); // 0-based
+        const day = Math.min(Math.max(Number(dueDay) || 1, 1), 28);
+        const due = `${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        const custom = prompt('Due date for this rent (YYYY-MM-DD)', due);
+        if (!custom) return;
+        const amt = parseFloat(prompt('Amount received (AED)', String(amount))) || amount;
+        const { error } = await supabaseClient.from('rental_payments').insert([{
+          user_id: currentUser.id,
+          property_id: propertyId,
+          amount: amt,
+          due_date: custom,
+          status: 'received',
+          paid_at: new Date().toISOString()
+        }]);
+        if (error) alert(error.message);
+        else loadRentHistory(propertyId);
+      };
+
       async function loadHoldingNews() {
         const lists = [
           document.getElementById('holdingNewsList'),
@@ -3059,6 +3206,7 @@
       
         if (name === 'ai-insights') { generateAiCfoInsights(); loadHoldingNews(); }
         if (name === 'overview') loadHoldingNews();
+        if (name === 'portfolio') loadDividends();
       }
 
       document.querySelectorAll('[data-view]').forEach(btn => {
