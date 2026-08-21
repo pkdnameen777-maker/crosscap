@@ -344,6 +344,19 @@
               <tbody id="portfolioTableBody" class="divide-y divide-zinc-50"></tbody>
             </table>
           </div>
+
+          <div class="mt-6 bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+              <div>
+                <h3 class="text-[15px] font-semibold text-zinc-900">Dividends</h3>
+                <p class="text-[12px] text-zinc-400">Log dividend income when received · linked to ticker</p>
+              </div>
+              <button type="button" id="btnLogDividend" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[12px] font-semibold px-3 py-2">+ Log received</button>
+            </div>
+            <div id="dividendsList" class="space-y-2 text-[13px]">
+              <p class="text-zinc-400">No dividends logged yet.</p>
+            </div>
+          </div>
         </div>
 
         <!-- ADD ASSET -->
@@ -471,6 +484,18 @@
               <div>
                 <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Total contract / value (AED)</label>
                 <input id="rePrice" type="number" step="any" placeholder="1480000" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]" />
+              </div>
+
+              <div id="rentIncomeFields" class="grid sm:grid-cols-2 gap-3 hidden">
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Monthly rent income (AED)</label>
+                  <input id="reMonthlyRent" type="number" step="any" placeholder="e.g. 8500" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]" />
+                </div>
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Rent due day of month</label>
+                  <input id="reRentDueDay" type="number" min="1" max="28" placeholder="1" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]" />
+                </div>
+                <p class="sm:col-span-2 text-[11px] text-zinc-400">Shown only for <span class="font-semibold">Ready</span> properties — not off-plan.</p>
               </div>
 
               <!-- SPA upload + AI extract -->
@@ -2043,7 +2068,10 @@
                   </div>
                   <p class="text-[13px] text-zinc-700">AED ${Number(p.monthly_rent).toLocaleString()} / month · due day ${p.rent_due_day || 1}</p>
                   <div id="rentHist-${p.id}" class="mt-2 space-y-1 text-[12px] text-zinc-500">Loading rent log…</div>
-                </div>` : (!isOffplan ? `<p class="text-[12px] text-zinc-400 mt-2">No rent schedule. Edit is not available yet — add rent when creating Ready property, or log via SQL later.</p>` : '')}
+                </div>` : (!isOffplan ? `<div class="mt-3 border-t border-zinc-100 pt-3">
+                  <p class="text-[12px] text-zinc-500 mb-1">Rental income not set</p>
+                  <button type="button" onclick="setPropertyRent('${p.id}')" class="text-[11px] font-semibold text-brand-700 hover:underline">+ Set monthly rent</button>
+                </div>` : '')}
                 ${instHtml}
               </div>
             `;
@@ -3019,6 +3047,18 @@
           return `<div class="flex justify-between gap-2"><span>${r.due_date}</span><span class="tabular-nums">AED ${Number(r.amount).toLocaleString()}</span><span class="${color} font-semibold">${st}</span></div>`;
         }).join('');
       }
+
+      window.setPropertyRent = async function(propertyId) {
+        const rent = parseFloat(prompt('Monthly rent (AED)', '8500'));
+        if (isNaN(rent) || rent < 0) return;
+        const day = parseInt(prompt('Due day of month (1-28)', '1'), 10) || 1;
+        const { error } = await supabaseClient.from('properties').update({
+          monthly_rent: rent,
+          rent_due_day: Math.min(28, Math.max(1, day))
+        }).eq('id', propertyId);
+        if (error) alert(error.message);
+        else loadProperties();
+      };
 
       window.logRentReceived = async function(propertyId, amount, dueDay) {
         if (!currentUser) return;
