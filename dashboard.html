@@ -81,6 +81,21 @@
     #sidebarBackdrop.show {
       display: block;
     }
+    .view.active {
+      animation: viewIn 0.35s ease;
+    }
+    @keyframes viewIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    #headerAvatarBtn.pulse-once {
+      animation: avatarPulse 0.45s ease;
+    }
+    @keyframes avatarPulse {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
   </style>
 </head>
 <body class="bg-zinc-50/80 text-zinc-900 min-h-screen">
@@ -166,9 +181,11 @@
           </div>
         </div>
         <div class="flex items-center gap-2 shrink-0">
-          <div id="headerAvatar" class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-700 ring-2 ring-white overflow-hidden shrink-0">
-            <img id="headerAvatarImg" src="" alt="" class="w-full h-full object-cover hidden" />
-          </div>
+          <button type="button" id="headerAvatarBtn" class="group relative w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-700 ring-2 ring-white overflow-hidden shrink-0 transition-transform duration-300 hover:scale-110 hover:ring-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-400" aria-label="Open profile settings" title="Profile & settings">
+            <div id="headerAvatar" class="w-full h-full">
+              <img id="headerAvatarImg" src="" alt="" class="w-full h-full object-cover hidden" />
+            </div>
+          </button>
         </div>
       </header>
 
@@ -512,8 +529,22 @@
             <p class="text-[11px] text-zinc-400 mt-3">General guidance only — not formal regulated financial advice.</p>
           </div>
 
-          <div id="aiCfoInsights" class="space-y-3 max-w-2xl">
+          <div id="aiCfoInsights" class="space-y-3 max-w-2xl mb-6">
             <p class="text-sm text-zinc-400">Analyzing portfolio…</p>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft max-w-2xl">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+              <div>
+                <h3 class="text-[15px] font-semibold text-zinc-900">News for your holdings</h3>
+                <p class="text-[12px] text-zinc-400">Only what you own — same personalised feed as Overview</p>
+              </div>
+              <button type="button" id="btnRefreshHoldingNewsCfo" class="text-[12px] font-semibold text-brand-700 hover:underline">Refresh</button>
+            </div>
+            <div id="holdingNewsListCfo" class="space-y-2 text-[13px]">
+              <p class="text-zinc-400">Loading personalised updates…</p>
+            </div>
+            <p id="holdingNewsMetaCfo" class="text-[11px] text-zinc-400 mt-3"></p>
           </div>
         </div>
 
@@ -2842,11 +2873,38 @@
 
 
 
+      function renderHoldingNewsItems(items) {
+        if (!items.length) {
+          return '<p class="text-zinc-400">No holding-specific news yet. Add stocks with US tickers for the richest feed, or set FINNHUB_API_KEY on the server.</p>';
+        }
+        return items.map(it => {
+          const badge = it.type === 'ex_div'
+            ? '<span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">Ex-div</span>'
+            : it.type === 'theme'
+              ? '<span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">Theme</span>'
+              : '<span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-brand-50 text-brand-700">News</span>';
+          const link = it.url
+            ? `<a href="${it.url}" target="_blank" rel="noopener" class="text-brand-700 font-medium hover:underline">${it.title}</a>`
+            : `<span class="text-zinc-800 font-medium">${it.title}</span>`;
+          return `<div class="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 rounded-xl border border-zinc-100 bg-zinc-50/50 px-3 py-2.5">
+            <div class="flex items-center gap-2 shrink-0">${badge}<span class="text-[11px] font-semibold text-zinc-500">${it.symbol}</span></div>
+            <div class="flex-1 min-w-0">${link}
+              <p class="text-[11px] text-zinc-400 mt-0.5">${it.date || ''}${it.source ? ' · ' + it.source : ''}${it.market ? ' · ' + it.market : ''}</p>
+            </div>
+          </div>`;
+        }).join('');
+      }
+
       async function loadHoldingNews() {
-        const list = document.getElementById('holdingNewsList');
-        const meta = document.getElementById('holdingNewsMeta');
-        if (!list) return;
-        list.innerHTML = '<p class="text-zinc-400">Loading personalised updates…</p>';
+        const lists = [
+          document.getElementById('holdingNewsList'),
+          document.getElementById('holdingNewsListCfo')
+        ].filter(Boolean);
+        const metas = [
+          document.getElementById('holdingNewsMeta'),
+          document.getElementById('holdingNewsMetaCfo')
+        ].filter(Boolean);
+        lists.forEach(list => { list.innerHTML = '<p class="text-zinc-400">Loading personalised updates…</p>'; });
         try {
           const { data: sessionData } = await supabaseClient.auth.getSession();
           const token = sessionData?.session?.access_token;
@@ -2862,37 +2920,31 @@
           const json = await res.json().catch(() => ({}));
           if (!res.ok) throw new Error(json.error || ('HTTP ' + res.status));
           const items = json.items || [];
-          if (!items.length) {
-            list.innerHTML = '<p class="text-zinc-400">No holding-specific news yet. Add stocks with US tickers for the richest feed, or set FINNHUB_API_KEY on the server.</p>';
-          } else {
-            list.innerHTML = items.map(it => {
-              const badge = it.type === 'ex_div'
-                ? '<span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">Ex-div</span>'
-                : it.type === 'theme'
-                  ? '<span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">Theme</span>'
-                  : '<span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-brand-50 text-brand-700">News</span>';
-              const link = it.url
-                ? `<a href="${it.url}" target="_blank" rel="noopener" class="text-brand-700 font-medium hover:underline">${it.title}</a>`
-                : `<span class="text-zinc-800 font-medium">${it.title}</span>`;
-              return `<div class="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 rounded-xl border border-zinc-100 bg-zinc-50/50 px-3 py-2.5">
-                <div class="flex items-center gap-2 shrink-0">${badge}<span class="text-[11px] font-semibold text-zinc-500">${it.symbol}</span></div>
-                <div class="flex-1 min-w-0">${link}
-                  <p class="text-[11px] text-zinc-400 mt-0.5">${it.date || ''}${it.source ? ' · ' + it.source : ''}${it.market ? ' · ' + it.market : ''}</p>
-                </div>
-              </div>`;
-            }).join('');
-          }
-          if (meta) {
-            const m = json.meta || {};
-            meta.textContent = m.finnhub
-              ? `Filtered to your ${m.holdings_count || 0} holding(s). Queried: ${(m.symbols_queried || []).slice(0,6).join(', ') || '—'}`
-              : `Filtered to your holdings. Add FINNHUB_API_KEY in Supabase secrets for live company news & ex-div (US works best).`;
-          }
+          const html = renderHoldingNewsItems(items);
+          lists.forEach(list => { list.innerHTML = html; });
+          const m = json.meta || {};
+          const metaText = m.finnhub
+            ? `Filtered to your ${m.holdings_count || 0} holding(s). Queried: ${(m.symbols_queried || []).slice(0,6).join(', ') || '—'}`
+            : `Filtered to your holdings. Add FINNHUB_API_KEY in Supabase secrets for live company news & ex-div (US works best).`;
+          metas.forEach(meta => { meta.textContent = metaText; });
         } catch (e) {
-          list.innerHTML = `<p class="text-rose-600">Could not load news: ${e.message || e}</p>`;
+          lists.forEach(list => { list.innerHTML = `<p class="text-rose-600">Could not load news: ${e.message || e}</p>`; });
         }
       }
       document.getElementById('btnRefreshHoldingNews')?.addEventListener('click', () => loadHoldingNews());
+      document.getElementById('btnRefreshHoldingNewsCfo')?.addEventListener('click', () => loadHoldingNews());
+
+
+      document.getElementById('headerAvatarBtn')?.addEventListener('click', () => {
+        const btn = document.getElementById('headerAvatarBtn');
+        btn?.classList.remove('pulse-once');
+        void btn?.offsetWidth;
+        btn?.classList.add('pulse-once');
+        showView('settings');
+        if (window.innerWidth < 1024) closeSidebar();
+        // Soft scroll to top of settings content
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
 
       // ---- Floating AI CFO chat ----
       async function buildChatSnapshot() {
@@ -2995,7 +3047,7 @@
           }
         });
       
-        if (name === 'ai-insights') generateAiCfoInsights();
+        if (name === 'ai-insights') { generateAiCfoInsights(); loadHoldingNews(); }
         if (name === 'overview') loadHoldingNews();
       }
 
