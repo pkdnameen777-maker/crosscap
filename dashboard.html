@@ -755,6 +755,15 @@
               </div>
             </div>
 
+            <div class="border-t border-zinc-100 pt-4">
+              <p class="text-[12px] font-semibold uppercase tracking-wider text-zinc-400 mb-3">Disclaimer & support</p>
+              <div class="rounded-xl border border-zinc-100 bg-zinc-50/80 p-4 text-[12.5px] text-zinc-600 leading-relaxed space-y-2">
+                <p><span class="font-semibold text-zinc-800">CrossCap is a personal wealth organiser.</span> AI CFO and chat are for viewing, organising, and managing your records (portfolio, property schedules, goals). They are <span class="font-semibold">not</span> a licensed financial advisor, broker, or tax professional, and do not provide formal investment advice.</p>
+                <p>Always verify figures against your bank, broker, and developer statements. Decisions remain your responsibility.</p>
+                <p class="pt-1">Support: <a href="mailto:support.crosscap@gmail.com" class="font-semibold text-brand-700 hover:underline">support.crosscap@gmail.com</a></p>
+              </div>
+            </div>
+
             <button id="saveProfileBtn" class="w-full rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[14px] font-semibold py-3 transition">Save profile</button>
             <p id="profileSaveStatus" class="text-[12px] text-center text-zinc-400 hidden"></p>
           </div>
@@ -2815,6 +2824,92 @@
         restoreFromBackup(f);
       });
 
+
+      // ---- Floating AI CFO chat ----
+      async function buildChatSnapshot() {
+        const rates = await getRatesToAed();
+        const { data: holdings } = await supabaseClient.from('holdings').select('*');
+        const { data: props } = await supabaseClient.from('properties').select('*');
+        const { data: insts } = await supabaseClient.from('installments').select('*');
+        let liquid = 0;
+        const markets = {};
+        (holdings || []).forEach(h => {
+          const cur = (h.currency || 'AED').toUpperCase();
+          const aed = (Number(h.shares)||0) * (Number(h.avg_buy_price)||0) * (rates[cur] != null ? rates[cur] : 1);
+          liquid += aed;
+          const m = h.market || 'OTHER';
+          markets[m] = (markets[m] || 0) + aed;
+        });
+        let re = 0;
+        (props || []).forEach(p => { re += Number(p.total_price) || 0; });
+        const today = new Date(); today.setHours(0,0,0,0);
+        let due30 = 0, overdue = 0;
+        (insts || []).forEach(i => {
+          if ((i.status||'').toLowerCase() === 'paid') return;
+          const days = Math.round((new Date(i.due_date+'T00:00:00') - today) / 86400000);
+          const amt = Number(i.amount) || 0;
+          if (days < 0) overdue += amt;
+          else if (days <= 30) due30 += amt;
+        });
+        return {
+          liquid_aed: Math.round(liquid),
+          real_estate_aed: Math.round(re),
+          combined_aed: Math.round(liquid + re),
+          markets,
+          installments: { overdue_aed: Math.round(overdue), due_30d_aed: Math.round(due30) },
+          golden_visa: { holder: !!goldenVisaHolder, property_aed: Math.round(re), target_aed: 2000000 }
+        };
+      }
+
+      function appendChatBubble(role, message) {
+        const box = document.getElementById('aiChatMessages');
+        if (!box) return;
+        const div = document.createElement('div');
+        div.className = role === 'user'
+          ? 'ml-8 bg-brand-700 text-white rounded-xl px-3 py-2 shadow-sm whitespace-pre-wrap'
+          : 'mr-4 bg-white border border-zinc-100 rounded-xl px-3 py-2 text-zinc-700 shadow-sm whitespace-pre-wrap';
+        div.textContent = message;
+        box.appendChild(div);
+        box.scrollTop = box.scrollHeight;
+      }
+
+      document.getElementById('aiChatFab')?.addEventListener('click', () => {
+        document.getElementById('aiChatPanel')?.classList.toggle('hidden');
+      });
+      document.getElementById('aiChatClose')?.addEventListener('click', () => {
+        document.getElementById('aiChatPanel')?.classList.add('hidden');
+      });
+      document.getElementById('aiChatForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const input = document.getElementById('aiChatInput');
+        const q = (input?.value || '').trim();
+        if (!q) return;
+        input.value = '';
+        appendChatBubble('user', q);
+        appendChatBubble('bot', 'Thinking…');
+        const box = document.getElementById('aiChatMessages');
+        const thinking = box?.lastElementChild;
+        try {
+          const snapshot = await buildChatSnapshot();
+          const { data: sessionData } = await supabaseClient.auth.getSession();
+          const token = sessionData?.session?.access_token;
+          const res = await fetch(`${SUPABASE_URL}/functions/v1/ai-cfo-narrative`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token || SUPABASE_ANON_KEY}`,
+              'apikey': SUPABASE_ANON_KEY
+            },
+            body: JSON.stringify({ snapshot, question: q })
+          });
+          const json = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(json.error || ('HTTP ' + res.status));
+          if (thinking) thinking.textContent = json.narrative || 'No reply.';
+        } catch (err) {
+          if (thinking) thinking.textContent = 'Could not answer right now. ' + (err.message || err);
+        }
+      });
+
       // View Switcher
       function showView(name) {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -2843,5 +2938,31 @@
       });
     });
   </script>
+
+  <!-- AI CFO floating chat -->
+  <button type="button" id="aiChatFab" class="fixed bottom-5 right-5 z-[60] w-14 h-14 rounded-full bg-brand-700 hover:bg-brand-800 text-white shadow-card flex items-center justify-center transition" aria-label="Open AI CFO chat">
+    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 12c0 4.556-4.03 8.25-9 8.25a9.76 9.76 0 01-2.53-.33L4.5 21l1.2-3.6A7.9 7.9 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"/></svg>
+  </button>
+  <div id="aiChatPanel" class="hidden fixed bottom-24 right-5 z-[60] w-[min(100vw-1.5rem,360px)] max-h-[min(70vh,520px)] bg-white rounded-2xl border border-zinc-200 shadow-card flex flex-col overflow-hidden">
+    <div class="px-4 py-3 border-b border-zinc-100 bg-gradient-to-r from-brand-700 to-brand-800 text-white flex items-center justify-between gap-2">
+      <div>
+        <p class="text-[13px] font-semibold">AI CFO</p>
+        <p class="text-[10px] text-white/70">Simple analysis · not a financial advisor</p>
+      </div>
+      <button type="button" id="aiChatClose" class="p-1 rounded-lg hover:bg-white/10" aria-label="Close">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div id="aiChatMessages" class="flex-1 overflow-y-auto p-3 space-y-2 text-[13px] bg-zinc-50/80">
+      <div class="bg-white border border-zinc-100 rounded-xl px-3 py-2 text-zinc-600 shadow-sm">
+        Ask a simple question about your CrossCap data (installments, concentration, Golden Visa progress). This helps you manage records — it is not formal financial advice.
+      </div>
+    </div>
+    <form id="aiChatForm" class="p-3 border-t border-zinc-100 bg-white flex gap-2">
+      <input id="aiChatInput" type="text" maxlength="400" placeholder="e.g. What should I prioritise this month?" class="flex-1 rounded-xl border border-zinc-200 px-3 py-2 text-[13px]" />
+      <button type="submit" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[12px] font-semibold px-3 py-2 shrink-0">Send</button>
+    </form>
+  </div>
+
 </body>
 </html>
