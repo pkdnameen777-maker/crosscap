@@ -368,24 +368,50 @@
             <div class="space-y-4">
               <div>
                 <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Ticker Symbol / Name</label>
-                <input id="assetSymbol" type="text" placeholder="e.g. AAPL, EMAAR, BTC" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
+                <input id="assetSymbol" type="text" placeholder="e.g. EMAAR, AAPL, RELIANCE, BTC" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
               </div>
               <div>
                 <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Market</label>
                 <select id="assetMarket" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]">
-                  <option value="US" data-currency="USD">United States (USD) — NYSE / NASDAQ</option>
-                  <option value="UAE" data-currency="AED">United Arab Emirates (AED) — DFM / ADX</option>
-                  <option value="IN" data-currency="INR">India (INR) — NSE / BSE</option>
-                  <option value="UK" data-currency="GBP">United Kingdom (GBP) — LSE</option>
-                  <option value="SA" data-currency="SAR">Saudi Arabia (SAR) — Tadawul</option>
-                  <option value="CN" data-currency="CNY">China (CNY) — SSE / SZSE</option>
-                  <option value="JP" data-currency="JPY">Japan (JPY) — TSE</option>
-                  <option value="HK" data-currency="HKD">Hong Kong (HKD) — HKEX</option>
-                  <option value="CRYPTO" data-currency="USD">Crypto (USD)</option>
-                  <option value="GOLD_AED" data-currency="AED">Gold (AED)</option>
-                  <option value="GOLD_INR" data-currency="INR">Gold (INR)</option>
-                  <option value="SILVER_AED" data-currency="AED">Silver (AED)</option>
-                  <option value="SILVER_INR" data-currency="INR">Silver (INR)</option>
+                  <optgroup label="GCC">
+                    <option value="UAE" data-currency="AED" selected>United Arab Emirates (AED) — DFM / ADX</option>
+                    <option value="SA" data-currency="SAR">Saudi Arabia (SAR) — Tadawul</option>
+                    <option value="QA" data-currency="QAR">Qatar (QAR) — QSE</option>
+                    <option value="KW" data-currency="KWD">Kuwait (KWD) — Boursa</option>
+                    <option value="BH" data-currency="BHD">Bahrain (BHD) — BHB</option>
+                  </optgroup>
+                  <optgroup label="South Asia">
+                    <option value="IN" data-currency="INR">India (INR) — NSE / BSE</option>
+                    <option value="PK" data-currency="PKR">Pakistan (PKR) — PSX</option>
+                  </optgroup>
+                  <optgroup label="Developed markets">
+                    <option value="US" data-currency="USD">United States (USD) — NYSE / NASDAQ</option>
+                    <option value="UK" data-currency="GBP">United Kingdom (GBP) — LSE</option>
+                    <option value="EU" data-currency="EUR">Europe (EUR) — Euronext / major EU</option>
+                    <option value="JP" data-currency="JPY">Japan (JPY) — TSE</option>
+                    <option value="AU" data-currency="AUD">Australia (AUD) — ASX</option>
+                  </optgroup>
+                  <optgroup label="Asia">
+                    <option value="HK" data-currency="HKD">Hong Kong (HKD) — HKEX</option>
+                    <option value="SG" data-currency="SGD">Singapore (SGD) — SGX</option>
+                    <option value="CN" data-currency="CNY">China (CNY) — SSE / SZSE</option>
+                  </optgroup>
+                  <optgroup label="MENA other">
+                    <option value="EG" data-currency="EGP">Egypt (EGP) — EGX</option>
+                  </optgroup>
+                  <optgroup label="Alternatives">
+                    <option value="CRYPTO" data-currency="USD">Crypto (USD)</option>
+                    <option value="GOLD_AED" data-currency="AED">Gold (AED)</option>
+                    <option value="GOLD_INR" data-currency="INR">Gold (INR)</option>
+                    <option value="SILVER_AED" data-currency="AED">Silver (AED)</option>
+                    <option value="SILVER_INR" data-currency="INR">Silver (INR)</option>
+                  </optgroup>
+                  <optgroup label="Other">
+                    <option value="OTHER_USD" data-currency="USD">Other — priced in USD</option>
+                    <option value="OTHER_AED" data-currency="AED">Other — priced in AED</option>
+                    <option value="OTHER_EUR" data-currency="EUR">Other — priced in EUR</option>
+                    <option value="OTHER_GBP" data-currency="GBP">Other — priced in GBP</option>
+                  </optgroup>
                 </select>
               </div>
               <div>
@@ -1489,17 +1515,17 @@
           // Convert: 1 UNIT = (USD per unit) * AED per USD
           // rates[X] = how many X per 1 USD → 1 X = 1/rates[X] USD
           const toAed = { AED: 1, USD: usdToAed };
-          ['INR','GBP','SAR','CNY','JPY','HKD','EUR'].forEach(c => {
+          ['INR','GBP','SAR','CNY','JPY','HKD','EUR','QAR','KWD','BHD','PKR','SGD','AUD','EGP'].forEach(c => {
             if (rates[c]) toAed[c] = usdToAed / rates[c];
           });
           fxCache = toAed;
           return toAed;
         } catch (e) {
           console.warn('FX fetch failed, using fallbacks', e);
-          // Approximate fallbacks
           return {
             AED: 1, USD: 3.6725, INR: 0.044, GBP: 4.65,
-            SAR: 0.979, CNY: 0.51, JPY: 0.024, HKD: 0.47, EUR: 4.0
+            SAR: 0.979, CNY: 0.51, JPY: 0.024, HKD: 0.47, EUR: 4.0,
+            QAR: 1.01, KWD: 12.0, BHD: 9.75, PKR: 0.013, SGD: 2.75, AUD: 2.4, EGP: 0.075
           };
         }
       }
@@ -1511,9 +1537,15 @@
       let perfRange = 'ALL';
 
       const MARKET_LABELS = {
-        US: '🇺🇸 United States', UAE: '🇦🇪 UAE', IN: '🇮🇳 India', UK: '🇬🇧 United Kingdom',
-        SA: '🇸🇦 Saudi Arabia', CN: '🇨🇳 China', JP: '🇯🇵 Japan', HK: '🇭🇰 Hong Kong',
-        CRYPTO: 'Crypto', GOLD: 'Gold', GOLD_AED: 'Gold (AED)', GOLD_INR: 'Gold (INR)', SILVER_AED: 'Silver (AED)', SILVER_INR: 'Silver (INR)', DFM: '🇦🇪 UAE', NSE: '🇮🇳 India'
+        UAE: '🇦🇪 UAE', SA: '🇸🇦 Saudi', QA: '🇶🇦 Qatar', KW: '🇰🇼 Kuwait', BH: '🇧🇭 Bahrain',
+        IN: '🇮🇳 India', PK: '🇵🇰 Pakistan',
+        US: '🇺🇸 United States', UK: '🇬🇧 United Kingdom', EU: '🇪🇺 Europe', JP: '🇯🇵 Japan', AU: '🇦🇺 Australia',
+        HK: '🇭🇰 Hong Kong', SG: '🇸🇬 Singapore', CN: '🇨🇳 China',
+        EG: '🇪🇬 Egypt',
+        CRYPTO: 'Crypto',
+        GOLD_AED: 'Gold (AED)', GOLD_INR: 'Gold (INR)', SILVER_AED: 'Silver (AED)', SILVER_INR: 'Silver (INR)',
+        OTHER_USD: 'Other (USD)', OTHER_AED: 'Other (AED)', OTHER_EUR: 'Other (EUR)', OTHER_GBP: 'Other (GBP)',
+        DFM: '🇦🇪 UAE', NSE: '🇮🇳 India', GOLD: 'Gold'
       };
       const ALLOC_COLORS = ['#7e22ce','#a855f7','#c084fc','#22c55e','#f59e0b','#3b82f6','#ef4444','#14b8a6','#ec4899','#64748b'];
 
