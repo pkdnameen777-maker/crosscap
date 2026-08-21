@@ -2975,22 +2975,35 @@
           box.innerHTML = '<p class="text-zinc-400">No dividends logged yet. Use "+ Log received" after you get paid.</p>';
           return;
         }
-        box.innerHTML = data.map(d => {
+        const header = `<div class="hidden sm:grid sm:grid-cols-[5.5rem_minmax(0,1.2fr)_4.5rem_7rem_6.5rem_4rem] gap-3 px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+          <span>Status</span>
+          <span>Ticker</span>
+          <span>Market</span>
+          <span class="text-right">Amount</span>
+          <span class="text-center">Pay date</span>
+          <span class="text-right">Actions</span>
+        </div>`;
+        const rows = data.map(d => {
           const st = (d.status || 'received').toLowerCase();
           const badge = st === 'received'
-            ? '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">Received</span>'
+            ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Received</span>'
             : st === 'expected'
-              ? '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">Expected</span>'
-              : '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600">' + st + '</span>';
-          return `<div class="flex flex-wrap items-center gap-2 rounded-xl border border-zinc-100 bg-zinc-50/60 px-3 py-2">
-            ${badge}
-            <span class="font-semibold text-zinc-900">${d.symbol}</span>
-            <span class="text-zinc-500">${d.market || ''}</span>
-            <span class="tabular-nums font-medium">AED ${Number(d.amount_aed || d.amount || 0).toLocaleString()}</span>
-            <span class="text-[11px] text-zinc-400">${d.pay_date || d.ex_date || ''}</span>
-            <button onclick="deleteDividend('${d.id}')" class="text-[11px] text-rose-500 hover:underline ml-auto">Delete</button>
+              ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">Expected</span>'
+              : '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">' + st + '</span>';
+          const amt = Number(d.amount_aed || d.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          const date = d.pay_date || d.ex_date || '—';
+          return `<div class="grid grid-cols-1 sm:grid-cols-[5.5rem_minmax(0,1.2fr)_4.5rem_7rem_6.5rem_4rem] gap-2 sm:gap-3 items-center rounded-xl border border-zinc-100 bg-zinc-50/60 px-3 py-2.5">
+            <div>${badge}</div>
+            <span class="font-semibold text-zinc-900 truncate">${d.symbol}</span>
+            <span class="text-zinc-500 text-[12px]">${d.market || '—'}</span>
+            <span class="tabular-nums font-semibold text-zinc-800 sm:text-right">AED ${amt}</span>
+            <span class="text-[12px] text-zinc-500 sm:text-center tabular-nums">${date}</span>
+            <div class="sm:text-right">
+              <button onclick="deleteDividend('${d.id}')" class="text-[11px] text-rose-500 hover:underline">Delete</button>
+            </div>
           </div>`;
         }).join('');
+        box.innerHTML = header + '<div class="space-y-1.5">' + rows + '</div>';
       }
 
       document.getElementById('btnLogDividend')?.addEventListener('click', async () => {
@@ -3041,10 +3054,13 @@
           el.innerHTML = '<span class="text-zinc-400">No rent marked received yet.</span>';
           return;
         }
-        el.innerHTML = data.map(r => {
+        el.innerHTML = `<div class="grid grid-cols-[6.5rem_1fr_4.5rem] gap-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
+          <span>Due date</span><span class="text-right">Amount</span><span class="text-right">Status</span>
+        </div>` + data.map(r => {
           const st = (r.status || 'received').toLowerCase();
           const color = st === 'received' ? 'text-emerald-700' : st === 'overdue' ? 'text-rose-600' : 'text-amber-700';
-          return `<div class="flex justify-between gap-2"><span>${r.due_date}</span><span class="tabular-nums">AED ${Number(r.amount).toLocaleString()}</span><span class="${color} font-semibold">${st}</span></div>`;
+          const amt = Number(r.amount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+          return `<div class="grid grid-cols-[6.5rem_1fr_4.5rem] gap-2 items-center"><span class="tabular-nums text-zinc-600">${r.due_date}</span><span class="tabular-nums font-medium text-zinc-800 text-right">AED ${amt}</span><span class="${color} font-semibold text-right capitalize">${st}</span></div>`;
         }).join('');
       }
 
