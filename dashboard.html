@@ -2935,14 +2935,23 @@
       document.getElementById('btnRefreshHoldingNewsCfo')?.addEventListener('click', () => loadHoldingNews());
 
 
+      let lastViewBeforeSettings = 'overview';
+      let currentViewName = 'overview';
+
       document.getElementById('headerAvatarBtn')?.addEventListener('click', () => {
         const btn = document.getElementById('headerAvatarBtn');
         btn?.classList.remove('pulse-once');
         void btn?.offsetWidth;
         btn?.classList.add('pulse-once');
-        showView('settings');
+
+        if (currentViewName === 'settings') {
+          // Second click: return to where the user was
+          showView(lastViewBeforeSettings || 'overview');
+        } else {
+          lastViewBeforeSettings = currentViewName || 'overview';
+          showView('settings');
+        }
         if (window.innerWidth < 1024) closeSidebar();
-        // Soft scroll to top of settings content
         window.scrollTo({ top: 0, behavior: 'smooth' });
       });
 
@@ -3033,6 +3042,7 @@
 
       // View Switcher
       function showView(name) {
+        currentViewName = name;
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.querySelectorAll('.sidebar-link').forEach(l => {
           l.classList.remove('active');
