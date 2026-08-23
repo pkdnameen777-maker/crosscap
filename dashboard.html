@@ -119,39 +119,57 @@
       <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         <p class="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Main</p>
         <button data-view="overview" class="sidebar-link active w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-left">
-          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+          <svg class="w-4.5 h-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
           Overview
         </button>
         <button data-view="portfolio" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
-          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/></svg>
+          <svg class="w-4.5 h-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/></svg>
           Portfolio
         </button>
         <button data-view="add-asset" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
-          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+          <svg class="w-4.5 h-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
           Add Asset
         </button>
+
+        <p class="px-3 pb-1.5 pt-5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Assets</p>
+        <button data-view="portfolio" data-asset-filter="stocks" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
+          <span class="w-5 text-center text-[14px] shrink-0">📈</span>
+          Stocks &amp; ETFs
+        </button>
+        <button data-view="portfolio" data-asset-filter="gold" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
+          <span class="w-5 text-center text-[14px] shrink-0">🪙</span>
+          Gold
+        </button>
+        <button data-view="portfolio" data-asset-filter="crypto" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
+          <span class="w-5 text-center text-[14px] shrink-0">₿</span>
+          Crypto
+        </button>
         <button data-view="real-estate" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
-          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/></svg>
+          <span class="w-5 text-center text-[14px] shrink-0">🏠</span>
           Real Estate
         </button>
+        <button data-view="cash" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
+          <span class="w-5 text-center text-[14px] shrink-0">💵</span>
+          Cash &amp; Bank
+        </button>
 
-        <p class="px-3 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Insights</p>
+        <p class="px-3 pb-1.5 pt-5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Insights</p>
         <button data-view="ai-insights" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
-          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/></svg>
+          <svg class="w-4.5 h-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
           AI CFO
         </button>
         <button data-view="goals" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
-          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <svg class="w-4.5 h-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           Goals
         </button>
         <button data-view="reports" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
-          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+          <svg class="w-4.5 h-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
           Reports
         </button>
 
-        <p class="px-3 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Account</p>
+        <p class="px-3 pb-1.5 pt-5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Account</p>
         <button data-view="settings" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
-          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <svg class="w-4.5 h-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
           Settings
         </button>
       </nav>
@@ -286,7 +304,7 @@
           <div class="grid lg:grid-cols-2 gap-4 mb-6">
             <div class="bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft">
               <h3 class="text-[15px] font-semibold text-zinc-900 mb-1">Portfolio allocation</h3>
-              <p class="text-[12px] text-zinc-400 mb-4">By market · share of liquid holdings (AED)</p>
+              <p class="text-[12px] text-zinc-400 mb-4">By market + real estate · share of total wealth (AED)</p>
               <div class="flex flex-col sm:flex-row items-center gap-6">
                 <div class="relative w-40 h-40 shrink-0">
                   <canvas id="allocChart"></canvas>
@@ -554,6 +572,17 @@
           <div id="propertiesList" class="space-y-4"></div>
         </div>
 
+
+
+        <!-- CASH & BANK -->
+        <div id="view-cash" class="view">
+          <h2 class="font-display text-xl font-semibold tracking-tight mb-2">Cash &amp; Bank</h2>
+          <p class="text-[14px] text-zinc-500 mb-6">Track liquid cash balances in AED or other currencies.</p>
+          <div class="bg-white rounded-2xl border border-zinc-100 p-6 shadow-soft max-w-xl space-y-4">
+            <p class="text-[13px] text-zinc-500">Add cash as an asset from <button type="button" data-view="add-asset" class="text-brand-700 font-semibold hover:underline">Add Asset</button> using market <span class="font-semibold">Other — priced in AED/USD</span> and symbol e.g. <span class="font-semibold">CASH-ENBD</span> or <span class="font-semibold">BANK-AED</span>.</p>
+            <p class="text-[12px] text-zinc-400">Dedicated multi-account cash ledger can be added later. For now, cash lines appear in Portfolio with the rest of your holdings.</p>
+          </div>
+        </div>
 
         <!-- AI INSIGHTS -->
         <div id="view-ai-insights" class="view">
@@ -1545,7 +1574,8 @@
         CRYPTO: 'Crypto',
         GOLD_AED: 'Gold (AED)', GOLD_INR: 'Gold (INR)', SILVER_AED: 'Silver (AED)', SILVER_INR: 'Silver (INR)',
         OTHER_USD: 'Other (USD)', OTHER_AED: 'Other (AED)', OTHER_EUR: 'Other (EUR)', OTHER_GBP: 'Other (GBP)',
-        DFM: '🇦🇪 UAE', NSE: '🇮🇳 India', GOLD: 'Gold'
+        DFM: '🇦🇪 UAE', NSE: '🇮🇳 India', GOLD: 'Gold',
+        REAL_ESTATE: '🏠 Real Estate'
       };
       const ALLOC_COLORS = ['#7e22ce','#a855f7','#c084fc','#22c55e','#f59e0b','#3b82f6','#ef4444','#14b8a6','#ec4899','#64748b'];
 
@@ -1564,6 +1594,13 @@
           bySymbol[key] = (bySymbol[key] || 0) + r.aedVal;
           total += r.aedVal;
         });
+        // Include real estate in allocation %
+        const reAed = Number(window.__lastReVal) || 0;
+        if (reAed > 0) {
+          byMarket['REAL_ESTATE'] = (byMarket['REAL_ESTATE'] || 0) + reAed;
+          bySymbol['Real Estate|REAL_ESTATE'] = (bySymbol['Real Estate|REAL_ESTATE'] || 0) + reAed;
+          total += reAed;
+        }
 
         const markets = Object.entries(byMarket).sort((a,b) => b[1]-a[1]);
         const list = document.getElementById('allocMarketList');
@@ -1818,6 +1855,12 @@
             const costAed = costLocal * rate;
             totalCostAed += costAed;
 
+            const mktKind = String(item.market || '').toUpperCase();
+            let assetKind = 'stocks';
+            if (mktKind.includes('GOLD') || mktKind.includes('SILVER')) assetKind = 'gold';
+            else if (mktKind === 'CRYPTO') assetKind = 'crypto';
+            else if (mktKind.startsWith('OTHER') || String(item.symbol||'').toUpperCase().includes('CASH') || String(item.symbol||'').toUpperCase().includes('BANK')) assetKind = 'cash';
+
             const key = `${String(item.symbol || '').toUpperCase()}|${String(item.market || '').toUpperCase()}`;
             const live = liveMap[key];
             let priceLocal = avg;
@@ -1858,7 +1901,7 @@
             const pnlSign = pnlAed >= 0 ? '+' : '';
 
             tbody.innerHTML += `
-              <tr class="hover:bg-zinc-50/50">
+              <tr class="hover:bg-zinc-50/50" data-asset-kind="${assetKind}">
                 <td class="px-5 py-4 font-medium text-zinc-900">${item.symbol}</td>
                 <td class="px-5 py-4 text-zinc-500">${item.market} <span class="text-zinc-400">· ${cur}</span></td>
                 <td class="px-5 py-4 text-right tabular-nums">${shares.toLocaleString()}</td>
@@ -1889,6 +1932,7 @@
         window.__lastCostAed = totalCostAed;
         window.__lastLiveAed = totalLiveAed;
         renderPerformance(totalCostAed, totalLiveAed);
+        if (typeof applyPortfolioAssetFilter === 'function') applyPortfolioAssetFilter();
 
         // Currency sub-boxes
         const box = document.getElementById('currencyBreakdown');
@@ -2123,6 +2167,9 @@
         // Golden Visa goal (UAE property only = all logged properties are UAE-focused)
         window.__lastReVal = totalReVal;
         updateGoldenVisaProgress(totalReVal);
+        if (typeof lastHoldingsAed !== 'undefined' && lastHoldingsAed) {
+          renderAllocation(lastHoldingsAed);
+        }
 
         // Radar (Real Estate page + Overview)
         const radarHtml = radarItems.length
@@ -3294,7 +3341,7 @@
       
         if (name === 'ai-insights') { generateAiCfoInsights(); loadHoldingNews(); }
         if (name === 'overview') loadHoldingNews();
-        if (name === 'portfolio') loadDividends();
+        if (name === 'portfolio') { loadDividends(); if (typeof applyPortfolioAssetFilter === 'function') applyPortfolioAssetFilter(); }
       }
 
       document.querySelectorAll('[data-view]').forEach(btn => {
