@@ -150,7 +150,7 @@
         </button>
         <button data-view="portfolio" data-asset-filter="gold" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
           <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-4-8.25h.008v.008H8V9.75zm0 3h.008v.008H8v-.008zm0 3h.008v.008H8v-.008zm4-6h.008v.008H12V9.75zm0 3h.008v.008H12v-.008zm0 3h.008v.008H12v-.008zm4-6h.008v.008H16V9.75zm0 3h.008v.008H16v-.008zm0 3h.008v.008H16v-.008zM4.5 19.5h15a1.5 1.5 0 001.5-1.5V6A1.5 1.5 0 0019.5 4.5h-15A1.5 1.5 0 003 6v12a1.5 1.5 0 001.5 1.5z"/></svg>
-          Gold
+          Gold &amp; Silver
         </button>
         <button data-view="portfolio" data-asset-filter="crypto" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
           <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v2m0 8v2m-6-6h2m8 0h2M8.5 8.5l1.5 1.5m4 4l1.5 1.5m0-7l-1.5 1.5m-4 4L8.5 15.5M12 21a9 9 0 100-18 9 9 0 000 18z"/></svg>
@@ -353,12 +353,38 @@
 
         <!-- PORTFOLIO -->
         <div id="view-portfolio" class="view">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="font-display text-xl font-semibold tracking-tight">Portfolio Holdings</h2>
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <div>
+              <h2 id="portfolioPageTitle" class="font-display text-xl font-semibold tracking-tight">Portfolio</h2>
+              <p id="portfolioPageSub" class="text-[13px] text-zinc-500 mt-0.5">Stocks, gold &amp; silver, and crypto — separated by type</p>
+            </div>
             <button data-view="add-asset" class="inline-flex items-center gap-2 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13.5px] font-semibold px-4 py-2.5">
               + Add Asset
             </button>
           </div>
+
+          <div id="portfolioKindCards" class="grid sm:grid-cols-3 gap-3 mb-5">
+            <div class="rounded-2xl border border-zinc-100 bg-white p-4 shadow-soft">
+              <p class="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Stocks &amp; ETFs</p>
+              <p id="cardStocksValue" class="font-display text-[18px] font-semibold text-zinc-900 mt-1 tabular-nums">AED 0</p>
+              <p id="cardStocksMeta" class="text-[12px] text-zinc-500 mt-0.5">0 lines</p>
+            </div>
+            <div class="rounded-2xl border border-zinc-100 bg-white p-4 shadow-soft">
+              <p class="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Gold &amp; Silver</p>
+              <p id="cardGoldValue" class="font-display text-[18px] font-semibold text-zinc-900 mt-1 tabular-nums">AED 0</p>
+              <p id="cardGoldMeta" class="text-[12px] text-zinc-500 mt-0.5">0 lines</p>
+            </div>
+            <div class="rounded-2xl border border-zinc-100 bg-white p-4 shadow-soft">
+              <p class="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Crypto</p>
+              <p id="cardCryptoValue" class="font-display text-[18px] font-semibold text-zinc-900 mt-1 tabular-nums">AED 0</p>
+              <p id="cardCryptoMeta" class="text-[12px] text-zinc-500 mt-0.5">0 lines</p>
+            </div>
+          </div>
+
+          <div id="portfolioFocusBanner" class="hidden mb-4 rounded-2xl border border-brand-100 bg-brand-50/50 px-4 py-3">
+            <p id="portfolioFocusText" class="text-[13px] text-brand-900 font-medium"></p>
+          </div>
+
           <div class="bg-white rounded-2xl border border-zinc-100 shadow-soft overflow-hidden">
             <table class="w-full text-left text-[13.5px]">
               <thead>
@@ -1855,6 +1881,7 @@
         const liveMap = await fetchLivePrices(holdings || []);
         let totalCostAed = 0;
         let totalLiveAed = 0;
+        window.__holdingsByKind = { stocks: {v:0,c:0,pnl:0}, gold: {v:0,c:0,pnl:0}, crypto: {v:0,c:0,pnl:0}, cash: {v:0,c:0,pnl:0} };
 
         if (holdings && holdings.length > 0) {
           document.getElementById('holdingsCountCard').textContent = `${holdings.length} Assets`;
@@ -1897,6 +1924,11 @@
             const liveLocal = shares * priceLocal;
             const liveAed = liveLocal * liveRate;
             totalLiveAed += liveAed;
+            if (!window.__holdingsByKind) window.__holdingsByKind = { stocks: {v:0,c:0,pnl:0}, gold: {v:0,c:0,pnl:0}, crypto: {v:0,c:0,pnl:0}, cash: {v:0,c:0,pnl:0} };
+            const bk = window.__holdingsByKind[assetKind] || window.__holdingsByKind.stocks;
+            bk.v += liveAed;
+            bk.c += 1;
+            bk.pnl += (liveAed - costAed);
 
             byCurrency[cur] = (byCurrency[cur] || 0) + costLocal;
             lastHoldingsAed.push({
@@ -1944,6 +1976,7 @@
         window.__lastCostAed = totalCostAed;
         window.__lastLiveAed = totalLiveAed;
         renderPerformance(totalCostAed, totalLiveAed);
+        updatePortfolioKindCards();
         if (typeof applyPortfolioAssetFilter === 'function') applyPortfolioAssetFilter();
 
         // Currency sub-boxes
@@ -3356,10 +3389,91 @@
         if (name === 'portfolio') { loadDividends(); if (typeof applyPortfolioAssetFilter === 'function') applyPortfolioAssetFilter(); }
       }
 
+      let portfolioAssetFilter = 'all';
+
+      function updatePortfolioKindCards() {
+        const k = window.__holdingsByKind || {};
+        const fmt = (n) => 'AED ' + (n || 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
+        const set = (idV, idM, obj) => {
+          const elV = document.getElementById(idV);
+          const elM = document.getElementById(idM);
+          if (elV) elV.textContent = fmt(obj?.v || 0);
+          if (elM) {
+            const pnl = obj?.pnl || 0;
+            const sign = pnl >= 0 ? '+' : '';
+            elM.textContent = `${obj?.c || 0} lines · ${sign}${Math.round(pnl).toLocaleString()} AED P/L`;
+          }
+        };
+        set('cardStocksValue', 'cardStocksMeta', k.stocks);
+        set('cardGoldValue', 'cardGoldMeta', k.gold);
+        set('cardCryptoValue', 'cardCryptoMeta', k.crypto);
+      }
+
+      function applyPortfolioAssetFilter() {
+        const tbody = document.getElementById('portfolioTableBody');
+        if (!tbody) return;
+        tbody.querySelectorAll('tr[data-section-header]').forEach(r => r.remove());
+        const rows = [...tbody.querySelectorAll('tr[data-asset-kind]')];
+
+        const title = document.getElementById('portfolioPageTitle');
+        const sub = document.getElementById('portfolioPageSub');
+        const banner = document.getElementById('portfolioFocusBanner');
+        const focusText = document.getElementById('portfolioFocusText');
+        const cards = document.getElementById('portfolioKindCards');
+
+        const labels = {
+          all: { t: 'Portfolio', s: 'Stocks & ETFs, gold & silver, and crypto — separated by type' },
+          stocks: { t: 'Stocks & ETFs', s: 'Equity and ETF holdings only' },
+          gold: { t: 'Gold & Silver', s: 'Precious metals dashboard — gold and silver only' },
+          crypto: { t: 'Crypto', s: 'Crypto dashboard — digital assets only' }
+        };
+        const L = labels[portfolioAssetFilter] || labels.all;
+        if (title) title.textContent = L.t;
+        if (sub) sub.textContent = L.s;
+
+        if (portfolioAssetFilter === 'all') {
+          if (cards) cards.classList.remove('hidden');
+          if (banner) banner.classList.add('hidden');
+          const titles = { stocks: 'Stocks & ETFs', gold: 'Gold & Silver', crypto: 'Crypto', cash: 'Cash & Bank' };
+          const seen = {};
+          rows.forEach(tr => {
+            const kind = tr.getAttribute('data-asset-kind') || 'stocks';
+            tr.style.display = '';
+            if (!seen[kind]) {
+              seen[kind] = true;
+              const hr = document.createElement('tr');
+              hr.setAttribute('data-section-header', kind);
+              hr.innerHTML = '<td colspan="6" class="px-5 py-2.5 bg-zinc-50 border-y border-zinc-100 text-[11px] font-bold uppercase tracking-wider text-zinc-500">' + (titles[kind] || kind) + '</td>';
+              tr.parentNode.insertBefore(hr, tr);
+            }
+          });
+        } else {
+          if (cards) cards.classList.add('hidden');
+          if (banner) banner.classList.remove('hidden');
+          const k = window.__holdingsByKind && window.__holdingsByKind[portfolioAssetFilter];
+          const val = k ? k.v : 0;
+          const cnt = k ? k.c : 0;
+          const pnl = k ? k.pnl : 0;
+          if (focusText) {
+            focusText.textContent = L.t + ' dashboard · ' + cnt + ' holding(s) · AED ' + val.toLocaleString(undefined,{maximumFractionDigits:0}) + ' · P/L ' + (pnl>=0?'+':'') + Math.round(pnl).toLocaleString() + ' AED';
+          }
+          rows.forEach(tr => {
+            const kind = tr.getAttribute('data-asset-kind') || 'stocks';
+            tr.style.display = (kind === portfolioAssetFilter) ? '' : 'none';
+          });
+        }
+      }
+
       document.querySelectorAll('[data-view]').forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.preventDefault();
-          showView(btn.getAttribute('data-view'));
+          const view = btn.getAttribute('data-view');
+          const filter = btn.getAttribute('data-asset-filter');
+          if (view === 'portfolio') {
+            portfolioAssetFilter = filter || 'all';
+          }
+          showView(view);
+          if (view === 'portfolio') applyPortfolioAssetFilter();
           if (window.innerWidth < 1024) closeSidebar();
         });
       });
