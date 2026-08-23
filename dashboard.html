@@ -233,12 +233,12 @@
             </button>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-            <div class="relative overflow-hidden rounded-2xl border-2 border-emerald-200/90 bg-gradient-to-br from-emerald-50 via-white to-white p-5 shadow-soft">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+            <div class="relative overflow-hidden rounded-2xl border-2 border-emerald-200/90 bg-gradient-to-br from-emerald-50 via-white to-white p-5 shadow-soft sm:col-span-1">
               <div class="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-emerald-200/35 blur-2xl pointer-events-none"></div>
               <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-700/80">Total Net Worth</p>
               <p id="totalNetWorthCard" class="relative font-display text-[24px] sm:text-[26px] font-semibold tracking-tight text-zinc-900 mt-1.5 tabular-nums">AED 0.00</p>
-              <p class="relative text-[12px] text-emerald-700/80 mt-1.5 font-medium">Liquid + property in AED</p>
+              <p id="totalNetWorthSub" class="relative text-[12px] text-emerald-700/80 mt-1.5 font-medium">All assets − debts</p>
             </div>
             <div class="relative overflow-hidden rounded-2xl border-2 border-brand-200/90 bg-gradient-to-br from-brand-50 via-white to-white p-5 shadow-soft">
               <div class="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-brand-200/35 blur-2xl pointer-events-none"></div>
@@ -248,9 +248,31 @@
             </div>
             <div class="relative overflow-hidden rounded-2xl border-2 border-amber-200/90 bg-gradient-to-br from-amber-50 via-white to-white p-5 shadow-soft">
               <div class="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-amber-200/40 blur-2xl pointer-events-none"></div>
-              <p class="text-[10px] font-bold uppercase tracking-wider text-amber-800/80">Total Holdings</p>
+              <p class="text-[10px] font-bold uppercase tracking-wider text-amber-800/80">Liquid portfolio</p>
               <p id="holdingsCountCard" class="relative font-display text-[24px] sm:text-[26px] font-semibold tracking-tight text-zinc-900 mt-1.5">0 Assets</p>
-              <p class="relative text-[12px] text-amber-800/80 mt-1.5 font-medium">Tracked in portfolio</p>
+              <p id="liquidValueSub" class="relative text-[12px] text-amber-800/80 mt-1.5 font-medium">Stocks + metals + crypto</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+            <div class="rounded-2xl border-2 border-brand-100 bg-white p-4 shadow-soft">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-brand-700/70">Stocks &amp; ETFs</p>
+              <p id="ovStocksVal" class="font-display text-[16px] font-semibold text-zinc-900 mt-1 tabular-nums">AED 0</p>
+            </div>
+            <div class="rounded-2xl border-2 border-amber-100 bg-white p-4 shadow-soft">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-amber-800/70">Gold &amp; Silver</p>
+              <p id="ovGoldVal" class="font-display text-[16px] font-semibold text-zinc-900 mt-1 tabular-nums">AED 0</p>
+            </div>
+            <div class="rounded-2xl border-2 border-violet-100 bg-white p-4 shadow-soft">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-violet-800/70">Crypto</p>
+              <p id="ovCryptoVal" class="font-display text-[16px] font-semibold text-zinc-900 mt-1 tabular-nums">AED 0</p>
+            </div>
+            <div class="rounded-2xl border-2 border-emerald-100 bg-white p-4 shadow-soft">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-700/70">Bank + receivable</p>
+              <p id="ovCashPosVal" class="font-display text-[16px] font-semibold text-zinc-900 mt-1 tabular-nums">AED 0</p>
+            </div>
+            <div class="rounded-2xl border-2 border-rose-100 bg-white p-4 shadow-soft col-span-2 lg:col-span-1">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-rose-700/70">Cards + debts</p>
+              <p id="ovCashNegVal" class="font-display text-[16px] font-semibold text-rose-800 mt-1 tabular-nums">AED 0</p>
             </div>
           </div>
 
@@ -2156,15 +2178,13 @@
           document.getElementById('holdingsCountCard').textContent = '0 Assets';
         }
 
-        document.getElementById('totalNetWorthCard').textContent =
-          `AED ${totalLiveAed.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
-
         // Allocation uses live AED; performance uses cost vs live
         renderAllocation(lastHoldingsAed);
         window.__lastCostAed = totalCostAed;
         window.__lastLiveAed = totalLiveAed;
         renderPerformance(totalCostAed, totalLiveAed);
         updatePortfolioKindCards();
+        refreshTotalNetWorth();
         if (typeof applyPortfolioAssetFilter === 'function') applyPortfolioAssetFilter();
 
         // Currency sub-boxes
@@ -2412,6 +2432,7 @@
         if (typeof lastHoldingsAed !== 'undefined' && lastHoldingsAed) {
           renderAllocation(lastHoldingsAed);
         }
+        refreshTotalNetWorth();
 
         // Radar (Real Estate page + Overview)
         const radarHtml = radarItems.length
@@ -3656,6 +3677,8 @@
         if (elC) elC.textContent = fmt(sums.credit_card);
         if (elR) elR.textContent = fmt(sums.receivable);
         if (elD) elD.textContent = fmt(sums.debt);
+        window.__lastCashSums = sums;
+        refreshTotalNetWorth();
 
         const render = (type) => {
           const el = lists[type];
@@ -3732,6 +3755,37 @@
 
 
       let portfolioAssetFilter = 'all';
+
+
+      function refreshTotalNetWorth() {
+        const liquid = Number(window.__lastLiveAed) || 0;
+        const re = Number(window.__lastReVal) || 0;
+        const cash = window.__lastCashSums || { bank: 0, credit_card: 0, receivable: 0, debt: 0 };
+        const bank = Number(cash.bank) || 0;
+        const recv = Number(cash.receivable) || 0;
+        const cards = Number(cash.credit_card) || 0;
+        const debt = Number(cash.debt) || 0;
+        // Net worth = liquid holdings + RE + bank + receivable − credit cards − debts
+        const total = liquid + re + bank + recv - cards - debt;
+        const el = document.getElementById('totalNetWorthCard');
+        if (el) el.textContent = 'AED ' + total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const sub = document.getElementById('totalNetWorthSub');
+        if (sub) {
+          sub.textContent = 'Holdings + property + cash − liabilities';
+        }
+        const liqSub = document.getElementById('liquidValueSub');
+        if (liqSub) {
+          liqSub.textContent = 'AED ' + liquid.toLocaleString(undefined, { maximumFractionDigits: 0 }) + ' live value';
+        }
+        const k = window.__holdingsByKind || {};
+        const fmt0 = (n) => 'AED ' + Math.round(n || 0).toLocaleString();
+        const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = fmt0(v); };
+        set('ovStocksVal', k.stocks && k.stocks.v);
+        set('ovGoldVal', k.gold && k.gold.v);
+        set('ovCryptoVal', k.crypto && k.crypto.v);
+        set('ovCashPosVal', bank + recv);
+        set('ovCashNegVal', cards + debt);
+      }
 
       function updatePortfolioKindCards() {
         const k = window.__holdingsByKind || {};
