@@ -234,18 +234,21 @@
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-            <div class="cc-stat border-emerald-100/80 bg-gradient-to-br from-emerald-50/80 via-white to-white">
-              <p class="cc-section-label text-emerald-700/70">Total Net Worth</p>
+            <div class="relative overflow-hidden rounded-2xl border-2 border-emerald-200/90 bg-gradient-to-br from-emerald-50 via-white to-white p-5 shadow-soft">
+              <div class="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-emerald-200/35 blur-2xl pointer-events-none"></div>
+              <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-700/80">Total Net Worth</p>
               <p id="totalNetWorthCard" class="relative font-display text-[24px] sm:text-[26px] font-semibold tracking-tight text-zinc-900 mt-1.5 tabular-nums">AED 0.00</p>
               <p class="relative text-[12px] text-emerald-700/80 mt-1.5 font-medium">Liquid + property in AED</p>
             </div>
-            <div class="cc-stat border-brand-100/80 bg-gradient-to-br from-brand-50/70 via-white to-white">
-              <p class="cc-section-label text-brand-700/70">Real Estate Assets</p>
+            <div class="relative overflow-hidden rounded-2xl border-2 border-brand-200/90 bg-gradient-to-br from-brand-50 via-white to-white p-5 shadow-soft">
+              <div class="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-brand-200/35 blur-2xl pointer-events-none"></div>
+              <p class="text-[10px] font-bold uppercase tracking-wider text-brand-700/80">Real Estate Assets</p>
               <p id="reAssetsCard" class="relative font-display text-[24px] sm:text-[26px] font-semibold tracking-tight text-zinc-900 mt-1.5 tabular-nums">AED 0.00</p>
               <p class="relative text-[12px] text-brand-700/80 mt-1.5 font-medium">Total property value</p>
             </div>
-            <div class="cc-stat border-amber-100/80 bg-gradient-to-br from-amber-50/80 via-white to-white">
-              <p class="cc-section-label text-amber-800/70">Total Holdings</p>
+            <div class="relative overflow-hidden rounded-2xl border-2 border-amber-200/90 bg-gradient-to-br from-amber-50 via-white to-white p-5 shadow-soft">
+              <div class="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-amber-200/40 blur-2xl pointer-events-none"></div>
+              <p class="text-[10px] font-bold uppercase tracking-wider text-amber-800/80">Total Holdings</p>
               <p id="holdingsCountCard" class="relative font-display text-[24px] sm:text-[26px] font-semibold tracking-tight text-zinc-900 mt-1.5">0 Assets</p>
               <p class="relative text-[12px] text-amber-800/80 mt-1.5 font-medium">Tracked in portfolio</p>
             </div>
@@ -609,7 +612,7 @@
             </div>
           </div>
 
-          <div id="propertiesList" class="space-y-4"></div>
+          <div id="propertiesList" class="space-y-6"></div>
         </div>
 
 
@@ -2339,21 +2342,30 @@
               p.location
             ].filter(Boolean).join(' · ');
 
+            const boxBorder = isOffplan
+              ? 'border-violet-200 bg-gradient-to-b from-violet-50/40 to-white'
+              : 'border-emerald-200 bg-gradient-to-b from-emerald-50/30 to-white';
+            const boxDot = isOffplan ? 'bg-violet-500' : 'bg-emerald-500';
+            const badgeCls = isOffplan ? 'bg-violet-100 text-violet-800' : 'bg-emerald-100 text-emerald-800';
             container.innerHTML += `
-              <div class="cc-panel p-5">
+              <div class="rounded-2xl border-2 ${boxBorder} p-5 sm:p-6 shadow-soft">
+                <div class="flex items-center gap-2 mb-3">
+                  <span class="w-2 h-2 rounded-full ${boxDot}"></span>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500">${isOffplan ? 'Off-plan' : 'Ready'}</span>
+                </div>
                 <div class="flex justify-between items-start gap-3">
-                  <div>
-                    <p class="font-semibold text-zinc-900">${p.name}</p>
+                  <div class="min-w-0">
+                    <p class="font-semibold text-zinc-900 text-[16px]">${p.name}</p>
                     <p class="text-[12px] text-zinc-500 mt-0.5">${meta}</p>
                     ${p.developer ? `<p class="text-[12px] text-zinc-400">Developer: ${p.developer}</p>` : ''}
                     ${p.spa_file_path ? `<p class="text-[11px] text-brand-600 mt-0.5">SPA document attached</p>` : ''}
                   </div>
                   <div class="flex items-center gap-2 shrink-0">
-                    <span class="text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full font-medium">${isOffplan ? 'Off-Plan' : 'Ready'}</span>
+                    <span class="text-[11px] ${badgeCls} px-2.5 py-1 rounded-full font-semibold">${isOffplan ? 'Off-Plan' : 'Ready'}</span>
                     <button onclick="deleteProperty('${p.id}')" class="text-[11px] text-rose-500 hover:underline">Delete</button>
                   </div>
                 </div>
-                <p class="text-sm font-semibold text-zinc-800 mt-3">AED ${parseFloat(p.total_price).toLocaleString()}</p>
+                <p class="text-[17px] font-semibold text-zinc-900 mt-3 tabular-nums">AED ${parseFloat(p.total_price).toLocaleString()}</p>
                 ${!isOffplan && p.monthly_rent ? `
                 <div class="mt-3 border-t border-zinc-100 pt-3">
                   <div class="flex items-center justify-between mb-2">
