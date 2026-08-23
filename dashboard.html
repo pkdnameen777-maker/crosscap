@@ -401,13 +401,19 @@
             </table>
           </div>
 
-          <div class="mt-6 bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft">
+          <div id="dividendsSection" class="mt-6 bg-white rounded-2xl border border-zinc-100 p-5 shadow-soft">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
               <div>
                 <h3 class="text-[15px] font-semibold text-zinc-900">Dividends</h3>
-                <p class="text-[12px] text-zinc-400">Log dividend income when received · linked to ticker</p>
+                <p class="text-[12px] text-zinc-400">Stocks &amp; ETFs only · log when received</p>
               </div>
-              <button type="button" id="btnLogDividend" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[12px] font-semibold px-3 py-2">+ Log received</button>
+              <div class="flex items-center gap-3">
+                <div class="text-right">
+                  <p class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Total received</p>
+                  <p id="dividendsTotalAed" class="text-[15px] font-semibold tabular-nums text-emerald-700">AED 0</p>
+                </div>
+                <button type="button" id="btnLogDividend" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[12px] font-semibold px-3 py-2">+ Log received</button>
+              </div>
             </div>
             <div id="dividendsList" class="space-y-2 text-[13px]">
               <p class="text-zinc-400">No dividends logged yet.</p>
@@ -3097,8 +3103,14 @@
         }
         if (!data || !data.length) {
           box.innerHTML = '<p class="text-zinc-400">No dividends logged yet. Use "+ Log received" after you get paid.</p>';
+          const tot0 = document.getElementById('dividendsTotalAed');
+          if (tot0) tot0.textContent = 'AED 0';
           return;
         }
+        let divTotal = 0;
+        data.forEach(d => { divTotal += Number(d.amount_aed || d.amount || 0); });
+        const totEl = document.getElementById('dividendsTotalAed');
+        if (totEl) totEl.textContent = 'AED ' + divTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         const header = `<div class="hidden sm:grid sm:grid-cols-[5.5rem_minmax(0,1.2fr)_4.5rem_7rem_6.5rem_4rem] gap-3 px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
           <span>Status</span>
           <span>Ticker</span>
@@ -3377,12 +3389,21 @@
         });
         const target = document.getElementById('view-' + name);
         if (target) target.classList.add('active');
-        document.querySelectorAll(`[data-view="${name}"]`).forEach(btn => {
-          if (btn.classList.contains('sidebar-link')) {
-            btn.classList.add('active');
-            btn.classList.remove('text-zinc-500');
+        // Sidebar highlight is handled by click handler (supports portfolio filters)
+        if (name !== 'portfolio') {
+          const btn = document.querySelector(`.sidebar-link[data-view="${name}"]:not([data-asset-filter])`);
+          if (btn && typeof setSidebarActive === 'function') setSidebarActive(btn);
+          else {
+            document.querySelectorAll('.sidebar-link').forEach(l => {
+              l.classList.remove('active');
+              l.classList.add('text-zinc-500');
+            });
+            document.querySelectorAll(`.sidebar-link[data-view="${name}"]`).forEach(b => {
+              b.classList.add('active');
+              b.classList.remove('text-zinc-500');
+            });
           }
-        });
+        }
       
         if (name === 'ai-insights') { generateAiCfoInsights(); loadHoldingNews(); }
         if (name === 'overview') loadHoldingNews();
@@ -3431,6 +3452,12 @@
         if (title) title.textContent = L.t;
         if (sub) sub.textContent = L.s;
 
+        const divSec = document.getElementById('dividendsSection');
+        if (divSec) {
+          // Dividends only on Stocks & ETFs screen
+          divSec.classList.toggle('hidden', portfolioAssetFilter !== 'stocks');
+        }
+
         if (portfolioAssetFilter === 'all') {
           if (cards) cards.classList.remove('hidden');
           if (banner) banner.classList.add('hidden');
@@ -3464,6 +3491,17 @@
         }
       }
 
+      function setSidebarActive(btn) {
+        document.querySelectorAll('.sidebar-link').forEach(l => {
+          l.classList.remove('active');
+          l.classList.add('text-zinc-500');
+        });
+        if (btn) {
+          btn.classList.add('active');
+          btn.classList.remove('text-zinc-500');
+        }
+      }
+
       document.querySelectorAll('[data-view]').forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.preventDefault();
@@ -3473,7 +3511,12 @@
             portfolioAssetFilter = filter || 'all';
           }
           showView(view);
-          if (view === 'portfolio') applyPortfolioAssetFilter();
+          // Highlight the exact nav item clicked (not all portfolio links)
+          setSidebarActive(btn);
+          if (view === 'portfolio') {
+            applyPortfolioAssetFilter();
+            if (portfolioAssetFilter === 'stocks') loadDividends();
+          }
           if (window.innerWidth < 1024) closeSidebar();
         });
       });
