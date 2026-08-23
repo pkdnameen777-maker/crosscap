@@ -468,12 +468,6 @@
                     <option value="SILVER_AED" data-currency="AED">Silver (AED)</option>
                     <option value="SILVER_INR" data-currency="INR">Silver (INR)</option>
                   </optgroup>
-                  <optgroup label="Other">
-                    <option value="OTHER_USD" data-currency="USD">Other — priced in USD</option>
-                    <option value="OTHER_AED" data-currency="AED">Other — priced in AED</option>
-                    <option value="OTHER_EUR" data-currency="EUR">Other — priced in EUR</option>
-                    <option value="OTHER_GBP" data-currency="GBP">Other — priced in GBP</option>
-                  </optgroup>
                 </select>
               </div>
               <div>
@@ -619,16 +613,137 @@
 
 
         <!-- CASH & BANK -->
-        <div id="view-cash" class="view">
-          <h2 class="font-display text-xl font-semibold tracking-tight mb-2">Cash &amp; Bank</h2>
-          <p class="text-[14px] text-zinc-500 mb-6">Track liquid cash balances in AED or other currencies.</p>
-          <div class="bg-white rounded-2xl border border-zinc-100 p-6 shadow-soft max-w-xl space-y-4">
-            <p class="text-[13px] text-zinc-500">Add cash as an asset from <button type="button" data-view="add-asset" class="text-brand-700 font-semibold hover:underline">Add Asset</button> using market <span class="font-semibold">Other — priced in AED/USD</span> and symbol e.g. <span class="font-semibold">CASH-ENBD</span> or <span class="font-semibold">BANK-AED</span>.</p>
-            <p class="text-[12px] text-zinc-400">Dedicated multi-account cash ledger can be added later. For now, cash lines appear in Portfolio with the rest of your holdings.</p>
+                <div id="view-cash" class="view">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+            <div>
+              <h2 class="font-display text-xl font-semibold tracking-tight">Cash &amp; Bank</h2>
+              <p class="text-[13px] text-zinc-500 mt-0.5">Accounts, cards, money lent, and debts — separate from stocks</p>
+            </div>
+            <button type="button" id="btnToggleCashForm" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13px] font-semibold px-4 py-2.5">+ Add entry</button>
+          </div>
+
+          <div id="cashSummaryCards" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+            <div class="rounded-2xl border border-zinc-100 bg-white p-4 shadow-soft">
+              <p class="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Bank balances</p>
+              <p id="cashSumBank" class="font-display text-[18px] font-semibold text-zinc-900 mt-1 tabular-nums">AED 0</p>
+            </div>
+            <div class="rounded-2xl border border-zinc-100 bg-white p-4 shadow-soft">
+              <p class="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Credit cards owed</p>
+              <p id="cashSumCards" class="font-display text-[18px] font-semibold text-rose-700 mt-1 tabular-nums">AED 0</p>
+            </div>
+            <div class="rounded-2xl border border-zinc-100 bg-white p-4 shadow-soft">
+              <p class="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Receivable (lent)</p>
+              <p id="cashSumRecv" class="font-display text-[18px] font-semibold text-emerald-700 mt-1 tabular-nums">AED 0</p>
+            </div>
+            <div class="rounded-2xl border border-zinc-100 bg-white p-4 shadow-soft">
+              <p class="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Debts to clear</p>
+              <p id="cashSumDebt" class="font-display text-[18px] font-semibold text-amber-800 mt-1 tabular-nums">AED 0</p>
+            </div>
+          </div>
+
+          <div id="cashFormPanel" class="hidden mb-6 bg-white rounded-2xl border border-brand-100 p-5 shadow-soft max-w-2xl">
+            <h3 class="text-[15px] font-semibold text-zinc-900 mb-3">New cash entry</h3>
+            <div class="grid sm:grid-cols-2 gap-3">
+              <div class="sm:col-span-2">
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1">Type</label>
+                <select id="cashType" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]">
+                  <option value="bank">Bank account</option>
+                  <option value="credit_card">Credit card</option>
+                  <option value="receivable">Money lent / receivable</option>
+                  <option value="debt">Debt to clear</option>
+                </select>
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1">Name / bank / person</label>
+                <input id="cashName" type="text" placeholder="e.g. ENBD Current, HSBC Visa, Ahmed loan" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" />
+              </div>
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1">Currency</label>
+                <select id="cashCurrency" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]">
+                  <option value="AED" selected>AED — UAE Dirham</option>
+                  <option value="USD">USD — US Dollar</option>
+                  <option value="EUR">EUR — Euro</option>
+                  <option value="GBP">GBP — British Pound</option>
+                  <option value="INR">INR — Indian Rupee</option>
+                  <option value="SAR">SAR — Saudi Riyal</option>
+                  <option value="QAR">QAR — Qatari Riyal</option>
+                  <option value="KWD">KWD — Kuwaiti Dinar</option>
+                  <option value="BHD">BHD — Bahraini Dinar</option>
+                  <option value="OMR">OMR — Omani Rial</option>
+                  <option value="EGP">EGP — Egyptian Pound</option>
+                  <option value="PKR">PKR — Pakistani Rupee</option>
+                  <option value="CNY">CNY — Chinese Yuan</option>
+                  <option value="HKD">HKD — Hong Kong Dollar</option>
+                  <option value="SGD">SGD — Singapore Dollar</option>
+                  <option value="JPY">JPY — Japanese Yen</option>
+                  <option value="AUD">AUD — Australian Dollar</option>
+                  <option value="CAD">CAD — Canadian Dollar</option>
+                  <option value="CHF">CHF — Swiss Franc</option>
+                  <option value="NZD">NZD — New Zealand Dollar</option>
+                  <option value="ZAR">ZAR — South African Rand</option>
+                  <option value="TRY">TRY — Turkish Lira</option>
+                  <option value="THB">THB — Thai Baht</option>
+                  <option value="MYR">MYR — Malaysian Ringgit</option>
+                  <option value="IDR">IDR — Indonesian Rupiah</option>
+                  <option value="PHP">PHP — Philippine Peso</option>
+                  <option value="KRW">KRW — South Korean Won</option>
+                  <option value="SEK">SEK — Swedish Krona</option>
+                  <option value="NOK">NOK — Norwegian Krone</option>
+                  <option value="DKK">DKK — Danish Krone</option>
+                  <option value="PLN">PLN — Polish Zloty</option>
+                  <option value="MXN">MXN — Mexican Peso</option>
+                  <option value="BRL">BRL — Brazilian Real</option>
+                  <option value="RUB">RUB — Russian Ruble</option>
+                  <option value="NGN">NGN — Nigerian Naira</option>
+                  <option value="KES">KES — Kenyan Shilling</option>
+                  <option value="BDT">BDT — Bangladeshi Taka</option>
+                  <option value="LKR">LKR — Sri Lankan Rupee</option>
+                  <option value="NPR">NPR — Nepalese Rupee</option>
+                  <option value="MAD">MAD — Moroccan Dirham</option>
+                  <option value="JOD">JOD — Jordanian Dinar</option>
+                  <option value="LBP">LBP — Lebanese Pound</option>
+                  <option value="IQD">IQD — Iraqi Dinar</option>
+                  <option value="TWD">TWD — Taiwan Dollar</option>
+                  <option value="VND">VND — Vietnamese Dong</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1">Balance / amount</label>
+                <input id="cashAmount" type="number" step="any" placeholder="0.00" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" />
+                <p class="text-[11px] text-zinc-400 mt-1">Bank = positive balance. Card / debt = amount you owe. Receivable = amount owed to you.</p>
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1">Note (optional)</label>
+                <input id="cashNote" type="text" placeholder="Account number last 4, due date, etc." class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" />
+              </div>
+            </div>
+            <div class="flex gap-2 mt-4">
+              <button type="button" id="btnSaveCash" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13px] font-semibold px-4 py-2.5">Save</button>
+              <button type="button" id="btnCancelCash" class="rounded-xl border border-zinc-200 text-[13px] font-semibold px-4 py-2.5 text-zinc-600">Cancel</button>
+            </div>
+          </div>
+
+          <div class="space-y-6 max-w-3xl">
+            <div>
+              <h3 class="text-[13px] font-semibold text-zinc-500 mb-2 uppercase tracking-wider">Bank accounts</h3>
+              <div id="cashListBank" class="space-y-2"></div>
+            </div>
+            <div>
+              <h3 class="text-[13px] font-semibold text-zinc-500 mb-2 uppercase tracking-wider">Credit cards</h3>
+              <div id="cashListCards" class="space-y-2"></div>
+            </div>
+            <div>
+              <h3 class="text-[13px] font-semibold text-zinc-500 mb-2 uppercase tracking-wider">Money lent / receivable</h3>
+              <div id="cashListRecv" class="space-y-2"></div>
+            </div>
+            <div>
+              <h3 class="text-[13px] font-semibold text-zinc-500 mb-2 uppercase tracking-wider">Debts to clear</h3>
+              <div id="cashListDebt" class="space-y-2"></div>
+            </div>
           </div>
         </div>
 
-        <!-- AI INSIGHTS -->
+        <!-- AI INSIGHTS --><!-- AI INSIGHTS -->
         <div id="view-ai-insights" class="view">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
             <div>
@@ -979,6 +1094,7 @@
         loadProperties();
         loadProfile();
         loadGoals();
+        loadCashAccounts();
         setTimeout(() => generateAiCfoInsights(), 800);
         setTimeout(() => loadHoldingNews(), 1200);
       });
@@ -1588,7 +1704,7 @@
           // Convert: 1 UNIT = (USD per unit) * AED per USD
           // rates[X] = how many X per 1 USD → 1 X = 1/rates[X] USD
           const toAed = { AED: 1, USD: usdToAed };
-          ['INR','GBP','SAR','CNY','JPY','HKD','EUR','QAR','KWD','BHD','PKR','SGD','AUD','EGP'].forEach(c => {
+          ['INR','GBP','SAR','CNY','JPY','HKD','EUR','QAR','KWD','BHD','PKR','SGD','AUD','EGP','OMR','CAD','CHF','NZD','ZAR','TRY','THB','MYR','IDR','PHP','KRW','SEK','NOK','DKK','PLN','MXN','BRL','NGN','KES','BDT','LKR','NPR','MAD','JOD'].forEach(c => {
             if (rates[c]) toAed[c] = usdToAed / rates[c];
           });
           fxCache = toAed;
@@ -3407,8 +3523,125 @@
       
         if (name === 'ai-insights') { generateAiCfoInsights(); loadHoldingNews(); }
         if (name === 'overview') loadHoldingNews();
+        if (name === 'cash') loadCashAccounts();
         if (name === 'portfolio') { loadDividends(); if (typeof applyPortfolioAssetFilter === 'function') applyPortfolioAssetFilter(); }
       }
+
+
+      // ---- Cash & Bank ----
+      document.getElementById('btnToggleCashForm')?.addEventListener('click', () => {
+        document.getElementById('cashFormPanel')?.classList.remove('hidden');
+      });
+      document.getElementById('btnCancelCash')?.addEventListener('click', () => {
+        document.getElementById('cashFormPanel')?.classList.add('hidden');
+      });
+
+      async function loadCashAccounts() {
+        const lists = {
+          bank: document.getElementById('cashListBank'),
+          credit_card: document.getElementById('cashListCards'),
+          receivable: document.getElementById('cashListRecv'),
+          debt: document.getElementById('cashListDebt')
+        };
+        Object.values(lists).forEach(el => { if (el) el.innerHTML = '<p class="text-[13px] text-zinc-400">Loading…</p>'; });
+        if (!currentUser) return;
+        const { data, error } = await supabaseClient
+          .from('cash_accounts')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .order('created_at', { ascending: false });
+        if (error) {
+          Object.values(lists).forEach(el => {
+            if (el) el.innerHTML = '<p class="text-[13px] text-zinc-400">Run cash-bank-setup.sql in Supabase to enable this section.</p>';
+          });
+          return;
+        }
+        const rates = await getRatesToAed();
+        const sums = { bank: 0, credit_card: 0, receivable: 0, debt: 0 };
+        const buckets = { bank: [], credit_card: [], receivable: [], debt: [] };
+        (data || []).forEach(row => {
+          const t = row.account_type || 'bank';
+          if (!buckets[t]) buckets[t] = [];
+          buckets[t].push(row);
+          const cur = (row.currency || 'AED').toUpperCase();
+          const aed = (Number(row.balance) || 0) * (rates[cur] != null ? rates[cur] : (cur === 'AED' ? 1 : 0));
+          if (sums[t] != null) sums[t] += aed;
+        });
+        const fmt = n => 'AED ' + Math.round(n).toLocaleString();
+        const elB = document.getElementById('cashSumBank');
+        const elC = document.getElementById('cashSumCards');
+        const elR = document.getElementById('cashSumRecv');
+        const elD = document.getElementById('cashSumDebt');
+        if (elB) elB.textContent = fmt(sums.bank);
+        if (elC) elC.textContent = fmt(sums.credit_card);
+        if (elR) elR.textContent = fmt(sums.receivable);
+        if (elD) elD.textContent = fmt(sums.debt);
+
+        const render = (type) => {
+          const el = lists[type];
+          if (!el) return;
+          const rows = buckets[type] || [];
+          if (!rows.length) {
+            el.innerHTML = '<p class="text-[13px] text-zinc-400">None yet.</p>';
+            return;
+          }
+          el.innerHTML = rows.map(r => {
+            const cur = (r.currency || 'AED').toUpperCase();
+            const bal = Number(r.balance) || 0;
+            const aed = bal * (rates[cur] != null ? rates[cur] : (cur === 'AED' ? 1 : 0));
+            return `<div class="flex flex-wrap items-center gap-2 rounded-xl border border-zinc-100 bg-white px-4 py-3 shadow-soft">
+              <div class="flex-1 min-w-0">
+                <p class="font-semibold text-zinc-900 truncate">${r.name}</p>
+                <p class="text-[12px] text-zinc-400">${r.note || type.replace('_',' ')}</p>
+              </div>
+              <div class="text-right">
+                <p class="tabular-nums font-semibold text-zinc-900">${cur} ${bal.toLocaleString(undefined,{maximumFractionDigits:2})}</p>
+                <p class="text-[11px] text-zinc-400">≈ AED ${aed.toLocaleString(undefined,{maximumFractionDigits:0})}</p>
+              </div>
+              <button onclick="deleteCashAccount('${r.id}')" class="text-[11px] text-rose-500 hover:underline">Delete</button>
+            </div>`;
+          }).join('');
+        };
+        render('bank');
+        render('credit_card');
+        render('receivable');
+        render('debt');
+      }
+
+      document.getElementById('btnSaveCash')?.addEventListener('click', async () => {
+        if (!currentUser) return;
+        const account_type = document.getElementById('cashType').value;
+        const name = document.getElementById('cashName').value.trim();
+        const currency = document.getElementById('cashCurrency').value;
+        const balance = parseFloat(document.getElementById('cashAmount').value);
+        const note = document.getElementById('cashNote').value.trim() || null;
+        if (!name || isNaN(balance)) {
+          alert('Enter a name and amount.');
+          return;
+        }
+        const { error } = await supabaseClient.from('cash_accounts').insert([{
+          user_id: currentUser.id,
+          account_type,
+          name,
+          currency,
+          balance,
+          note
+        }]);
+        if (error) { alert(error.message); return; }
+        document.getElementById('cashName').value = '';
+        document.getElementById('cashAmount').value = '';
+        document.getElementById('cashNote').value = '';
+        document.getElementById('cashFormPanel').classList.add('hidden');
+        loadCashAccounts();
+      });
+
+      window.deleteCashAccount = async function(id) {
+        if (!confirm('Delete this entry?')) return;
+        const { error } = await supabaseClient.from('cash_accounts').delete().eq('id', id);
+        if (error) alert(error.message);
+        else loadCashAccounts();
+      };
+
 
       let portfolioAssetFilter = 'all';
 
