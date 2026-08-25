@@ -164,6 +164,10 @@
           <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/></svg>
           Cash &amp; Bank
         </button>
+        <button data-view="alt-assets" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
+          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12"/></svg>
+          Other assets
+        </button>
 
         <p class="px-3 pb-1.5 pt-5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Insights</p>
         <button data-view="ai-insights" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-zinc-500 hover:bg-zinc-50 text-left">
@@ -226,7 +230,7 @@
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
               <h2 class="font-display text-xl font-semibold tracking-tight text-zinc-900">Portfolio overview</h2>
-              <p class="text-[13px] text-zinc-500 mt-0.5">Consolidated net worth in AED · prices from market feeds</p>
+              <p class="text-[13px] text-zinc-500 mt-0.5">Real-time consolidated net worth in AED</p>
             </div>
             <button data-view="add-asset" class="inline-flex items-center gap-2 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13.5px] font-semibold px-4 py-2.5 shadow-soft transition">
               + Add Asset
@@ -831,6 +835,139 @@
           </div>
         </div>
 
+        
+        <!-- OTHER ASSETS: MF, FD, Bonds, Vehicles, Business -->
+        <div id="view-alt-assets" class="view">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+            <div>
+              <h2 class="font-display text-xl font-semibold tracking-tight">Other assets</h2>
+              <p class="text-[13px] text-zinc-500 mt-0.5">Mutual funds, FDs, bonds &amp; sukuk, vehicles, business ownership</p>
+            </div>
+            <button type="button" id="btnToggleAltForm" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13px] font-semibold px-4 py-2.5">+ Add entry</button>
+          </div>
+
+          <div class="flex flex-wrap gap-2 mb-5" id="altTypeTabs">
+            <button type="button" data-alt-tab="all" class="alt-tab rounded-full px-3.5 py-1.5 text-[12px] font-semibold bg-brand-700 text-white">All</button>
+            <button type="button" data-alt-tab="mutual_fund" class="alt-tab rounded-full px-3.5 py-1.5 text-[12px] font-semibold bg-zinc-100 text-zinc-600 hover:bg-zinc-200">Mutual Funds</button>
+            <button type="button" data-alt-tab="fixed_deposit" class="alt-tab rounded-full px-3.5 py-1.5 text-[12px] font-semibold bg-zinc-100 text-zinc-600 hover:bg-zinc-200">Fixed Deposits</button>
+            <button type="button" data-alt-tab="bond_sukuk" class="alt-tab rounded-full px-3.5 py-1.5 text-[12px] font-semibold bg-zinc-100 text-zinc-600 hover:bg-zinc-200">Bonds &amp; Sukuk</button>
+            <button type="button" data-alt-tab="vehicle" class="alt-tab rounded-full px-3.5 py-1.5 text-[12px] font-semibold bg-zinc-100 text-zinc-600 hover:bg-zinc-200">Vehicles</button>
+            <button type="button" data-alt-tab="business" class="alt-tab rounded-full px-3.5 py-1.5 text-[12px] font-semibold bg-zinc-100 text-zinc-600 hover:bg-zinc-200">Business</button>
+          </div>
+
+          <div id="altSummaryCards" class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-5">
+            <div class="rounded-2xl border-2 border-indigo-100 bg-white p-3.5 shadow-soft">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-indigo-700/70">Mutual funds</p>
+              <p id="altSumMf" class="font-display text-[16px] font-semibold tabular-nums mt-1">AED 0</p>
+            </div>
+            <div class="rounded-2xl border-2 border-sky-100 bg-white p-3.5 shadow-soft">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-sky-700/70">Fixed deposits</p>
+              <p id="altSumFd" class="font-display text-[16px] font-semibold tabular-nums mt-1">AED 0</p>
+            </div>
+            <div class="rounded-2xl border-2 border-teal-100 bg-white p-3.5 shadow-soft">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-teal-700/70">Bonds &amp; sukuk</p>
+              <p id="altSumBond" class="font-display text-[16px] font-semibold tabular-nums mt-1">AED 0</p>
+            </div>
+            <div class="rounded-2xl border-2 border-orange-100 bg-white p-3.5 shadow-soft">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-orange-800/70">Vehicles</p>
+              <p id="altSumVeh" class="font-display text-[16px] font-semibold tabular-nums mt-1">AED 0</p>
+            </div>
+            <div class="rounded-2xl border-2 border-fuchsia-100 bg-white p-3.5 shadow-soft">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-fuchsia-800/70">Business</p>
+              <p id="altSumBiz" class="font-display text-[16px] font-semibold tabular-nums mt-1">AED 0</p>
+            </div>
+          </div>
+
+          <div id="altFormPanel" class="hidden mb-6 cc-panel p-5 max-w-2xl ring-1 ring-brand-50">
+            <h3 class="text-[15px] font-semibold text-zinc-900 mb-1">New other asset</h3>
+            <p class="text-[12px] text-zinc-400 mb-4">Fields change by type — fill what applies.</p>
+            <div class="grid sm:grid-cols-2 gap-3">
+              <div class="sm:col-span-2">
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1">Type</label>
+                <select id="altClass" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]">
+                  <option value="mutual_fund">Mutual Fund</option>
+                  <option value="fixed_deposit">Fixed Deposit</option>
+                  <option value="bond_sukuk">Bond / Sukuk</option>
+                  <option value="vehicle">Vehicle</option>
+                  <option value="business">Business ownership</option>
+                </select>
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1" id="altNameLabel">Name</label>
+                <input id="altName" type="text" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" placeholder="Scheme / FD / issuer / model / company" />
+              </div>
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1" id="altInstLabel">Institution</label>
+                <input id="altInstitution" type="text" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" placeholder="AMC / bank / issuer" />
+              </div>
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1">Currency</label>
+                <select id="altCurrency" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]">
+                  <option value="AED" selected>AED</option>
+                  <option value="USD">USD</option>
+                  <option value="INR">INR</option>
+                  <option value="EUR">EUR</option>
+                  <option value="GBP">GBP</option>
+                  <option value="SAR">SAR</option>
+                  <option value="QAR">QAR</option>
+                  <option value="KWD">KWD</option>
+                  <option value="BHD">BHD</option>
+                  <option value="PKR">PKR</option>
+                  <option value="SGD">SGD</option>
+                  <option value="HKD">HKD</option>
+                  <option value="JPY">JPY</option>
+                  <option value="CNY">CNY</option>
+                </select>
+              </div>
+              <div id="altFieldQty">
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1" id="altQtyLabel">Units / quantity</label>
+                <input id="altQuantity" type="number" step="any" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" placeholder="0" />
+              </div>
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1" id="altInvestedLabel">Invested amount</label>
+                <input id="altInvested" type="number" step="any" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" placeholder="0" />
+              </div>
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1" id="altValueLabel">Current value (estimate)</label>
+                <input id="altCurrent" type="number" step="any" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" placeholder="Same as invested if unknown" />
+              </div>
+              <div id="altFieldRate">
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1" id="altRateLabel">Rate % p.a.</label>
+                <input id="altRate" type="number" step="any" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" placeholder="e.g. 5.5" />
+              </div>
+              <div id="altFieldOwn">
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1">Ownership %</label>
+                <input id="altOwnPct" type="number" step="any" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" placeholder="e.g. 25" />
+              </div>
+              <div id="altFieldStart">
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1">Start / purchase date</label>
+                <input id="altStart" type="date" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" />
+              </div>
+              <div id="altFieldMaturity">
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1">Maturity date</label>
+                <input id="altMaturity" type="date" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" />
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1" id="altRefLabel">Reference (folio / ISIN / plate / trade license)</label>
+                <input id="altFolio" type="text" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" />
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1">Notes</label>
+                <input id="altNotes" type="text" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" placeholder="Optional" />
+              </div>
+            </div>
+            <div class="flex gap-2 mt-4">
+              <button type="button" id="btnSaveAlt" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13px] font-semibold px-4 py-2.5">Save</button>
+              <button type="button" id="btnCancelAlt" class="rounded-xl border border-zinc-200 text-[13px] font-semibold px-4 py-2.5 text-zinc-600">Cancel</button>
+            </div>
+          </div>
+
+          <div id="altAssetsList" class="space-y-3 max-w-3xl">
+            <p class="text-[13px] text-zinc-400">Loading…</p>
+          </div>
+        </div>
+
+
         <!-- AI INSIGHTS --><!-- AI INSIGHTS -->
         <div id="view-ai-insights" class="view">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
@@ -1177,6 +1314,7 @@
           loadProfile();
           loadGoals();
           loadCashAccounts();
+          loadAltAssets();
           setTimeout(() => generateAiCfoInsights(), 800);
           setTimeout(() => loadHoldingNews(), 1200);
         }, 150);
@@ -3763,8 +3901,182 @@
         if (name === 'ai-insights') { generateAiCfoInsights(); loadHoldingNews(); }
         if (name === 'overview') loadHoldingNews();
         if (name === 'cash') loadCashAccounts();
+        if (name === 'alt-assets') { loadAltAssets(); updateAltFormFields(); }
         if (name === 'portfolio') { loadDividends(); if (typeof applyPortfolioAssetFilter === 'function') applyPortfolioAssetFilter(); }
       }
+
+
+
+      // ---- Other assets (MF, FD, Bonds, Vehicles, Business) ----
+      let altTabFilter = 'all';
+      window.__lastAltAed = 0;
+
+      const ALT_LABELS = {
+        mutual_fund: 'Mutual Fund',
+        fixed_deposit: 'Fixed Deposit',
+        bond_sukuk: 'Bond / Sukuk',
+        vehicle: 'Vehicle',
+        business: 'Business'
+      };
+
+      function updateAltFormFields() {
+        const t = document.getElementById('altClass')?.value || 'mutual_fund';
+        const nameL = document.getElementById('altNameLabel');
+        const instL = document.getElementById('altInstLabel');
+        const qtyL = document.getElementById('altQtyLabel');
+        const invL = document.getElementById('altInvestedLabel');
+        const valL = document.getElementById('altValueLabel');
+        const rateL = document.getElementById('altRateLabel');
+        const refL = document.getElementById('altRefLabel');
+        const show = (id, on) => { const el = document.getElementById(id); if (el) el.classList.toggle('hidden', !on); };
+        show('altFieldQty', t === 'mutual_fund' || t === 'bond_sukuk' || t === 'vehicle');
+        show('altFieldRate', t === 'fixed_deposit' || t === 'bond_sukuk');
+        show('altFieldOwn', t === 'business');
+        show('altFieldStart', t !== 'vehicle');
+        show('altFieldMaturity', t === 'fixed_deposit' || t === 'bond_sukuk');
+        if (nameL) nameL.textContent = ({ mutual_fund: 'Scheme / fund name', fixed_deposit: 'FD name / bank product', bond_sukuk: 'Bond or sukuk name', vehicle: 'Make & model', business: 'Business / company name' })[t];
+        if (instL) instL.textContent = ({ mutual_fund: 'AMC / platform', fixed_deposit: 'Bank', bond_sukuk: 'Issuer', vehicle: 'Dealer / financed by', business: 'Jurisdiction / free zone' })[t];
+        if (qtyL) qtyL.textContent = ({ mutual_fund: 'Units', bond_sukuk: 'Face units / count', vehicle: 'Count (usually 1)' })[t] || 'Quantity';
+        if (invL) invL.textContent = ({ mutual_fund: 'Amount invested', fixed_deposit: 'Principal', bond_sukuk: 'Amount invested', vehicle: 'Purchase price', business: 'Capital invested' })[t];
+        if (valL) valL.textContent = ({ mutual_fund: 'Current value (NAV × units)', fixed_deposit: 'Maturity value (est.)', bond_sukuk: 'Current market value', vehicle: 'Current market value', business: 'Your share value (est.)' })[t];
+        if (rateL) rateL.textContent = t === 'bond_sukuk' ? 'Coupon % p.a.' : 'Interest % p.a.';
+        if (refL) refL.textContent = ({ mutual_fund: 'Folio number', fixed_deposit: 'Account / FD number', bond_sukuk: 'ISIN / certificate no.', vehicle: 'Plate / chassis', business: 'Trade license / share cert.' })[t];
+      }
+
+      document.getElementById('altClass')?.addEventListener('change', updateAltFormFields);
+      document.getElementById('btnToggleAltForm')?.addEventListener('click', () => {
+        document.getElementById('altFormPanel')?.classList.remove('hidden');
+        updateAltFormFields();
+      });
+      document.getElementById('btnCancelAlt')?.addEventListener('click', () => {
+        document.getElementById('altFormPanel')?.classList.add('hidden');
+      });
+      document.querySelectorAll('[data-alt-tab]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          altTabFilter = btn.getAttribute('data-alt-tab') || 'all';
+          document.querySelectorAll('.alt-tab').forEach(b => {
+            const on = b.getAttribute('data-alt-tab') === altTabFilter;
+            b.className = 'alt-tab rounded-full px-3.5 py-1.5 text-[12px] font-semibold ' + (on ? 'bg-brand-700 text-white' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200');
+          });
+          loadAltAssets();
+        });
+      });
+
+      async function loadAltAssets() {
+        const list = document.getElementById('altAssetsList');
+        if (!list || !currentUser) return;
+        list.innerHTML = '<p class="text-[13px] text-zinc-400">Loading…</p>';
+        const { data, error } = await supabaseClient
+          .from('alt_assets')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .order('created_at', { ascending: false });
+        if (error) {
+          list.innerHTML = '<p class="text-[13px] text-zinc-400">Run <strong>alt-assets-setup.sql</strong> in Supabase to enable Mutual Funds, FDs, Bonds, Vehicles & Business.</p>';
+          window.__lastAltAed = 0;
+          if (typeof refreshTotalNetWorth === 'function') refreshTotalNetWorth();
+          return;
+        }
+        const rates = await getRatesToAed();
+        const sums = { mutual_fund: 0, fixed_deposit: 0, bond_sukuk: 0, vehicle: 0, business: 0 };
+        let totalAed = 0;
+        const rows = (data || []).map(r => {
+          const cur = (r.currency || 'AED').toUpperCase();
+          const raw = Number(r.current_value) || Number(r.invested_amount) || 0;
+          const aed = raw * (rates[cur] != null ? rates[cur] : (cur === 'AED' ? 1 : 0));
+          if (sums[r.asset_class] != null) sums[r.asset_class] += aed;
+          totalAed += aed;
+          return { ...r, _aed: aed };
+        });
+        window.__lastAltAed = totalAed;
+        window.__lastAltSums = sums;
+        const fmt = n => 'AED ' + Math.round(n).toLocaleString();
+        const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = fmt(v); };
+        set('altSumMf', sums.mutual_fund);
+        set('altSumFd', sums.fixed_deposit);
+        set('altSumBond', sums.bond_sukuk);
+        set('altSumVeh', sums.vehicle);
+        set('altSumBiz', sums.business);
+        if (typeof refreshTotalNetWorth === 'function') refreshTotalNetWorth();
+
+        const filtered = altTabFilter === 'all' ? rows : rows.filter(r => r.asset_class === altTabFilter);
+        if (!filtered.length) {
+          list.innerHTML = '<p class="text-[13px] text-zinc-400 py-4">No entries yet. Use + Add entry.</p>';
+          return;
+        }
+        const accent = {
+          mutual_fund: 'bg-indigo-50 text-indigo-700 ring-indigo-100',
+          fixed_deposit: 'bg-sky-50 text-sky-800 ring-sky-100',
+          bond_sukuk: 'bg-teal-50 text-teal-800 ring-teal-100',
+          vehicle: 'bg-orange-50 text-orange-800 ring-orange-100',
+          business: 'bg-fuchsia-50 text-fuchsia-800 ring-fuchsia-100'
+        };
+        list.innerHTML = filtered.map(r => {
+          const letter = (r.name || '?').charAt(0).toUpperCase();
+          const meta = [
+            ALT_LABELS[r.asset_class] || r.asset_class,
+            r.institution,
+            r.rate != null ? (r.rate + '%') : null,
+            r.ownership_pct != null ? (r.ownership_pct + '% own') : null,
+            r.maturity_date ? ('Mat. ' + r.maturity_date) : null
+          ].filter(Boolean).join(' · ');
+          const cur = (r.currency || 'AED').toUpperCase();
+          const val = Number(r.current_value) || Number(r.invested_amount) || 0;
+          return `<div class="group flex items-center gap-3 rounded-2xl border-2 border-zinc-100 bg-white hover:border-zinc-200 hover:shadow-soft px-4 py-3.5 transition">
+            <div class="w-10 h-10 rounded-xl ${accent[r.asset_class]||'bg-zinc-50'} ring-1 flex items-center justify-center text-[13px] font-bold shrink-0">${letter}</div>
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-zinc-900 truncate text-[14px]">${r.name}</p>
+              <p class="text-[11.5px] text-zinc-400 truncate">${meta}</p>
+              ${r.folio_ref ? `<p class="text-[11px] text-zinc-400">Ref: ${r.folio_ref}</p>` : ''}
+            </div>
+            <div class="text-right shrink-0">
+              <p class="tabular-nums font-semibold text-zinc-900 text-[14px]">${cur} ${val.toLocaleString(undefined,{maximumFractionDigits:0})}</p>
+              <p class="text-[11px] text-zinc-400 tabular-nums">≈ AED ${Math.round(r._aed).toLocaleString()}</p>
+            </div>
+            <button type="button" onclick="deleteAltAsset('${r.id}')" class="opacity-70 sm:opacity-0 sm:group-hover:opacity-100 text-[11px] font-semibold text-rose-500 px-1">Delete</button>
+          </div>`;
+        }).join('');
+      }
+
+      document.getElementById('btnSaveAlt')?.addEventListener('click', async () => {
+        if (!currentUser) return;
+        const asset_class = document.getElementById('altClass').value;
+        const name = document.getElementById('altName').value.trim();
+        if (!name) { alert('Enter a name'); return; }
+        const invested = parseFloat(document.getElementById('altInvested').value);
+        let current = parseFloat(document.getElementById('altCurrent').value);
+        if (isNaN(current) && !isNaN(invested)) current = invested;
+        const row = {
+          user_id: currentUser.id,
+          asset_class,
+          name,
+          institution: document.getElementById('altInstitution').value.trim() || null,
+          currency: document.getElementById('altCurrency').value,
+          quantity: parseFloat(document.getElementById('altQuantity').value) || null,
+          invested_amount: isNaN(invested) ? 0 : invested,
+          current_value: isNaN(current) ? 0 : current,
+          rate: parseFloat(document.getElementById('altRate').value) || null,
+          ownership_pct: parseFloat(document.getElementById('altOwnPct').value) || null,
+          start_date: document.getElementById('altStart').value || null,
+          maturity_date: document.getElementById('altMaturity').value || null,
+          folio_ref: document.getElementById('altFolio').value.trim() || null,
+          notes: document.getElementById('altNotes').value.trim() || null
+        };
+        const { error } = await supabaseClient.from('alt_assets').insert([row]);
+        if (error) { alert(error.message + '\\n\\nRun alt-assets-setup.sql in Supabase if the table is missing.'); return; }
+        document.getElementById('altFormPanel').classList.add('hidden');
+        ['altName','altInstitution','altQuantity','altInvested','altCurrent','altRate','altOwnPct','altStart','altMaturity','altFolio','altNotes'].forEach(id => {
+          const el = document.getElementById(id); if (el) el.value = '';
+        });
+        loadAltAssets();
+      });
+
+      window.deleteAltAsset = async function(id) {
+        if (!confirm('Delete this entry?')) return;
+        const { error } = await supabaseClient.from('alt_assets').delete().eq('id', id);
+        if (error) alert(error.message);
+        else loadAltAssets();
+      };
 
 
       // ---- Cash & Bank ----
@@ -3898,18 +4210,19 @@
       function refreshTotalNetWorth() {
         const liquid = Number(window.__lastLiveAed) || 0;
         const re = Number(window.__lastReVal) || 0;
+        const alt = Number(window.__lastAltAed) || 0;
         const cash = window.__lastCashSums || { bank: 0, credit_card: 0, receivable: 0, debt: 0 };
         const bank = Number(cash.bank) || 0;
         const recv = Number(cash.receivable) || 0;
         const cards = Number(cash.credit_card) || 0;
         const debt = Number(cash.debt) || 0;
-        // Net worth = liquid holdings + RE + bank + receivable − credit cards − debts
-        const total = liquid + re + bank + recv - cards - debt;
+        // Net worth = liquid + RE + other assets + bank + receivable − cards − debts
+        const total = liquid + re + alt + bank + recv - cards - debt;
         const el = document.getElementById('totalNetWorthCard');
         if (el) el.textContent = 'AED ' + total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         const sub = document.getElementById('totalNetWorthSub');
         if (sub) {
-          sub.textContent = 'Holdings + property + cash − liabilities';
+          sub.textContent = 'Holdings + property + other + cash − liabilities';
         }
         const liqSub = document.getElementById('liquidValueSub');
         if (liqSub) {
