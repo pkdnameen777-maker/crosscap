@@ -1123,7 +1123,7 @@
             <!-- Backup -->
             <div class="cc-panel p-5">
               <h3 class="text-[15px] font-semibold text-zinc-900 mb-1">Backup</h3>
-              <p class="text-[12px] text-zinc-400 mb-4">Download a full JSON backup of holdings, properties, installments, and profile.</p>
+              <p class="text-[12px] text-zinc-400 mb-4">Download a full JSON backup: holdings, properties, installments, cash, other assets, goals, dividends, rent, and profile.</p>
               <button type="button" id="btnBackupJson" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13px] font-semibold px-4 py-2.5">Download full backup</button>
             </div>
 
@@ -3281,25 +3281,50 @@
 
       async function downloadFullBackup() {
         if (!currentUser) return;
-        const [holdings, properties, installments, profile] = await Promise.all([
-          supabaseClient.from('holdings').select('*'),
-          supabaseClient.from('properties').select('*'),
-          supabaseClient.from('installments').select('*'),
-          supabaseClient.from('profiles').select('*').eq('id', currentUser.id).maybeSingle()
+        const uid = currentUser.id;
+        const [
+          holdings, properties, installments, profile,
+          cash, alt, goals, goalContribs, dividends, rents
+        ] = await Promise.all([
+          supabaseClient.from('holdings').select('*').eq('user_id', uid),
+          supabaseClient.from('properties').select('*').eq('user_id', uid),
+          supabaseClient.from('installments').select('*').eq('user_id', uid),
+          supabaseClient.from('profiles').select('*').eq('id', uid).maybeSingle(),
+          supabaseClient.from('cash_accounts').select('*').eq('user_id', uid),
+          supabaseClient.from('alt_assets').select('*').eq('user_id', uid),
+          supabaseClient.from('goals').select('*').eq('user_id', uid),
+          supabaseClient.from('goal_contributions').select('*').eq('user_id', uid),
+          supabaseClient.from('dividends').select('*').eq('user_id', uid),
+          supabaseClient.from('rental_payments').select('*').eq('user_id', uid)
         ]);
+        // Tables that may not exist yet → empty arrays (don't fail whole backup)
+        const safe = (res) => (res && !res.error && res.data) ? res.data : [];
         const payload = {
-          version: 1,
+          version: 2,
           app: 'CrossCap',
           exported_at: new Date().toISOString(),
           user_email: currentUser.email,
-          holdings: holdings.data || [],
-          properties: properties.data || [],
-          installments: installments.data || [],
-          profile: profile.data || null
+          holdings: safe(holdings),
+          properties: safe(properties),
+          installments: safe(installments),
+          profile: (profile && profile.data) ? profile.data : null,
+          cash_accounts: safe(cash),
+          alt_assets: safe(alt),
+          goals: safe(goals),
+          goal_contributions: safe(goalContribs),
+          dividends: safe(dividends),
+          rental_payments: safe(rents)
         };
         const stamp = new Date().toISOString().slice(0,10);
         downloadBlob(`crosscap-backup-${stamp}.json`, JSON.stringify(payload, null, 2), 'application/json');
-        setReportStatus('Full backup downloaded', true);
+        const parts = [
+          payload.holdings.length + ' holdings',
+          payload.properties.length + ' properties',
+          payload.cash_accounts.length + ' cash',
+          payload.alt_assets.length + ' other assets',
+          payload.goals.length + ' goals'
+        ];
+        setReportStatus('Full backup downloaded (' + parts.join(', ') + ')', true);
       }
 
       async function restoreFromBackup(file) {
@@ -3434,13 +3459,144 @@
             }, { onConflict: 'id' });
           }
 
+          let cashCount = 0, altCount = 0, goalCount = 0, divCount = 0, rentCount = 0;
+
+          // Cash & bank
+          if (Array.isArray(data.cash_accounts)) {
+            const { data: existCash } = await supabaseClient.from('cash_accounts').select('name, account_type, currency, balance').eq('user_id', currentUser.id);
+            for (const c of data.cash_accounts) {
+              const exists = (existCash || []).find(e =>
+                String(e.name||'').toLowerCase() === String(c.name||'').toLowerCase()
+                && String(e.account_type||'') === String(c.account_type||'')
+                && String(e.currency||'') === String(c.currency||'')
+                && Number(e.balance) === Number(c.balance)
+              );
+              if (exists) continue;
+              const { error } = await supabaseClient.from('cash_accounts').insert([{
+                user_id: currentUser.id,
+                account_type: c.account_type || 'bank',
+                name: c.name,
+                currency: c.currency || 'AED',
+                balance: Number(c.balance) || 0,
+                note: c.note || null
+              }]);
+              if (!error) cashCount++;
+            }
+          }
+
+          // Other assets (MF, FD, bonds, vehicles, business)
+          if (Array.isArray(data.alt_assets)) {
+            const { data: existAlt } = await supabaseClient.from('alt_assets').select('name, asset_class, invested_amount').eq('user_id', currentUser.id);
+            for (const a of data.alt_assets) {
+              const exists = (existAlt || []).find(e =>
+                String(e.name||'').toLowerCase() === String(a.name||'').toLowerCase()
+                && String(e.asset_class||'') === String(a.asset_class||'')
+                && Number(e.invested_amount) === Number(a.invested_amount)
+              );
+              if (exists) continue;
+              const { error } = await supabaseClient.from('alt_assets').insert([{
+                user_id: currentUser.id,
+                asset_class: a.asset_class,
+                name: a.name,
+                institution: a.institution || null,
+                currency: a.currency || 'AED',
+                quantity: a.quantity ?? null,
+                invested_amount: Number(a.invested_amount) || 0,
+                current_value: Number(a.current_value) || 0,
+                rate: a.rate ?? null,
+                ownership_pct: a.ownership_pct ?? null,
+                start_date: a.start_date || null,
+                maturity_date: a.maturity_date || null,
+                folio_ref: a.folio_ref || null,
+                notes: a.notes || null
+              }]);
+              if (!error) altCount++;
+            }
+          }
+
+          // Goals + contributions
+          const goalIdMap = {};
+          if (Array.isArray(data.goals)) {
+            const { data: existGoals } = await supabaseClient.from('goals').select('id, title, target_amount').eq('user_id', currentUser.id);
+            for (const g of data.goals) {
+              const already = (existGoals || []).find(e =>
+                String(e.title||'').toLowerCase() === String(g.title||'').toLowerCase()
+                && Number(e.target_amount) === Number(g.target_amount)
+              );
+              if (already) {
+                goalIdMap[g.id] = already.id;
+                continue;
+              }
+              const { data: created, error } = await supabaseClient.from('goals').insert([{
+                user_id: currentUser.id,
+                title: g.title,
+                target_amount: Number(g.target_amount) || 0,
+                note: g.note || null,
+                status: g.status || 'active',
+                claimed_at: g.claimed_at || null
+              }]).select().single();
+              if (!error && created) {
+                goalIdMap[g.id] = created.id;
+                goalCount++;
+              }
+            }
+          }
+          if (Array.isArray(data.goal_contributions)) {
+            for (const gc of data.goal_contributions) {
+              const gid = goalIdMap[gc.goal_id];
+              if (!gid) continue;
+              await supabaseClient.from('goal_contributions').insert([{
+                goal_id: gid,
+                user_id: currentUser.id,
+                amount: Number(gc.amount) || 0,
+                note: gc.note || null,
+                status: gc.status || 'paid'
+              }]);
+            }
+          }
+
+          // Dividends
+          if (Array.isArray(data.dividends)) {
+            for (const d of data.dividends) {
+              const { error } = await supabaseClient.from('dividends').insert([{
+                user_id: currentUser.id,
+                ticker: d.ticker || d.symbol || null,
+                amount: Number(d.amount) || 0,
+                amount_aed: d.amount_aed != null ? Number(d.amount_aed) : null,
+                received_date: d.received_date || d.date || null,
+                note: d.note || null
+              }]);
+              if (!error) divCount++;
+            }
+          }
+
+          // Rental payments
+          if (Array.isArray(data.rental_payments)) {
+            for (const r of data.rental_payments) {
+              const pid = propIdMap[r.property_id];
+              if (!pid) continue;
+              const { error } = await supabaseClient.from('rental_payments').insert([{
+                user_id: currentUser.id,
+                property_id: pid,
+                amount: Number(r.amount) || 0,
+                due_date: r.due_date || null,
+                status: r.status || 'received',
+                note: r.note || null
+              }]);
+              if (!error) rentCount++;
+            }
+          }
+
           await dedupePropertiesSilent();
           await dedupeHoldingsSilent();
-          status.textContent = `Restored: ${hCount} holdings, ${pCount} new properties (${window.__restoreSkippedProps || 0} skipped as duplicates), ${iCount} installments`;
+          status.textContent = `Restored: ${hCount} holdings, ${pCount} properties, ${iCount} installments, ${cashCount} cash, ${altCount} other assets, ${goalCount} goals, ${divCount} dividends, ${rentCount} rent logs`;
           status.className = 'text-[12px] text-emerald-600 mt-3';
           loadPortfolio();
           loadProperties();
           if (typeof loadProfile === 'function') loadProfile();
+          if (typeof loadCashAccounts === 'function') loadCashAccounts();
+          if (typeof loadAltAssets === 'function') loadAltAssets();
+          if (typeof loadGoals === 'function') loadGoals();
         } catch (e) {
           status.textContent = 'Restore failed: ' + (e.message || e);
           status.className = 'text-[12px] text-rose-600 mt-3';
