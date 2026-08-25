@@ -1156,8 +1156,30 @@
       let currentUser = null;
 
       // Handle auth session from OAuth token
+      let __dataLoadedForUser = null;
+      let __loadTimer = null;
+      function runInitialDataLoad() {
+        if (!currentUser) return;
+        // Debounce: auth can fire INITIAL_SESSION + SIGNED_IN
+        clearTimeout(__loadTimer);
+        __loadTimer = setTimeout(async () => {
+          if (__dataLoadedForUser === currentUser.id) return;
+          __dataLoadedForUser = currentUser.id;
+          await dedupePropertiesSilent();
+          await dedupeHoldingsSilent();
+          loadPortfolio();
+          loadProperties();
+          loadProfile();
+          loadGoals();
+          loadCashAccounts();
+          setTimeout(() => generateAiCfoInsights(), 800);
+          setTimeout(() => loadHoldingNews(), 1200);
+        }, 150);
+      }
+
       supabaseClient.auth.onAuthStateChange((event, session) => {
         if (!session) {
+          __dataLoadedForUser = null;
           window.location.href = 'login.html';
           return;
         }
@@ -1178,13 +1200,10 @@
         const setE = document.getElementById('settingsEmail');
         if (setE) setE.textContent = currentUser.email || '';
 
-        loadPortfolio();
-        loadProperties();
-        loadProfile();
-        loadGoals();
-        loadCashAccounts();
-        setTimeout(() => generateAiCfoInsights(), 800);
-        setTimeout(() => loadHoldingNews(), 1200);
+        // Load once per user (not on every TOKEN_REFRESHED)
+        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
+          runInitialDataLoad();
+        }
       });
 
       function setAvatarDisplay(url) {
@@ -1369,15 +1388,38 @@
         const marketSelect = document.getElementById('assetMarket');
         const currency = marketSelect.options[marketSelect.selectedIndex].getAttribute('data-currency') || 'USD';
 
-        const { error } = await supabaseClient.from('holdings').insert([{
-          user_id: currentUser.id,
-          symbol,
-          market,
-          asset_type: 'stocks',
-          shares,
-          avg_buy_price,
-          currency
-        }]);
+        // Same symbol + market → update (weighted avg) instead of second row
+        const { data: existingH } = await supabaseClient.from('holdings').select('*')
+          .eq('user_id', currentUser.id)
+          .ilike('symbol', symbol)
+          .eq('market', market)
+          .maybeSingle();
+
+        let error = null;
+        if (existingH) {
+          const oldSh = Number(existingH.shares) || 0;
+          const oldAvg = Number(existingH.avg_buy_price) || 0;
+          const newSh = oldSh + shares;
+          const newAvg = newSh > 0 ? ((oldSh * oldAvg) + (shares * avg_buy_price)) / newSh : avg_buy_price;
+          const res = await supabaseClient.from('holdings').update({
+            shares: newSh,
+            avg_buy_price: newAvg,
+            currency
+          }).eq('id', existingH.id);
+          error = res.error;
+          if (!error) alert('Updated existing holding (merged quantity).');
+        } else {
+          const res = await supabaseClient.from('holdings').insert([{
+            user_id: currentUser.id,
+            symbol,
+            market,
+            asset_type: 'stocks',
+            shares,
+            avg_buy_price,
+            currency
+          }]);
+          error = res.error;
+        }
 
         if (error) {
           alert('Error saving asset: ' + error.message);
@@ -1626,6 +1668,17 @@
 
         const monthly_rent = status === 'ready' ? (parseFloat(document.getElementById('reMonthlyRent')?.value) || null) : null;
         const rent_due_day = status === 'ready' ? (parseInt(document.getElementById('reRentDueDay')?.value, 10) || null) : null;
+
+        // Block exact duplicate property (same name + price)
+        const { data: dupProp } = await supabaseClient.from('properties').select('id')
+          .eq('user_id', currentUser.id)
+          .ilike('name', name)
+          .eq('total_price', total_price)
+          .maybeSingle();
+        if (dupProp) {
+          alert('This property already exists (same name and price). Open it from the list instead of adding again.');
+          return;
+        }
 
         const { data: prop, error } = await supabaseClient.from('properties').insert([{
           user_id: currentUser.id,
@@ -2080,7 +2133,16 @@
       }
 
       async function loadPortfolio() {
-        const { data: holdings } = await supabaseClient.from('holdings').select('*');
+        if (!currentUser) return;
+        const { data: holdings } = await supabaseClient.from('holdings').select('*').eq('user_id', currentUser.id);
+        // Client safety: unique by symbol|market (keep first)
+        const seenH = new Set();
+        const holdingsUnique = (holdings || []).filter(h => {
+          const k = String(h.symbol||'').toUpperCase() + '|' + String(h.market||'').toUpperCase();
+          if (seenH.has(k)) return false;
+          seenH.add(k);
+          return true;
+        });
         const tbody = document.getElementById('portfolioTableBody');
         tbody.innerHTML = '';
         let totalAed = 0;
@@ -2088,7 +2150,7 @@
 
         const rates = await getRatesToAed();
         lastHoldingsAed = [];
-        const liveMap = await fetchLivePrices(holdings || []);
+        const liveMap = await fetchLivePrices(holdingsUnique);
         let totalCostAed = 0;
         let totalLiveAed = 0;
         window.__holdingsByKind = { stocks: {v:0,c:0,pnl:0}, gold: {v:0,c:0,pnl:0}, crypto: {v:0,c:0,pnl:0}, cash: {v:0,c:0,pnl:0} };
@@ -2298,7 +2360,16 @@
 
       // Load Real Estate + installments + 30-day radar
       async function loadProperties() {
-        const { data: properties } = await supabaseClient.from('properties').select('*').order('created_at', { ascending: false });
+        if (!currentUser) return;
+        const { data: propertiesRaw } = await supabaseClient.from('properties').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
+        // Client safety: unique by name|price (keep newest first from query)
+        const seenP = new Set();
+        const properties = (propertiesRaw || []).filter(p => {
+          const k = String(p.name||'').trim().toLowerCase() + '|' + Number(p.total_price);
+          if (seenP.has(k)) return false;
+          seenP.add(k);
+          return true;
+        });
         const container = document.getElementById('propertiesList');
         container.innerHTML = '';
         let totalReVal = 0;
@@ -3215,6 +3286,8 @@
             }, { onConflict: 'id' });
           }
 
+          await dedupePropertiesSilent();
+          await dedupeHoldingsSilent();
           status.textContent = `Restored: ${hCount} holdings, ${pCount} new properties (${window.__restoreSkippedProps || 0} skipped as duplicates), ${iCount} installments`;
           status.className = 'text-[12px] text-emerald-600 mt-3';
           loadPortfolio();
@@ -3231,6 +3304,61 @@
       document.getElementById('btnExportAllocationCsv')?.addEventListener('click', exportAllocationCsv);
       document.getElementById('btnExportMonthly')?.addEventListener('click', exportMonthlyStatement);
       document.getElementById('btnBackupJson')?.addEventListener('click', downloadFullBackup);
+
+      async function dedupePropertiesSilent() {
+        if (!currentUser) return 0;
+        const { data: props, error } = await supabaseClient
+          .from('properties')
+          .select('id, name, total_price, created_at')
+          .eq('user_id', currentUser.id)
+          .order('created_at', { ascending: true });
+        if (error || !props) return 0;
+        const groups = {};
+        props.forEach(p => {
+          const key = String(p.name || '').trim().toLowerCase() + '|' + Number(p.total_price);
+          if (!groups[key]) groups[key] = [];
+          groups[key].push(p);
+        });
+        let removed = 0;
+        for (const key of Object.keys(groups)) {
+          const list = groups[key];
+          if (list.length < 2) continue;
+          for (let i = 1; i < list.length; i++) {
+            await supabaseClient.from('installments').delete().eq('property_id', list[i].id);
+            const { error: delErr } = await supabaseClient.from('properties').delete().eq('id', list[i].id);
+            if (!delErr) removed++;
+          }
+        }
+        return removed;
+      }
+
+      async function dedupeHoldingsSilent() {
+        if (!currentUser) return 0;
+        const { data: rows, error } = await supabaseClient
+          .from('holdings')
+          .select('id, symbol, market, shares, created_at')
+          .eq('user_id', currentUser.id)
+          .order('created_at', { ascending: true });
+        if (error || !rows) return 0;
+        const groups = {};
+        rows.forEach(h => {
+          const key = String(h.symbol || '').trim().toUpperCase() + '|' + String(h.market || '').trim().toUpperCase();
+          if (!groups[key]) groups[key] = [];
+          groups[key].push(h);
+        });
+        let removed = 0;
+        for (const key of Object.keys(groups)) {
+          const list = groups[key];
+          if (list.length < 2) continue;
+          // keep oldest; delete rest
+          for (let i = 1; i < list.length; i++) {
+            const { error: delErr } = await supabaseClient.from('holdings').delete().eq('id', list[i].id);
+            if (!delErr) removed++;
+          }
+        }
+        return removed;
+      }
+
       async function dedupeProperties() {
         const status = document.getElementById('dedupeStatus');
         status.classList.remove('hidden');
