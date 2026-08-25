@@ -709,9 +709,9 @@
               <div class="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-amber-200/30 blur-2xl pointer-events-none"></div>
               <div class="relative flex items-start justify-between gap-2">
                 <div>
-                  <p class="text-[10px] font-bold uppercase tracking-wider text-amber-800/80">Debts to clear</p>
+                  <p class="text-[10px] font-bold uppercase tracking-wider text-amber-800/80">All loans &amp; debt</p>
                   <p id="cashSumDebt" class="font-display text-[20px] font-semibold text-amber-950 mt-1.5 tabular-nums tracking-tight">AED 0</p>
-                  <p class="text-[11px] text-zinc-400 mt-1">Liabilities</p>
+                  <p class="text-[11px] text-zinc-400 mt-1">Mortgage + vehicle + personal + business + other</p>
                 </div>
                 <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
                   <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
@@ -722,15 +722,23 @@
 
           <div id="cashFormPanel" class="hidden mb-6 bg-white rounded-2xl border border-zinc-200/80 p-6 shadow-card max-w-2xl ring-1 ring-brand-50">
             <h3 class="text-[15px] font-semibold text-zinc-900 mb-1">New cash entry</h3>
-            <p class="text-[12px] text-zinc-400 mb-4">Bank, card, receivable, or debt — choose currency after the name.</p>
+            <p class="text-[12px] text-zinc-400 mb-4">Banks, receivables, and loans (mortgage, vehicle, personal, business, cards).</p>
             <div class="grid sm:grid-cols-2 gap-3">
               <div class="sm:col-span-2">
                 <label class="block text-[12px] font-medium text-zinc-600 mb-1">Type</label>
                 <select id="cashType" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]">
-                  <option value="bank">Bank account</option>
-                  <option value="credit_card">Credit card</option>
-                  <option value="receivable">Money lent / receivable</option>
-                  <option value="debt">Debt to clear</option>
+                  <optgroup label="Assets">
+                    <option value="bank">Bank account</option>
+                    <option value="receivable">Money lent / receivable</option>
+                  </optgroup>
+                  <optgroup label="Loans &amp; debt">
+                    <option value="credit_card">Credit card debt</option>
+                    <option value="mortgage">Mortgage / property loan</option>
+                    <option value="vehicle_loan">Vehicle loan</option>
+                    <option value="personal_loan">Personal loan</option>
+                    <option value="business_loan">Business loan</option>
+                    <option value="debt">Other debt</option>
+                  </optgroup>
                 </select>
               </div>
               <div class="sm:col-span-2">
@@ -790,11 +798,21 @@
               <div>
                 <label class="block text-[12px] font-medium text-zinc-600 mb-1">Balance / amount</label>
                 <input id="cashAmount" type="number" step="any" placeholder="0.00" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" />
-                <p class="text-[11px] text-zinc-400 mt-1">Bank = positive balance. Card / debt = amount you owe. Receivable = amount owed to you.</p>
+                <p class="text-[11px] text-zinc-400 mt-1">Bank / receivable = positive. Loans &amp; cards = outstanding amount you still owe.</p>
+              </div>
+              <div id="cashLoanFields" class="sm:col-span-2 grid sm:grid-cols-2 gap-3 hidden">
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1">Interest rate % p.a. (optional)</label>
+                  <input id="cashRate" type="number" step="any" placeholder="e.g. 4.5" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" />
+                </div>
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1">Monthly EMI / payment (optional)</label>
+                  <input id="cashEmi" type="number" step="any" placeholder="0.00" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" />
+                </div>
               </div>
               <div class="sm:col-span-2">
                 <label class="block text-[12px] font-medium text-zinc-600 mb-1">Note (optional)</label>
-                <input id="cashNote" type="text" placeholder="Account number last 4, due date, etc." class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" />
+                <input id="cashNote" type="text" placeholder="Account last 4, lender, property ref, etc." class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" />
               </div>
             </div>
             <div class="flex gap-2 mt-4">
@@ -813,13 +831,6 @@
             </section>
             <section class="rounded-2xl border border-zinc-100 bg-white/80 p-4 sm:p-5 shadow-soft">
               <div class="flex items-center gap-2 mb-3">
-                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                <h3 class="text-[12px] font-bold text-zinc-500 uppercase tracking-wider">Credit cards</h3>
-              </div>
-              <div id="cashListCards" class="space-y-2"></div>
-            </section>
-            <section class="rounded-2xl border border-zinc-100 bg-white/80 p-4 sm:p-5 shadow-soft">
-              <div class="flex items-center gap-2 mb-3">
                 <span class="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
                 <h3 class="text-[12px] font-bold text-zinc-500 uppercase tracking-wider">Money lent / receivable</h3>
               </div>
@@ -827,8 +838,43 @@
             </section>
             <section class="rounded-2xl border border-zinc-100 bg-white/80 p-4 sm:p-5 shadow-soft">
               <div class="flex items-center gap-2 mb-3">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                <h3 class="text-[12px] font-bold text-zinc-500 uppercase tracking-wider">Credit card debt</h3>
+              </div>
+              <div id="cashListCards" class="space-y-2"></div>
+            </section>
+            <section class="rounded-2xl border border-zinc-100 bg-white/80 p-4 sm:p-5 shadow-soft">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="w-1.5 h-1.5 rounded-full bg-violet-500"></span>
+                <h3 class="text-[12px] font-bold text-zinc-500 uppercase tracking-wider">Mortgages / property loans</h3>
+              </div>
+              <div id="cashListMortgage" class="space-y-2"></div>
+            </section>
+            <section class="rounded-2xl border border-zinc-100 bg-white/80 p-4 sm:p-5 shadow-soft">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+                <h3 class="text-[12px] font-bold text-zinc-500 uppercase tracking-wider">Vehicle loans</h3>
+              </div>
+              <div id="cashListVehicle" class="space-y-2"></div>
+            </section>
+            <section class="rounded-2xl border border-zinc-100 bg-white/80 p-4 sm:p-5 shadow-soft">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
+                <h3 class="text-[12px] font-bold text-zinc-500 uppercase tracking-wider">Personal loans</h3>
+              </div>
+              <div id="cashListPersonal" class="space-y-2"></div>
+            </section>
+            <section class="rounded-2xl border border-zinc-100 bg-white/80 p-4 sm:p-5 shadow-soft">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="w-1.5 h-1.5 rounded-full bg-fuchsia-500"></span>
+                <h3 class="text-[12px] font-bold text-zinc-500 uppercase tracking-wider">Business loans</h3>
+              </div>
+              <div id="cashListBusiness" class="space-y-2"></div>
+            </section>
+            <section class="rounded-2xl border border-zinc-100 bg-white/80 p-4 sm:p-5 shadow-soft">
+              <div class="flex items-center gap-2 mb-3">
                 <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                <h3 class="text-[12px] font-bold text-zinc-500 uppercase tracking-wider">Debts to clear</h3>
+                <h3 class="text-[12px] font-bold text-zinc-500 uppercase tracking-wider">Other debt</h3>
               </div>
               <div id="cashListDebt" class="space-y-2"></div>
             </section>
@@ -4243,11 +4289,23 @@
         document.getElementById('cashFormPanel')?.classList.add('hidden');
       });
 
+      function toggleCashLoanFields() {
+        const t = document.getElementById('cashType')?.value || '';
+        const loanTypes = ['credit_card','mortgage','vehicle_loan','personal_loan','business_loan','debt'];
+        document.getElementById('cashLoanFields')?.classList.toggle('hidden', !loanTypes.includes(t));
+      }
+      document.getElementById('cashType')?.addEventListener('change', toggleCashLoanFields);
+
+
       async function loadCashAccounts() {
         const lists = {
           bank: document.getElementById('cashListBank'),
           credit_card: document.getElementById('cashListCards'),
           receivable: document.getElementById('cashListRecv'),
+          mortgage: document.getElementById('cashListMortgage'),
+          vehicle_loan: document.getElementById('cashListVehicle'),
+          personal_loan: document.getElementById('cashListPersonal'),
+          business_loan: document.getElementById('cashListBusiness'),
           debt: document.getElementById('cashListDebt')
         };
         Object.values(lists).forEach(el => { if (el) el.innerHTML = '<p class="text-[13px] text-zinc-400">Loading…</p>'; });
@@ -4264,8 +4322,8 @@
           return;
         }
         const rates = await getRatesToAed();
-        const sums = { bank: 0, credit_card: 0, receivable: 0, debt: 0 };
-        const buckets = { bank: [], credit_card: [], receivable: [], debt: [] };
+        const sums = { bank: 0, credit_card: 0, receivable: 0, mortgage: 0, vehicle_loan: 0, personal_loan: 0, business_loan: 0, debt: 0 };
+        const buckets = { bank: [], credit_card: [], receivable: [], mortgage: [], vehicle_loan: [], personal_loan: [], business_loan: [], debt: [] };
         (data || []).forEach(row => {
           const t = row.account_type || 'bank';
           if (!buckets[t]) buckets[t] = [];
@@ -4282,8 +4340,19 @@
         if (elB) elB.textContent = fmt(sums.bank);
         if (elC) elC.textContent = fmt(sums.credit_card);
         if (elR) elR.textContent = fmt(sums.receivable);
-        if (elD) elD.textContent = fmt(sums.debt);
-        window.__lastCashSums = sums;
+        const allLoans = (sums.mortgage||0) + (sums.vehicle_loan||0) + (sums.personal_loan||0) + (sums.business_loan||0) + (sums.debt||0);
+        if (elD) elD.textContent = fmt(allLoans);
+        // credit cards stay separate on card; liabilities for net worth = cards + all loans
+        window.__lastCashSums = {
+          bank: sums.bank,
+          credit_card: sums.credit_card,
+          receivable: sums.receivable,
+          debt: allLoans,
+          mortgage: sums.mortgage,
+          vehicle_loan: sums.vehicle_loan,
+          personal_loan: sums.personal_loan,
+          business_loan: sums.business_loan
+        };
         refreshTotalNetWorth();
 
         const render = (type) => {
@@ -4298,6 +4367,10 @@
               bank: 'bg-emerald-50 text-emerald-700 ring-emerald-100',
               credit_card: 'bg-rose-50 text-rose-700 ring-rose-100',
               receivable: 'bg-teal-50 text-teal-700 ring-teal-100',
+              mortgage: 'bg-violet-50 text-violet-800 ring-violet-100',
+              vehicle_loan: 'bg-orange-50 text-orange-800 ring-orange-100',
+              personal_loan: 'bg-sky-50 text-sky-800 ring-sky-100',
+              business_loan: 'bg-fuchsia-50 text-fuchsia-800 ring-fuchsia-100',
               debt: 'bg-amber-50 text-amber-800 ring-amber-100'
             }[type] || 'bg-zinc-50 text-zinc-600 ring-zinc-100';
           el.innerHTML = rows.map(r => {
@@ -4320,8 +4393,12 @@
           }).join('');
         };
         render('bank');
-        render('credit_card');
         render('receivable');
+        render('credit_card');
+        render('mortgage');
+        render('vehicle_loan');
+        render('personal_loan');
+        render('business_loan');
         render('debt');
       }
 
@@ -4336,14 +4413,32 @@
           alert('Enter a name and amount.');
           return;
         }
-        const { error } = await supabaseClient.from('cash_accounts').insert([{
+        const rate = parseFloat(document.getElementById('cashRate')?.value);
+        const emi = parseFloat(document.getElementById('cashEmi')?.value);
+        let noteFinal = note || '';
+        if (!isNaN(rate) || !isNaN(emi)) {
+          const bits = [];
+          if (!isNaN(rate)) bits.push(rate + '% p.a.');
+          if (!isNaN(emi)) bits.push('EMI ' + emi);
+          noteFinal = (bits.join(' · ') + (noteFinal ? ' · ' + noteFinal : '')).trim();
+        }
+        const row = {
           user_id: currentUser.id,
           account_type,
           name,
           currency,
           balance,
-          note
-        }]);
+          note: noteFinal || null
+        };
+        // Optional columns if migration applied
+        if (!isNaN(rate)) row.interest_rate = rate;
+        if (!isNaN(emi)) row.monthly_emi = emi;
+        let { error } = await supabaseClient.from('cash_accounts').insert([row]);
+        if (error && /interest_rate|monthly_emi|schema cache/i.test(error.message)) {
+          delete row.interest_rate;
+          delete row.monthly_emi;
+          ({ error } = await supabaseClient.from('cash_accounts').insert([row]));
+        }
         if (error) { alert(error.message); return; }
         document.getElementById('cashName').value = '';
         document.getElementById('cashAmount').value = '';
