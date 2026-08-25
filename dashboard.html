@@ -1037,6 +1037,11 @@
                   <label class="block text-[12px] font-medium text-zinc-600 mb-1">Email</label>
                   <p id="settingsEmail" class="text-sm font-medium text-zinc-800 break-all bg-zinc-50 rounded-xl px-3 py-2.5">—</p>
                 </div>
+                <div id="adminLinkBox" class="hidden sm:col-span-2 rounded-xl border-2 border-rose-100 bg-rose-50/50 p-3">
+                  <p class="text-[12px] font-semibold text-rose-800">Admin tools</p>
+                  <p class="text-[12px] text-zinc-600 mt-0.5 mb-2">Users, asset counts, announcement totals, support detail</p>
+                  <a href="admin.html" class="inline-flex text-[13px] font-semibold text-white bg-brand-700 hover:bg-brand-800 rounded-lg px-3 py-2">Open Admin page</a>
+                </div>
                 <div>
                   <label class="block text-[12px] font-medium text-zinc-600 mb-1">Full name</label>
                   <input id="profileName" type="text" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" placeholder="Your name" />
@@ -1199,6 +1204,11 @@
         if (se) se.textContent = currentUser.email || '';
         const setE = document.getElementById('settingsEmail');
         if (setE) setE.textContent = currentUser.email || '';
+        const adminBox = document.getElementById('adminLinkBox');
+        if (adminBox) {
+          const admins = ['muhammedameenpkdn@gmail.com', 'support.crosscap@gmail.com'];
+          adminBox.classList.toggle('hidden', !admins.includes((currentUser.email || '').toLowerCase()));
+        }
 
         // Load once per user (not on every TOKEN_REFRESHED)
         if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {

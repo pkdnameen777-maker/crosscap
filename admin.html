@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — CrossCap</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <meta name="theme-color" content="#7e22ce" />
+  <link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#faf5ff', 100: '#f3e8ff', 200: '#e9d5ff', 300: '#d8b4fe',
+              400: '#c084fc', 500: '#a855f7', 600: '#9333ea', 700: '#7e22ce',
+              800: '#6b21a8', 900: '#581c87', 950: '#3b0764',
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"SF Pro Display"', '"Segoe UI"', 'Roboto', 'sans-serif'],
+            display: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', '"Segoe UI"', 'Roboto', 'sans-serif']
+          },
+          boxShadow: {
+            soft: '0 4px 20px -4px rgba(88, 28, 135, 0.06), 0 2px 6px -2px rgba(0,0,0,0.04)',
+            card: '0 8px 30px -8px rgba(88, 28, 135, 0.1), 0 4px 12px -4px rgba(0,0,0,0.04)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+      letter-spacing: -0.011em;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-display { letter-spacing: -0.025em; }
+  </style>
+</head>
+<body class="bg-zinc-50 text-zinc-900 min-h-screen">
+  <header class="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-zinc-100">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <a href="dashboard.html" class="flex items-center gap-2 shrink-0">
+          <img src="assets/logo.svg" alt="CrossCap" class="h-7 w-7" onerror="this.style.display='none'" />
+          <span class="font-display font-semibold text-[16px]">CrossCap Admin</span>
+        </a>
+        <span class="hidden sm:inline text-[11px] font-semibold uppercase tracking-wider text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full">Private</span>
+      </div>
+      <div class="flex items-center gap-2 text-[13px]">
+        <span id="adminEmail" class="hidden sm:inline text-zinc-500 truncate max-w-[200px]"></span>
+        <a href="dashboard.html" class="rounded-lg border border-zinc-200 px-3 py-1.5 font-semibold text-zinc-700 hover:bg-zinc-50">Dashboard</a>
+        <button type="button" id="btnRefresh" class="rounded-lg bg-brand-700 hover:bg-brand-800 text-white px-3 py-1.5 font-semibold">Refresh</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+    <div id="gate" class="hidden max-w-md mx-auto mt-16 text-center">
+      <h1 class="font-display text-xl font-semibold mb-2">Admin only</h1>
+      <p id="gateMsg" class="text-[14px] text-zinc-500 mb-4">Sign in with an admin Google account.</p>
+      <a href="login.html" class="inline-flex rounded-xl bg-brand-700 text-white font-semibold px-4 py-2.5">Go to login</a>
+    </div>
+
+    <div id="app" class="hidden space-y-6">
+      <div>
+        <h1 class="font-display text-2xl font-semibold tracking-tight">Platform overview</h1>
+        <p class="text-[13px] text-zinc-500 mt-1">Users, asset counts, and support lookup · read-only</p>
+        <p id="generatedAt" class="text-[11px] text-zinc-400 mt-1"></p>
+      </div>
+
+      <!-- Totals for announcements -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="rounded-2xl border-2 border-emerald-200/90 bg-gradient-to-br from-emerald-50 via-white to-white p-4 shadow-soft">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-700/80">Users</p>
+          <p id="statUsers" class="font-display text-[22px] font-semibold mt-1 tabular-nums">—</p>
+        </div>
+        <div class="rounded-2xl border-2 border-brand-200/90 bg-gradient-to-br from-brand-50 via-white to-white p-4 shadow-soft">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-brand-700/80">Assets tracked</p>
+          <p id="statAssets" class="font-display text-[22px] font-semibold mt-1 tabular-nums">—</p>
+          <p class="text-[11px] text-zinc-500 mt-0.5">holdings + properties + cash</p>
+        </div>
+        <div class="rounded-2xl border-2 border-amber-200/90 bg-gradient-to-br from-amber-50 via-white to-white p-4 shadow-soft">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-amber-800/80">Property value</p>
+          <p id="statPropVal" class="font-display text-[18px] font-semibold mt-1 tabular-nums">—</p>
+          <p class="text-[11px] text-zinc-500 mt-0.5">Sum of total_price (AED)</p>
+        </div>
+        <div class="rounded-2xl border-2 border-violet-200/90 bg-gradient-to-br from-violet-50 via-white to-white p-4 shadow-soft">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-violet-800/80">Breakdown</p>
+          <p id="statBreakdown" class="text-[12px] text-zinc-700 mt-1 leading-relaxed">—</p>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-zinc-200 bg-white p-4 shadow-soft">
+        <p class="text-[12px] font-semibold text-zinc-700 mb-1">Announcement line (copy)</p>
+        <p id="announceLine" class="text-[14px] text-zinc-800 font-medium">—</p>
+        <button type="button" id="btnCopyAnnounce" class="mt-2 text-[12px] font-semibold text-brand-700 hover:underline">Copy text</button>
+      </div>
+
+      <!-- Search users -->
+      <div class="flex flex-col sm:flex-row sm:items-end gap-3">
+        <div class="flex-1">
+          <label class="block text-[12px] font-medium text-zinc-600 mb-1">Search user email</label>
+          <input id="searchEmail" type="search" placeholder="client@email.com" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]" />
+        </div>
+        <button type="button" id="btnSearch" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13px] font-semibold px-4 py-2.5">Search</button>
+        <button type="button" id="btnClearSearch" class="rounded-xl border border-zinc-200 text-[13px] font-semibold px-4 py-2.5 text-zinc-600">Show all</button>
+      </div>
+
+      <div class="rounded-2xl border border-zinc-200 bg-white shadow-soft overflow-hidden">
+        <div class="px-4 py-3 border-b border-zinc-100 flex items-center justify-between">
+          <h2 class="text-[14px] font-semibold">Users &amp; asset counts</h2>
+          <span id="userCountLabel" class="text-[12px] text-zinc-400"></span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-[13px]">
+            <thead>
+              <tr class="text-[10px] uppercase tracking-wider text-zinc-400 border-b border-zinc-100">
+                <th class="px-4 py-2.5 font-medium">Email</th>
+                <th class="px-4 py-2.5 font-medium text-right">Holdings</th>
+                <th class="px-4 py-2.5 font-medium text-right">Properties</th>
+                <th class="px-4 py-2.5 font-medium text-right">Cash</th>
+                <th class="px-4 py-2.5 font-medium text-right">Total items</th>
+                <th class="px-4 py-2.5 font-medium text-right">RE value</th>
+                <th class="px-4 py-2.5 font-medium">Last sign-in</th>
+                <th class="px-4 py-2.5 font-medium"></th>
+              </tr>
+            </thead>
+            <tbody id="usersBody">
+              <tr><td colspan="8" class="px-4 py-8 text-center text-zinc-400">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Detail panel -->
+      <div id="detailPanel" class="hidden rounded-2xl border-2 border-brand-100 bg-white p-5 shadow-card">
+        <div class="flex items-start justify-between gap-3 mb-4">
+          <div>
+            <h2 class="font-display text-lg font-semibold">Support detail</h2>
+            <p id="detailEmail" class="text-[13px] text-zinc-500"></p>
+            <p id="detailId" class="text-[11px] text-zinc-400 font-mono mt-0.5 break-all"></p>
+          </div>
+          <button type="button" id="btnCloseDetail" class="text-[12px] font-semibold text-zinc-500 hover:text-zinc-800">Close</button>
+        </div>
+        <div id="detailBody" class="space-y-4 text-[13px]"></div>
+      </div>
+
+      <p class="text-[11px] text-zinc-400 pb-8">
+        Admin access is limited to approved emails in <code class="bg-zinc-100 px-1 rounded">admin-setup.sql</code>.
+        Data is read-only from this page — do not share client details.
+      </p>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = 'https://mbweotdviwxmutxdjlpj.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1id2VvdGR2aXd4bXV0eGRqbHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MTAxNDQsImV4cCI6MjEwMjM4NjE0NH0.2hbHdyxS7zqiP-CexUsu8hI0nsgkdjCBeIKcQrmJCAw';
+    const ADMIN_EMAILS = ['muhammedameenpkdn@gmail.com', 'support.crosscap@gmail.com'];
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentUser = null;
+
+    function fmtNum(n) {
+      return Number(n || 0).toLocaleString();
+    }
+    function fmtAed(n) {
+      return 'AED ' + Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
+    }
+    function fmtDate(d) {
+      if (!d) return '—';
+      try { return new Date(d).toLocaleString(); } catch { return String(d); }
+    }
+
+    function showGate(msg) {
+      document.getElementById('gate').classList.remove('hidden');
+      document.getElementById('app').classList.add('hidden');
+      if (msg) document.getElementById('gateMsg').textContent = msg;
+    }
+    function showApp() {
+      document.getElementById('gate').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+    }
+
+    async function loadStats() {
+      const { data, error } = await supabaseClient.rpc('admin_platform_stats');
+      if (error) throw error;
+      document.getElementById('statUsers').textContent = fmtNum(data.total_users);
+      document.getElementById('statAssets').textContent = fmtNum(data.total_assets_tracked);
+      document.getElementById('statPropVal').textContent = fmtAed(data.total_property_value_aed);
+      document.getElementById('statBreakdown').innerHTML =
+        `${fmtNum(data.total_holdings)} holdings<br>${fmtNum(data.total_properties)} properties<br>${fmtNum(data.total_cash_entries)} cash · ${fmtNum(data.total_goals)} goals`;
+      const line = `CrossCap tracks ${fmtNum(data.total_assets_tracked)} assets across ${fmtNum(data.total_users)} investors (${fmtAed(data.total_property_value_aed)} in property value).`;
+      document.getElementById('announceLine').textContent = line;
+      document.getElementById('generatedAt').textContent = 'Updated ' + fmtDate(data.generated_at);
+      return data;
+    }
+
+    async function loadUsers(search) {
+      const { data, error } = await supabaseClient.rpc('admin_user_asset_counts', {
+        search_email: search || null
+      });
+      if (error) throw error;
+      const rows = data || [];
+      document.getElementById('userCountLabel').textContent = rows.length + ' user(s)';
+      const body = document.getElementById('usersBody');
+      if (!rows.length) {
+        body.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-zinc-400">No users found</td></tr>';
+        return;
+      }
+      body.innerHTML = rows.map(r => `
+        <tr class="border-b border-zinc-50 hover:bg-zinc-50/80">
+          <td class="px-4 py-3">
+            <p class="font-medium text-zinc-900">${r.email || '—'}</p>
+            <p class="text-[11px] text-zinc-400 font-mono truncate max-w-[180px]">${r.user_id}</p>
+          </td>
+          <td class="px-4 py-3 text-right tabular-nums">${r.holdings_count}</td>
+          <td class="px-4 py-3 text-right tabular-nums">${r.properties_count}</td>
+          <td class="px-4 py-3 text-right tabular-nums">${r.cash_entries_count}</td>
+          <td class="px-4 py-3 text-right tabular-nums font-semibold">${r.total_items}</td>
+          <td class="px-4 py-3 text-right tabular-nums text-[12px]">${fmtAed(r.property_value_aed)}</td>
+          <td class="px-4 py-3 text-[12px] text-zinc-500 whitespace-nowrap">${fmtDate(r.last_sign_in_at)}</td>
+          <td class="px-4 py-3 text-right">
+            <button type="button" data-uid="${r.user_id}" class="btn-detail text-[12px] font-semibold text-brand-700 hover:underline">Detail</button>
+          </td>
+        </tr>
+      `).join('');
+      body.querySelectorAll('.btn-detail').forEach(btn => {
+        btn.addEventListener('click', () => openDetail(btn.getAttribute('data-uid')));
+      });
+    }
+
+    async function openDetail(userId) {
+      const panel = document.getElementById('detailPanel');
+      const body = document.getElementById('detailBody');
+      panel.classList.remove('hidden');
+      body.innerHTML = '<p class="text-zinc-400">Loading…</p>';
+      const { data, error } = await supabaseClient.rpc('admin_user_detail', { p_user_id: userId });
+      if (error) {
+        body.innerHTML = '<p class="text-rose-600">' + error.message + '</p>';
+        return;
+      }
+      const u = data.user || {};
+      document.getElementById('detailEmail').textContent = u.email || '';
+      document.getElementById('detailId').textContent = 'user_id: ' + (u.id || userId);
+
+      const holdings = data.holdings || [];
+      const props = data.properties || [];
+      const cash = data.cash_accounts || [];
+      const goals = data.goals || [];
+
+      body.innerHTML = `
+        <div class="grid sm:grid-cols-4 gap-2 mb-2">
+          <div class="rounded-xl border border-zinc-100 p-3"><p class="text-[10px] uppercase text-zinc-400 font-bold">Holdings</p><p class="font-semibold">${holdings.length}</p></div>
+          <div class="rounded-xl border border-zinc-100 p-3"><p class="text-[10px] uppercase text-zinc-400 font-bold">Properties</p><p class="font-semibold">${props.length}</p></div>
+          <div class="rounded-xl border border-zinc-100 p-3"><p class="text-[10px] uppercase text-zinc-400 font-bold">Cash</p><p class="font-semibold">${cash.length}</p></div>
+          <div class="rounded-xl border border-zinc-100 p-3"><p class="text-[10px] uppercase text-zinc-400 font-bold">Goals</p><p class="font-semibold">${goals.length}</p></div>
+        </div>
+        <div>
+          <p class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Holdings</p>
+          <div class="rounded-xl border border-zinc-100 divide-y divide-zinc-50 max-h-40 overflow-y-auto">
+            ${holdings.length ? holdings.map(h => `<div class="px-3 py-2 flex justify-between gap-2"><span class="font-medium">${h.symbol}</span><span class="text-zinc-500">${h.market || ''} · ${h.shares}</span></div>`).join('') : '<p class="px-3 py-2 text-zinc-400">None</p>'}
+          </div>
+        </div>
+        <div>
+          <p class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Properties</p>
+          <div class="rounded-xl border border-zinc-100 divide-y divide-zinc-50 max-h-40 overflow-y-auto">
+            ${props.length ? props.map(p => `<div class="px-3 py-2 flex justify-between gap-2"><span class="font-medium truncate">${p.name}</span><span class="text-zinc-500 tabular-nums shrink-0">${fmtAed(p.total_price)}</span></div>`).join('') : '<p class="px-3 py-2 text-zinc-400">None</p>'}
+          </div>
+        </div>
+        <div>
+          <p class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Cash &amp; bank</p>
+          <div class="rounded-xl border border-zinc-100 divide-y divide-zinc-50 max-h-40 overflow-y-auto">
+            ${cash.length ? cash.map(c => `<div class="px-3 py-2 flex justify-between gap-2"><span class="font-medium">${c.name} <span class="text-zinc-400 font-normal">(${c.account_type})</span></span><span class="text-zinc-500">${c.currency} ${Number(c.balance).toLocaleString()}</span></div>`).join('') : '<p class="px-3 py-2 text-zinc-400">None</p>'}
+          </div>
+        </div>
+        <p class="text-[12px] text-zinc-500">Created ${fmtDate(u.created_at)} · Last sign-in ${fmtDate(u.last_sign_in_at)}</p>
+      `;
+      panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    async function refreshAll() {
+      try {
+        await loadStats();
+        await loadUsers(document.getElementById('searchEmail').value.trim());
+      } catch (e) {
+        const msg = e.message || String(e);
+        if (/not authorized|Not authorized/i.test(msg)) {
+          showGate('Your account is signed in but not on the admin allow-list.');
+        } else if (/function|does not exist|schema cache/i.test(msg)) {
+          showGate('Run admin-setup.sql in Supabase SQL Editor first, then refresh.');
+        } else {
+          alert(msg);
+        }
+      }
+    }
+
+    document.getElementById('btnRefresh').addEventListener('click', refreshAll);
+    document.getElementById('btnSearch').addEventListener('click', () => loadUsers(document.getElementById('searchEmail').value.trim()).catch(e => alert(e.message)));
+    document.getElementById('btnClearSearch').addEventListener('click', () => {
+      document.getElementById('searchEmail').value = '';
+      loadUsers(null).catch(e => alert(e.message));
+    });
+    document.getElementById('searchEmail').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('btnSearch').click();
+    });
+    document.getElementById('btnCloseDetail').addEventListener('click', () => {
+      document.getElementById('detailPanel').classList.add('hidden');
+    });
+    document.getElementById('btnCopyAnnounce').addEventListener('click', async () => {
+      const t = document.getElementById('announceLine').textContent;
+      try {
+        await navigator.clipboard.writeText(t);
+        alert('Copied');
+      } catch {
+        prompt('Copy:', t);
+      }
+    });
+
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        showGate('Sign in with Google first (same login as the app).');
+        return;
+      }
+      currentUser = session.user;
+      const email = (currentUser.email || '').toLowerCase();
+      document.getElementById('adminEmail').textContent = currentUser.email || '';
+      if (!ADMIN_EMAILS.includes(email)) {
+        showGate('This page is only for CrossCap admins (' + ADMIN_EMAILS.join(', ') + ').');
+        return;
+      }
+      showApp();
+      if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
+        refreshAll();
+      }
+    });
+  </script>
+</body>
+</html>
