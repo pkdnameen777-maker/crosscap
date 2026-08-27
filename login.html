@@ -41,11 +41,11 @@
 <body class="bg-white text-zinc-900 min-h-screen flex flex-col">
 
   <header class="px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between border-b border-zinc-100/80">
-    <a href="index.html" class="flex items-center gap-2.5">
+    <a href="/" class="flex items-center gap-2.5">
       <img src="assets/logo.png" alt="CrossCap" class="w-8 h-8 rounded-lg object-contain shrink-0" width="32" height="32" />
       <span class="font-display font-semibold text-[17px] tracking-tight">CrossCap</span>
     </a>
-    <a href="index.html" class="text-[13px] text-zinc-500 hover:text-zinc-800 transition-colors">← Back to home</a>
+    <a href="/" class="text-[13px] text-zinc-500 hover:text-zinc-800 transition-colors">← Back to home</a>
   </header>
 
   <main class="flex-1 flex items-center justify-center px-4 py-12">
@@ -103,7 +103,7 @@
       // Auto-redirect if session is active
       supabaseClient.auth.onAuthStateChange((event, session) => {
         if (session) {
-          window.location.href = 'dashboard.html';
+          window.location.href = '/dashboard';
         }
       });
 
@@ -124,7 +124,7 @@
           const { error } = await supabaseClient.auth.signInWithOAuth({
             provider: 'google',
             options: {
-              redirectTo: window.location.origin + '/dashboard.html'
+              redirectTo: window.location.origin + '/dashboard'
             }
           });
           if (error) showError(error.message);
@@ -146,14 +146,14 @@
               showError(signUpRes.error.message);
               return;
             }
-            window.location.href = 'dashboard.html';
+            window.location.href = '/dashboard';
             return;
           }
 
           if (error) {
             showError(error.message);
           } else {
-            window.location.href = 'dashboard.html';
+            window.location.href = '/dashboard';
           }
         });
       }
