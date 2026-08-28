@@ -44,7 +44,7 @@
   <header class="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-zinc-100">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
       <div class="flex items-center gap-3 min-w-0">
-        <a href="dashboard.html" class="flex items-center gap-2 shrink-0">
+        <a href="/dashboard" class="flex items-center gap-2 shrink-0">
           <img src="assets/logo.svg" alt="CrossCap" class="h-7 w-7" onerror="this.style.display='none'" />
           <span class="font-display font-semibold text-[16px]">CrossCap Admin</span>
         </a>
@@ -52,7 +52,7 @@
       </div>
       <div class="flex items-center gap-2 text-[13px]">
         <span id="adminEmail" class="hidden sm:inline text-zinc-500 truncate max-w-[200px]"></span>
-        <a href="dashboard.html" class="rounded-lg border border-zinc-200 px-3 py-1.5 font-semibold text-zinc-700 hover:bg-zinc-50">Dashboard</a>
+        <a href="/dashboard" class="rounded-lg border border-zinc-200 px-3 py-1.5 font-semibold text-zinc-700 hover:bg-zinc-50">Dashboard</a>
         <button type="button" id="btnRefresh" class="rounded-lg bg-brand-700 hover:bg-brand-800 text-white px-3 py-1.5 font-semibold">Refresh</button>
       </div>
     </div>
@@ -62,7 +62,7 @@
     <div id="gate" class="hidden max-w-md mx-auto mt-16 text-center">
       <h1 class="font-display text-xl font-semibold mb-2">Admin only</h1>
       <p id="gateMsg" class="text-[14px] text-zinc-500 mb-4">Sign in with an admin Google account.</p>
-      <a href="login.html" class="inline-flex rounded-xl bg-brand-700 text-white font-semibold px-4 py-2.5">Go to login</a>
+      <a href="/login" class="inline-flex rounded-xl bg-brand-700 text-white font-semibold px-4 py-2.5">Go to login</a>
     </div>
 
     <div id="app" class="hidden space-y-6">
@@ -160,7 +160,7 @@
   <script>
     const SUPABASE_URL = 'https://mbweotdviwxmutxdjlpj.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1id2VvdGR2aXd4bXV0eGRqbHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MTAxNDQsImV4cCI6MjEwMjM4NjE0NH0.2hbHdyxS7zqiP-CexUsu8hI0nsgkdjCBeIKcQrmJCAw';
-    const ADMIN_EMAILS = ['muhammedameenpkdn@gmail.com', 'support.crosscap@gmail.com'];
+    const ADMIN_EMAILS = ['muhammedameenpkdn@gmail.com', 'support@crosscap.app'];
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let currentUser = null;
