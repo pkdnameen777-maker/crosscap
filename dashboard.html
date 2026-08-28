@@ -78,7 +78,6 @@
     #sidebarBackdrop {
       display: none;
     }
-
     #sidebar svg {
       width: 1rem;
       height: 1rem;
@@ -89,7 +88,6 @@
     #sidebar .sidebar-link {
       overflow: hidden;
     }
-
     #sidebarBackdrop.show {
       display: block;
     }
@@ -372,7 +370,7 @@
             </div>
           </div>
 
-          <!-- Currency exposure (sub totals) -->
+          <!-- Currency exposure -->
           <div class="mb-2">
             <h3 class="text-[13px] font-semibold text-zinc-500 mb-3">Currency exposure (before FX to AED)</h3>
             <div id="currencyBreakdown" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -653,10 +651,8 @@
           <div id="propertiesList" class="space-y-6"></div>
         </div>
 
-
-
         <!-- CASH & BANK -->
-                <div id="view-cash" class="view">
+        <div id="view-cash" class="view">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
             <div>
               <h2 class="font-display text-xl font-semibold tracking-tight">Cash &amp; Bank</h2>
@@ -675,7 +671,7 @@
                   <p class="text-[11px] text-zinc-400 mt-1">Liquid cash</p>
                 </div>
                 <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/></svg>
                 </div>
               </div>
             </div>
@@ -881,8 +877,7 @@
           </div>
         </div>
 
-        
-        <!-- OTHER ASSETS: MF, FD, Bonds, Vehicles, Business -->
+        <!-- OTHER ASSETS -->
         <div id="view-alt-assets" class="view">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
             <div>
@@ -1013,8 +1008,7 @@
           </div>
         </div>
 
-
-        <!-- AI INSIGHTS --><!-- AI INSIGHTS -->
+        <!-- AI INSIGHTS -->
         <div id="view-ai-insights" class="view">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
             <div>
@@ -1337,7 +1331,7 @@
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const SUPABASE_URL = 'https://auth.crosscap.app';
+      const SUPABASE_URL = 'https://mbweotdviwxmutxdjlpj.supabase.co';
       const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1id2VvdGR2aXd4bXV0eGRqbHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MTAxNDQsImV4cCI6MjEwMjM4NjE0NH0.2hbHdyxS7zqiP-CexUsu8hI0nsgkdjCBeIKcQrmJCAw';
 
       const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -1348,7 +1342,6 @@
       let __loadTimer = null;
       function runInitialDataLoad() {
         if (!currentUser) return;
-        // Debounce: auth can fire INITIAL_SESSION + SIGNED_IN
         clearTimeout(__loadTimer);
         __loadTimer = setTimeout(async () => {
           if (__dataLoadedForUser === currentUser.id) return;
@@ -1367,36 +1360,37 @@
       }
 
       supabaseClient.auth.onAuthStateChange((event, session) => {
-        if (!session) {
+        if (!session && event === 'INITIAL_SESSION') {
           __dataLoadedForUser = null;
-          window.location.href = '/login';
+          window.location.href = '/login.html';
           return;
         }
 
-        currentUser = session.user;
-        const name = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
-        const hour = new Date().getHours(); // user's local timezone
-        let wish = 'Good evening';
-        if (hour < 12) wish = 'Good morning';
-        else if (hour < 17) wish = 'Good afternoon';
-        document.getElementById('userGreeting').textContent = `${wish}, ${name}`;
-        const emailEl = document.getElementById('userEmailDisplay');
-        if (emailEl) emailEl.textContent = currentUser.email;
-        const sn = document.getElementById('sidebarUserName');
-        const se = document.getElementById('sidebarUserEmail');
-        if (sn) sn.textContent = name;
-        if (se) se.textContent = currentUser.email || '';
-        const setE = document.getElementById('settingsEmail');
-        if (setE) setE.textContent = currentUser.email || '';
-        const adminBox = document.getElementById('adminLinkBox');
-        if (adminBox) {
-          const admins = ['muhammedameenpkdn@gmail.com', 'support@crosscap.app'];
-          adminBox.classList.toggle('hidden', !admins.includes((currentUser.email || '').toLowerCase()));
-        }
+        if (session) {
+          currentUser = session.user;
+          const name = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
+          const hour = new Date().getHours();
+          let wish = 'Good evening';
+          if (hour < 12) wish = 'Good morning';
+          else if (hour < 17) wish = 'Good afternoon';
+          document.getElementById('userGreeting').textContent = `${wish}, ${name}`;
+          const emailEl = document.getElementById('userEmailDisplay');
+          if (emailEl) emailEl.textContent = currentUser.email;
+          const sn = document.getElementById('sidebarUserName');
+          const se = document.getElementById('sidebarUserEmail');
+          if (sn) sn.textContent = name;
+          if (se) se.textContent = currentUser.email || '';
+          const setE = document.getElementById('settingsEmail');
+          if (setE) setE.textContent = currentUser.email || '';
+          const adminBox = document.getElementById('adminLinkBox');
+          if (adminBox) {
+            const admins = ['muhammedameenpkdn@gmail.com', 'support@crosscap.app'];
+            adminBox.classList.toggle('hidden', !admins.includes((currentUser.email || '').toLowerCase()));
+          }
 
-        // Load once per user (not on every TOKEN_REFRESHED)
-        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
-          runInitialDataLoad();
+          if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
+            runInitialDataLoad();
+          }
         }
       });
 
@@ -1417,7 +1411,6 @@
 
       async function resolveAvatarUrl(path) {
         if (!path) return null;
-        // public URL if bucket public, else signed
         const { data } = supabaseClient.storage.from('avatars').getPublicUrl(path);
         if (data?.publicUrl) return data.publicUrl;
         const { data: signed } = await supabaseClient.storage.from('avatars').createSignedUrl(path, 3600 * 24);
@@ -1548,12 +1541,10 @@
       // Sign Out
       document.getElementById('signOutBtn').addEventListener('click', async () => {
         await supabaseClient.auth.signOut();
-        window.location.href = '/login';
+        window.location.href = '/login.html';
       });
 
       // Save Asset
-      
-      // Update price currency label when market changes
       const marketEl = document.getElementById('assetMarket');
       const priceLabel = document.getElementById('priceCurrencyLabel');
       function syncCurrencyLabel() {
@@ -1582,7 +1573,6 @@
         const marketSelect = document.getElementById('assetMarket');
         const currency = marketSelect.options[marketSelect.selectedIndex].getAttribute('data-currency') || 'USD';
 
-        // Same symbol + market → update (weighted avg) instead of second row
         const { data: existingH } = await supabaseClient.from('holdings').select('*')
           .eq('user_id', currentUser.id)
           .ilike('symbol', symbol)
@@ -1626,7 +1616,7 @@
         }
       });
 
-      // ---- Real Estate helpers ----
+      // Real Estate helpers
       const RESIDENTIAL_TYPES = ['Apartment', 'Villa', 'Townhouse', 'Penthouse', 'Land'];
       const COMMERCIAL_TYPES = ['Retail Shop', 'Office Space', 'Warehouse', 'Factory', 'Land'];
 
@@ -1740,7 +1730,6 @@
             if (o.value.toLowerCase() === want.toLowerCase()) { sel.value = o.value; matched = true; }
           });
           if (!matched) {
-            // try partial match
             [...sel.options].forEach(o => {
               if (want.toLowerCase().includes(o.value.toLowerCase()) || o.value.toLowerCase().includes(want.toLowerCase())) {
                 sel.value = o.value;
@@ -1822,7 +1811,7 @@
       fillPropTypes();
       syncInstallmentsVisibility();
 
-      // Save Property + installments
+      // Save Property
       document.getElementById('savePropertyBtn').addEventListener('click', async () => {
         if (!currentUser) return;
         const name = document.getElementById('reName').value.trim();
@@ -1846,7 +1835,6 @@
 
         const spa_file_path = document.getElementById('spaFilePath').value.trim() || null;
 
-        // Prevent duplicate property (same user + name + price)
         const { data: existingProps } = await supabaseClient
           .from('properties')
           .select('id, name, total_price')
@@ -1856,23 +1844,12 @@
           && Number(p.total_price) === Number(total_price)
         );
         if (dup) {
-          alert('This property already exists (same name and price). Open it below to edit installments instead of saving again.');
+          alert('This property already exists (same name and price).');
           return;
         }
 
         const monthly_rent = status === 'ready' ? (parseFloat(document.getElementById('reMonthlyRent')?.value) || null) : null;
         const rent_due_day = status === 'ready' ? (parseInt(document.getElementById('reRentDueDay')?.value, 10) || null) : null;
-
-        // Block exact duplicate property (same name + price)
-        const { data: dupProp } = await supabaseClient.from('properties').select('id')
-          .eq('user_id', currentUser.id)
-          .ilike('name', name)
-          .eq('total_price', total_price)
-          .maybeSingle();
-        if (dupProp) {
-          alert('This property already exists (same name and price). Open it from the list instead of adding again.');
-          return;
-        }
 
         const { data: prop, error } = await supabaseClient.from('properties').insert([{
           user_id: currentUser.id,
@@ -1917,7 +1894,6 @@
           }
         }
 
-        // reset form
         document.getElementById('reName').value = '';
         document.getElementById('rePrice').value = '';
         document.getElementById('reLocation').value = '';
@@ -1980,7 +1956,7 @@
           property_id: propertyId,
           user_id: user.id,
           stage: stage || 'Installment',
-          due_date: due,
+          due_date,
           amount,
           status: 'scheduled'
         }]);
@@ -2025,19 +2001,15 @@
       window.deleteHolding = deleteHolding;
       window.editHolding = editHolding;
 
-
-      // FX rates → AED (cached briefly)
+      // FX rates
       let fxCache = null;
       async function getRatesToAed() {
         if (fxCache) return fxCache;
         try {
-          // Free API: rates vs USD, then derive to AED
           const res = await fetch('https://open.er-api.com/v6/latest/USD');
           const data = await res.json();
           const rates = data.rates || {};
-          const usdToAed = rates.AED || 3.6725; // fallback peg
-          // Convert: 1 UNIT = (USD per unit) * AED per USD
-          // rates[X] = how many X per 1 USD → 1 X = 1/rates[X] USD
+          const usdToAed = rates.AED || 3.6725;
           const toAed = { AED: 1, USD: usdToAed };
           ['INR','GBP','SAR','CNY','JPY','HKD','EUR','QAR','KWD','BHD','PKR','SGD','AUD','EGP','OMR','CAD','CHF','NZD','ZAR','TRY','THB','MYR','IDR','PHP','KRW','SEK','NOK','DKK','PLN','MXN','BRL','NGN','KES','BDT','LKR','NPR','MAD','JOD'].forEach(c => {
             if (rates[c]) toAed[c] = usdToAed / rates[c];
@@ -2054,10 +2026,10 @@
         }
       }
 
-      // ---- Charts state ----
+      // Charts state
       let allocChartInst = null;
       let perfChartInst = null;
-      let lastHoldingsAed = []; // {symbol, market, currency, localVal, aedVal}
+      let lastHoldingsAed = [];
       let perfRange = 'ALL';
 
       const MARKET_LABELS = {
@@ -2089,7 +2061,6 @@
           bySymbol[key] = (bySymbol[key] || 0) + r.aedVal;
           total += r.aedVal;
         });
-        // Include real estate in allocation %
         const reAed = Number(window.__lastReVal) || 0;
         if (reAed > 0) {
           byMarket['REAL_ESTATE'] = (byMarket['REAL_ESTATE'] || 0) + reAed;
@@ -2121,7 +2092,6 @@
           filter.value = [...filter.options].some(o => o.value === cur) ? cur : 'ALL';
         }
 
-        // Donut
         const ctx = document.getElementById('allocChart');
         if (ctx && window.Chart) {
           if (allocChartInst) allocChartInst.destroy();
@@ -2199,7 +2169,6 @@
           } else {
             hist.push({ d: today, invested, value: current });
           }
-          // keep ~400 days
           while (hist.length > 400) hist.shift();
           localStorage.setItem(key, JSON.stringify(hist));
         } catch (e) {}
@@ -2294,7 +2263,7 @@
         });
       });
 
-            // Load Holdings — convert everything to AED
+      // Load Holdings
       async function fetchLivePrices(holdings) {
         try {
           const items = (holdings || []).map(h => ({
@@ -2329,7 +2298,6 @@
       async function loadPortfolio() {
         if (!currentUser) return;
         const { data: holdings } = await supabaseClient.from('holdings').select('*').eq('user_id', currentUser.id);
-        // Client safety: unique by symbol|market (keep first)
         const seenH = new Set();
         const holdingsUnique = (holdings || []).filter(h => {
           const k = String(h.symbol||'').toUpperCase() + '|' + String(h.market||'').toUpperCase();
@@ -2340,7 +2308,7 @@
         const tbody = document.getElementById('portfolioTableBody');
         tbody.innerHTML = '';
         let totalAed = 0;
-        const byCurrency = {}; // local totals before FX
+        const byCurrency = {};
 
         const rates = await getRatesToAed();
         lastHoldingsAed = [];
@@ -2376,7 +2344,6 @@
               liveOk = true;
               liveUnit = live.unit || '';
             }
-            // Gold/Silver live is USD per gram; crypto is USD
             let liveCurrency = cur;
             const mktU = String(item.market || '').toUpperCase();
             if (liveOk && (mktU.includes('GOLD') || mktU.includes('SILVER'))) {
@@ -2434,7 +2401,6 @@
           document.getElementById('holdingsCountCard').textContent = '0 Assets';
         }
 
-        // Allocation uses live AED; performance uses cost vs live
         renderAllocation(lastHoldingsAed);
         window.__lastCostAed = totalCostAed;
         window.__lastLiveAed = totalLiveAed;
@@ -2443,7 +2409,6 @@
         refreshTotalNetWorth();
         if (typeof applyPortfolioAssetFilter === 'function') applyPortfolioAssetFilter();
 
-        // Currency sub-boxes
         const box = document.getElementById('currencyBreakdown');
         if (box) {
           const entries = Object.entries(byCurrency);
@@ -2465,8 +2430,7 @@
         }
       }
 
-      const GOLDEN_VISA_TARGET = 2000000; // AED
-
+      const GOLDEN_VISA_TARGET = 2000000;
       let goldenVisaHolder = false;
       let goldenVisaClaimedAt = null;
 
@@ -2528,8 +2492,8 @@
             note.classList.toggle('hidden', eligible);
             if (!eligible) {
               note.innerHTML = current > 0
-                ? `You have <span class="font-semibold text-zinc-700">${pct.toFixed(1)}%</span> of the AED 2M UAE property threshold. Add more UAE real estate to close the gap.`
-                : 'Add UAE off-plan or ready properties under Real Estate. Progress updates automatically from their contract values.';
+                ? `You have <span class="font-semibold text-zinc-700">${pct.toFixed(1)}%</span> of the AED 2M UAE property threshold.`
+                : 'Add UAE off-plan or ready properties under Real Estate. Progress updates automatically.';
             }
           }
           if (bar) bar.className = 'h-full rounded-full bg-brand-600 transition-all duration-500';
@@ -2552,11 +2516,10 @@
         updateGoldenVisaProgress(window.__lastReVal || 0);
       });
 
-      // Load Real Estate + installments + 30-day radar
+      // Load Real Estate
       async function loadProperties() {
         if (!currentUser) return;
         const { data: propertiesRaw } = await supabaseClient.from('properties').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
-        // Client safety: unique by name|price (keep newest first from query)
         const seenP = new Set();
         const properties = (propertiesRaw || []).filter(p => {
           const k = String(p.name||'').trim().toLowerCase() + '|' + Number(p.total_price);
@@ -2679,7 +2642,6 @@
               </div>
             `;
           }
-          // Load rent history for ready units
           for (const p of properties) {
             const isOff = (p.property_type || '').toUpperCase().includes('OFF');
             if (!isOff && p.monthly_rent) loadRentHistory(p.id);
@@ -2691,7 +2653,6 @@
         document.getElementById('reAssetsCard').textContent =
           `AED ${totalReVal.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
 
-        // Golden Visa goal (UAE property only = all logged properties are UAE-focused)
         window.__lastReVal = totalReVal;
         updateGoldenVisaProgress(totalReVal);
         if (typeof lastHoldingsAed !== 'undefined' && lastHoldingsAed) {
@@ -2699,7 +2660,6 @@
         }
         refreshTotalNetWorth();
 
-        // Radar (Real Estate page + Overview)
         const radarHtml = radarItems.length
           ? radarItems.sort((a,b) => a.days - b.days).map(r => `
                 <div class="flex flex-wrap items-center justify-between gap-2 text-[13px] bg-white/80 rounded-xl px-3 py-2 border border-amber-100">
@@ -2742,10 +2702,7 @@
         }
       }
 
-
-
-
-      // ---- AI CFO (rule-based insights from live data) ----
+      // AI CFO Insights
       async function generateAiCfoInsights() {
         const box = document.getElementById('aiCfoInsights');
         const sumEl = document.getElementById('aiCfoSummaryText');
@@ -2760,7 +2717,6 @@
         const insights = [];
         const push = (level, title, body, tip) => insights.push({ level, title, body, tip });
 
-        // --- Liquid portfolio ---
         let liquidAed = 0;
         const byMarket = {};
         const bySymbol = {};
@@ -2774,12 +2730,10 @@
           bySymbol[h.symbol] = (bySymbol[h.symbol] || 0) + aed;
         });
 
-        // --- Real estate ---
         let reAed = 0;
         (props || []).forEach(p => { reAed += Number(p.total_price) || 0; });
         const totalWealth = liquidAed + reAed;
 
-        // Concentration by market
         if (liquidAed > 0) {
           const markets = Object.entries(byMarket).sort((a,b) => b[1]-a[1]);
           const top = markets[0];
@@ -2810,7 +2764,6 @@
             'Add assets under Portfolio to unlock allocation insights.');
         }
 
-        // Real estate weight
         if (totalWealth > 0) {
           const rePct = (reAed / totalWealth) * 100;
           if (rePct >= 85) {
@@ -2824,7 +2777,6 @@
           }
         }
 
-        // Installment cash-flow risk
         const today = new Date();
         today.setHours(0,0,0,0);
         let due30 = 0, due90 = 0, overdue = 0, overdueCount = 0, nextInst = null;
@@ -2860,7 +2812,6 @@
             'Still review the Real Estate schedule monthly.');
         }
 
-        // Golden Visa
         const gvTarget = 2000000;
         const gvPct = Math.min(100, (reAed / gvTarget) * 100);
         if (goldenVisaHolder) {
@@ -2877,15 +2828,13 @@
             'Only UAE real estate counts — stocks do not help this milestone.');
         }
 
-        // Goals
         const activeGoals = (goals || []).filter(g => g.status === 'active' || g.status === 'completed');
         if (activeGoals.length) {
           push('info', 'Active savings goals',
             `You have ${activeGoals.length} custom goal(s) under Goals.`,
-            'Contribute on a fixed cadence (e.g. AED 1,000/month) so progress stays automatic.');
+            'Contribute on a fixed cadence so progress stays automatic.');
         }
 
-        // Metals note
         const metals = (holdings || []).filter(h => String(h.market||'').toUpperCase().includes('GOLD') || String(h.market||'').toUpperCase().includes('SILVER'));
         if (metals.length) {
           push('info', 'Precious metals logged',
@@ -2893,7 +2842,6 @@
             'Confirm quantities are in grams so P/L stays accurate.');
         }
 
-        // Executive summary
         let summary = '';
         if (totalWealth <= 0) {
           summary = 'Your AI CFO is ready. Add stocks or UAE property to get a personalised briefing on risk and cash flow.';
@@ -2914,7 +2862,6 @@
           info: { border: 'border-zinc-200', bg: 'bg-white', badge: 'bg-zinc-200 text-zinc-700', label: 'Note' }
         };
 
-        // Sort: high → medium → low → info
         const order = { high: 0, medium: 1, low: 2, info: 3 };
         insights.sort((a, b) => order[a.level] - order[b.level]);
 
@@ -2934,7 +2881,6 @@
           }).join('');
         }
 
-        // Gemini senior FM narrative (free tier key)
         const snapshot = {
           liquid_aed: Math.round(liquidAed),
           real_estate_aed: Math.round(reAed),
@@ -2992,7 +2938,7 @@
 
       document.getElementById('btnRefreshInsights')?.addEventListener('click', () => generateAiCfoInsights());
 
-      // ---- Custom savings goals ----
+      // Goals
       document.getElementById('btnNewGoal')?.addEventListener('click', () => {
         document.getElementById('newGoalForm')?.classList.remove('hidden');
       });
@@ -3031,12 +2977,12 @@
           .eq('user_id', currentUser.id)
           .order('created_at', { ascending: false });
         if (error) {
-          list.innerHTML = `<p class="text-sm text-zinc-400">Goals table not ready yet. Run the SQL setup if you see errors.</p>`;
+          list.innerHTML = `<p class="text-sm text-zinc-400">Goals table not ready yet.</p>`;
           console.warn(error);
           return;
         }
         if (!goals || !goals.length) {
-          list.innerHTML = `<p class="text-sm text-zinc-400">No custom goals yet. Tap "+ New goal" (e.g. car AED 20,000).</p>`;
+          list.innerHTML = `<p class="text-sm text-zinc-400">No custom goals yet. Tap "+ New goal".</p>`;
           return;
         }
         list.innerHTML = '';
@@ -3134,7 +3080,7 @@
                 <span class="text-zinc-500">${isDone ? 'Target reached' : ('AED ' + remaining.toLocaleString(undefined,{maximumFractionDigits:0}) + ' to go')}</span>
               </div>
               ${footerHtml}
-              <div class="relative mt-3 space-y-1.5">${contribHtml || (!isClaimed ? '<p class="text-[12px] text-zinc-400">No contributions yet. Add AED 1,000 (or any amount) when you set money aside.</p>' : '')}</div>
+              <div class="relative mt-3 space-y-1.5">${contribHtml || (!isClaimed ? '<p class="text-[12px] text-zinc-400">No contributions yet.</p>' : '')}</div>
             </div>`;
         }
       }
@@ -3183,7 +3129,7 @@
         else loadGoals();
       };
 
-      // ---- Reports: export / backup / restore ----
+      // Reports
       function downloadBlob(filename, content, mime) {
         const blob = new Blob([content], { type: mime || 'text/plain;charset=utf-8' });
         const url = URL.createObjectURL(blob);
@@ -3317,8 +3263,7 @@
           '=== UPCOMING INSTALLMENTS (this month + next) ===',
           ...(upcoming.length ? upcoming.map(i => `  - ${i.due_date} | ${i.stage || 'Installment'} | AED ${Number(i.amount).toLocaleString()} | ${i.status}`) : ['  (none)']),
           '',
-          'Note: Liquid values use cost basis × FX. Live market prices appear in the Portfolio screen.',
-          'This statement is for personal records only — not tax or financial advice.'
+          'Note: Liquid values use cost basis × FX. Live market prices appear in the Portfolio screen.'
         ];
         const stamp = now.toISOString().slice(0,10);
         downloadBlob(`crosscap-monthly-statement-${stamp}.txt`, lines.join('\n'), 'text/plain;charset=utf-8');
@@ -3343,7 +3288,6 @@
           supabaseClient.from('dividends').select('*').eq('user_id', uid),
           supabaseClient.from('rental_payments').select('*').eq('user_id', uid)
         ]);
-        // Tables that may not exist yet → empty arrays (don't fail whole backup)
         const safe = (res) => (res && !res.error && res.data) ? res.data : [];
         const payload = {
           version: 2,
@@ -3391,7 +3335,6 @@
           status.textContent = 'Restoring…';
           let hCount = 0, pCount = 0, iCount = 0;
 
-          // Holdings (strip id so new UUIDs)
           const { data: existingHoldings } = await supabaseClient
             .from('holdings').select('symbol, market, shares, avg_buy_price').eq('user_id', currentUser.id);
           for (const h of data.holdings) {
@@ -3418,7 +3361,6 @@
             }
           }
 
-          // Load existing properties to skip duplicates
           const { data: existingProps } = await supabaseClient
             .from('properties')
             .select('id, name, total_price, developer')
@@ -3428,7 +3370,6 @@
             && Number(e.total_price) === Number(p.total_price)
           );
 
-          // Map old property id → existing or new id
           const propIdMap = {};
           let pSkipped = 0;
           for (const p of (data.properties || [])) {
@@ -3458,7 +3399,6 @@
             }
           }
 
-          // Installments: skip if same property already has same stage + due_date
           for (const i of (data.installments || [])) {
             const newPropId = propIdMap[i.property_id];
             if (!newPropId) continue;
@@ -3483,7 +3423,6 @@
           }
           window.__restoreSkippedProps = pSkipped;
 
-          // Profile upsert (optional)
           if (data.profile && typeof data.profile === 'object') {
             const pr = data.profile;
             await supabaseClient.from('profiles').upsert({
@@ -3507,7 +3446,6 @@
 
           let cashCount = 0, altCount = 0, goalCount = 0, divCount = 0, rentCount = 0;
 
-          // Cash & bank
           if (Array.isArray(data.cash_accounts)) {
             const { data: existCash } = await supabaseClient.from('cash_accounts').select('name, account_type, currency, balance').eq('user_id', currentUser.id);
             for (const c of data.cash_accounts) {
@@ -3530,7 +3468,6 @@
             }
           }
 
-          // Other assets (MF, FD, bonds, vehicles, business)
           if (Array.isArray(data.alt_assets)) {
             const { data: existAlt } = await supabaseClient.from('alt_assets').select('name, asset_class, invested_amount').eq('user_id', currentUser.id);
             for (const a of data.alt_assets) {
@@ -3560,7 +3497,6 @@
             }
           }
 
-          // Goals + contributions
           const goalIdMap = {};
           if (Array.isArray(data.goals)) {
             const { data: existGoals } = await supabaseClient.from('goals').select('id, title, target_amount').eq('user_id', currentUser.id);
@@ -3575,1071 +3511,4 @@
               }
               const { data: created, error } = await supabaseClient.from('goals').insert([{
                 user_id: currentUser.id,
-                title: g.title,
-                target_amount: Number(g.target_amount) || 0,
-                note: g.note || null,
-                status: g.status || 'active',
-                claimed_at: g.claimed_at || null
-              }]).select().single();
-              if (!error && created) {
-                goalIdMap[g.id] = created.id;
-                goalCount++;
-              }
-            }
-          }
-          if (Array.isArray(data.goal_contributions)) {
-            for (const gc of data.goal_contributions) {
-              const gid = goalIdMap[gc.goal_id];
-              if (!gid) continue;
-              await supabaseClient.from('goal_contributions').insert([{
-                goal_id: gid,
-                user_id: currentUser.id,
-                amount: Number(gc.amount) || 0,
-                note: gc.note || null,
-                status: gc.status || 'paid'
-              }]);
-            }
-          }
-
-          // Dividends
-          if (Array.isArray(data.dividends)) {
-            for (const d of data.dividends) {
-              const { error } = await supabaseClient.from('dividends').insert([{
-                user_id: currentUser.id,
-                ticker: d.ticker || d.symbol || null,
-                amount: Number(d.amount) || 0,
-                amount_aed: d.amount_aed != null ? Number(d.amount_aed) : null,
-                received_date: d.received_date || d.date || null,
-                note: d.note || null
-              }]);
-              if (!error) divCount++;
-            }
-          }
-
-          // Rental payments
-          if (Array.isArray(data.rental_payments)) {
-            for (const r of data.rental_payments) {
-              const pid = propIdMap[r.property_id];
-              if (!pid) continue;
-              const { error } = await supabaseClient.from('rental_payments').insert([{
-                user_id: currentUser.id,
-                property_id: pid,
-                amount: Number(r.amount) || 0,
-                due_date: r.due_date || null,
-                status: r.status || 'received',
-                note: r.note || null
-              }]);
-              if (!error) rentCount++;
-            }
-          }
-
-          await dedupePropertiesSilent();
-          await dedupeHoldingsSilent();
-          status.textContent = `Restored: ${hCount} holdings, ${pCount} properties, ${iCount} installments, ${cashCount} cash, ${altCount} other assets, ${goalCount} goals, ${divCount} dividends, ${rentCount} rent logs`;
-          status.className = 'text-[12px] text-emerald-600 mt-3';
-          loadPortfolio();
-          loadProperties();
-          if (typeof loadProfile === 'function') loadProfile();
-          if (typeof loadCashAccounts === 'function') loadCashAccounts();
-          if (typeof loadAltAssets === 'function') loadAltAssets();
-          if (typeof loadGoals === 'function') loadGoals();
-        } catch (e) {
-          status.textContent = 'Restore failed: ' + (e.message || e);
-          status.className = 'text-[12px] text-rose-600 mt-3';
-        }
-      }
-
-      document.getElementById('btnExportHoldingsCsv')?.addEventListener('click', exportHoldingsCsv);
-      document.getElementById('btnExportPropertiesCsv')?.addEventListener('click', exportPropertiesCsv);
-      document.getElementById('btnExportAllocationCsv')?.addEventListener('click', exportAllocationCsv);
-      document.getElementById('btnExportMonthly')?.addEventListener('click', exportMonthlyStatement);
-      document.getElementById('btnBackupJson')?.addEventListener('click', downloadFullBackup);
-
-      async function dedupePropertiesSilent() {
-        if (!currentUser) return 0;
-        const { data: props, error } = await supabaseClient
-          .from('properties')
-          .select('id, name, total_price, created_at')
-          .eq('user_id', currentUser.id)
-          .order('created_at', { ascending: true });
-        if (error || !props) return 0;
-        const groups = {};
-        props.forEach(p => {
-          const key = String(p.name || '').trim().toLowerCase() + '|' + Number(p.total_price);
-          if (!groups[key]) groups[key] = [];
-          groups[key].push(p);
-        });
-        let removed = 0;
-        for (const key of Object.keys(groups)) {
-          const list = groups[key];
-          if (list.length < 2) continue;
-          for (let i = 1; i < list.length; i++) {
-            await supabaseClient.from('installments').delete().eq('property_id', list[i].id);
-            const { error: delErr } = await supabaseClient.from('properties').delete().eq('id', list[i].id);
-            if (!delErr) removed++;
-          }
-        }
-        return removed;
-      }
-
-      async function dedupeHoldingsSilent() {
-        if (!currentUser) return 0;
-        const { data: rows, error } = await supabaseClient
-          .from('holdings')
-          .select('id, symbol, market, shares, created_at')
-          .eq('user_id', currentUser.id)
-          .order('created_at', { ascending: true });
-        if (error || !rows) return 0;
-        const groups = {};
-        rows.forEach(h => {
-          const key = String(h.symbol || '').trim().toUpperCase() + '|' + String(h.market || '').trim().toUpperCase();
-          if (!groups[key]) groups[key] = [];
-          groups[key].push(h);
-        });
-        let removed = 0;
-        for (const key of Object.keys(groups)) {
-          const list = groups[key];
-          if (list.length < 2) continue;
-          // keep oldest; delete rest
-          for (let i = 1; i < list.length; i++) {
-            const { error: delErr } = await supabaseClient.from('holdings').delete().eq('id', list[i].id);
-            if (!delErr) removed++;
-          }
-        }
-        return removed;
-      }
-
-      async function dedupeProperties() {
-        const status = document.getElementById('dedupeStatus');
-        status.classList.remove('hidden');
-        status.textContent = 'Scanning…';
-        status.className = 'text-[12px] text-zinc-500 mt-3';
-        const { data: props, error } = await supabaseClient
-          .from('properties')
-          .select('*')
-          .eq('user_id', currentUser.id)
-          .order('created_at', { ascending: true });
-        if (error) {
-          status.textContent = error.message;
-          status.className = 'text-[12px] text-rose-600 mt-3';
-          return;
-        }
-        const groups = {};
-        (props || []).forEach(p => {
-          const key = String(p.name || '').trim().toLowerCase() + '|' + Number(p.total_price);
-          if (!groups[key]) groups[key] = [];
-          groups[key].push(p);
-        });
-        let removed = 0;
-        for (const key of Object.keys(groups)) {
-          const list = groups[key];
-          if (list.length < 2) continue;
-          // keep first (oldest), delete the rest
-          for (let i = 1; i < list.length; i++) {
-            const id = list[i].id;
-            await supabaseClient.from('installments').delete().eq('property_id', id);
-            const { error: delErr } = await supabaseClient.from('properties').delete().eq('id', id);
-            if (!delErr) removed++;
-          }
-        }
-        status.textContent = removed ? `Removed ${removed} duplicate property card(s).` : 'No duplicates found.';
-        status.className = 'text-[12px] text-emerald-600 mt-3';
-        loadProperties();
-      }
-
-      document.getElementById('btnDedupeProperties')?.addEventListener('click', () => {
-        if (!confirm('Remove duplicate properties (same name + price)? The oldest copy is kept.')) return;
-        dedupeProperties();
-      });
-
-      document.getElementById('btnRestoreJson')?.addEventListener('click', () => {
-        const f = document.getElementById('restoreFile')?.files?.[0];
-        if (!f) { alert('Choose a backup JSON file first'); return; }
-        restoreFromBackup(f);
-      });
-
-
-
-      function renderHoldingNewsItems(items) {
-        if (!items.length) {
-          return '<p class="text-zinc-400">No holding-specific news yet. Add stocks with US tickers for the richest feed, or set FINNHUB_API_KEY on the server.</p>';
-        }
-        return items.map(it => {
-          const badge = it.type === 'ex_div'
-            ? '<span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">Ex-div</span>'
-            : it.type === 'theme'
-              ? '<span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">Theme</span>'
-              : '<span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-brand-50 text-brand-700">News</span>';
-          const link = it.url
-            ? `<a href="${it.url}" target="_blank" rel="noopener" class="text-brand-700 font-medium hover:underline">${it.title}</a>`
-            : `<span class="text-zinc-800 font-medium">${it.title}</span>`;
-          return `<div class="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 rounded-xl border border-zinc-100 bg-zinc-50/50 px-3 py-2.5">
-            <div class="flex items-center gap-2 shrink-0">${badge}<span class="text-[11px] font-semibold text-zinc-500">${it.symbol}</span></div>
-            <div class="flex-1 min-w-0">${link}
-              <p class="text-[11px] text-zinc-400 mt-0.5">${it.date || ''}${it.source ? ' · ' + it.source : ''}${it.market ? ' · ' + it.market : ''}</p>
-            </div>
-          </div>`;
-        }).join('');
-      }
-
-
-      // ---- Dividends & rental income ----
-      async function loadDividends() {
-        const box = document.getElementById('dividendsList');
-        if (!box || !currentUser) return;
-        const { data, error } = await supabaseClient
-          .from('dividends')
-          .select('*')
-          .eq('user_id', currentUser.id)
-          .order('pay_date', { ascending: false });
-        if (error) {
-          box.innerHTML = `<p class="text-zinc-400">Dividends table not ready — run SQL setup.</p>`;
-          return;
-        }
-        if (!data || !data.length) {
-          box.innerHTML = '<p class="text-zinc-400">No dividends logged yet. Use "+ Log received" after you get paid.</p>';
-          const tot0 = document.getElementById('dividendsTotalAed');
-          if (tot0) tot0.textContent = 'AED 0';
-          return;
-        }
-        let divTotal = 0;
-        data.forEach(d => { divTotal += Number(d.amount_aed || d.amount || 0); });
-        const totEl = document.getElementById('dividendsTotalAed');
-        if (totEl) totEl.textContent = 'AED ' + divTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        const header = `<div class="hidden sm:grid sm:grid-cols-[5.5rem_minmax(0,1.2fr)_4.5rem_7rem_6.5rem_4rem] gap-3 px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
-          <span>Status</span>
-          <span>Ticker</span>
-          <span>Market</span>
-          <span class="text-right">Amount</span>
-          <span class="text-center">Pay date</span>
-          <span class="text-right">Actions</span>
-        </div>`;
-        const rows = data.map(d => {
-          const st = (d.status || 'received').toLowerCase();
-          const badge = st === 'received'
-            ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Received</span>'
-            : st === 'expected'
-              ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">Expected</span>'
-              : '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">' + st + '</span>';
-          const amt = Number(d.amount_aed || d.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-          const date = d.pay_date || d.ex_date || '—';
-          return `<div class="grid grid-cols-1 sm:grid-cols-[5.5rem_minmax(0,1.2fr)_4.5rem_7rem_6.5rem_4rem] gap-2 sm:gap-3 items-center rounded-xl border border-zinc-100 bg-zinc-50/60 px-3 py-2.5">
-            <div>${badge}</div>
-            <span class="font-semibold text-zinc-900 truncate">${d.symbol}</span>
-            <span class="text-zinc-500 text-[12px]">${d.market || '—'}</span>
-            <span class="tabular-nums font-semibold text-zinc-800 sm:text-right">AED ${amt}</span>
-            <span class="text-[12px] text-zinc-500 sm:text-center tabular-nums">${date}</span>
-            <div class="sm:text-right">
-              <button onclick="deleteDividend('${d.id}')" class="text-[11px] text-rose-500 hover:underline">Delete</button>
-            </div>
-          </div>`;
-        }).join('');
-        box.innerHTML = header + '<div class="space-y-1.5">' + rows + '</div>';
-      }
-
-      document.getElementById('btnLogDividend')?.addEventListener('click', async () => {
-        if (!currentUser) return;
-        const symbol = prompt('Ticker symbol (must match a holding)', 'AAPL');
-        if (!symbol) return;
-        const amount = parseFloat(prompt('Amount received (AED)', '100'));
-        if (isNaN(amount)) { alert('Invalid amount'); return; }
-        const pay_date = prompt('Payment date (YYYY-MM-DD)', new Date().toISOString().slice(0,10));
-        if (!pay_date) return;
-        const { data: h } = await supabaseClient.from('holdings').select('market, currency').eq('user_id', currentUser.id).ilike('symbol', symbol.trim()).maybeSingle();
-        const { error } = await supabaseClient.from('dividends').insert([{
-          user_id: currentUser.id,
-          symbol: symbol.trim().toUpperCase(),
-          market: h?.market || null,
-          amount: amount,
-          amount_aed: amount,
-          currency: 'AED',
-          pay_date,
-          status: 'received',
-          source: 'manual'
-        }]);
-        if (error) alert(error.message);
-        else loadDividends();
-      });
-
-      window.deleteDividend = async function(id) {
-        if (!confirm('Delete this dividend entry?')) return;
-        const { error } = await supabaseClient.from('dividends').delete().eq('id', id);
-        if (error) alert(error.message);
-        else loadDividends();
-      };
-
-      async function loadRentHistory(propertyId) {
-        const el = document.getElementById('rentHist-' + propertyId);
-        if (!el) return;
-        const { data, error } = await supabaseClient
-          .from('rental_payments')
-          .select('*')
-          .eq('property_id', propertyId)
-          .order('due_date', { ascending: false })
-          .limit(6);
-        if (error) {
-          el.innerHTML = '<span class="text-zinc-400">Rent log unavailable (run SQL).</span>';
-          return;
-        }
-        if (!data || !data.length) {
-          el.innerHTML = '<span class="text-zinc-400">No rent marked received yet.</span>';
-          return;
-        }
-        el.innerHTML = `<div class="grid grid-cols-[6.5rem_1fr_4.5rem] gap-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
-          <span>Due date</span><span class="text-right">Amount</span><span class="text-right">Status</span>
-        </div>` + data.map(r => {
-          const st = (r.status || 'received').toLowerCase();
-          const color = st === 'received' ? 'text-emerald-700' : st === 'overdue' ? 'text-rose-600' : 'text-amber-700';
-          const amt = Number(r.amount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-          return `<div class="grid grid-cols-[6.5rem_1fr_4.5rem] gap-2 items-center"><span class="tabular-nums text-zinc-600">${r.due_date}</span><span class="tabular-nums font-medium text-zinc-800 text-right">AED ${amt}</span><span class="${color} font-semibold text-right capitalize">${st}</span></div>`;
-        }).join('');
-      }
-
-      window.setPropertyRent = async function(propertyId) {
-        const rent = parseFloat(prompt('Monthly rent (AED)', '8500'));
-        if (isNaN(rent) || rent < 0) return;
-        const day = parseInt(prompt('Due day of month (1-28)', '1'), 10) || 1;
-        const { error } = await supabaseClient.from('properties').update({
-          monthly_rent: rent,
-          rent_due_day: Math.min(28, Math.max(1, day))
-        }).eq('id', propertyId);
-        if (error) alert(error.message);
-        else loadProperties();
-      };
-
-      window.logRentReceived = async function(propertyId, amount, dueDay) {
-        if (!currentUser) return;
-        const now = new Date();
-        const y = now.getFullYear();
-        const m = now.getMonth(); // 0-based
-        const day = Math.min(Math.max(Number(dueDay) || 1, 1), 28);
-        const due = `${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-        const custom = prompt('Due date for this rent (YYYY-MM-DD)', due);
-        if (!custom) return;
-        const amt = parseFloat(prompt('Amount received (AED)', String(amount))) || amount;
-        const { error } = await supabaseClient.from('rental_payments').insert([{
-          user_id: currentUser.id,
-          property_id: propertyId,
-          amount: amt,
-          due_date: custom,
-          status: 'received',
-          paid_at: new Date().toISOString()
-        }]);
-        if (error) alert(error.message);
-        else loadRentHistory(propertyId);
-      };
-
-      async function loadHoldingNews() {
-        const lists = [
-          document.getElementById('holdingNewsList'),
-          document.getElementById('holdingNewsListCfo')
-        ].filter(Boolean);
-        const metas = [
-          document.getElementById('holdingNewsMeta'),
-          document.getElementById('holdingNewsMetaCfo')
-        ].filter(Boolean);
-        lists.forEach(list => { list.innerHTML = '<p class="text-zinc-400">Loading personalised updates…</p>'; });
-        try {
-          const { data: sessionData } = await supabaseClient.auth.getSession();
-          const token = sessionData?.session?.access_token;
-          const res = await fetch(`${SUPABASE_URL}/functions/v1/holding-news`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token || SUPABASE_ANON_KEY}`,
-              'apikey': SUPABASE_ANON_KEY
-            },
-            body: JSON.stringify({})
-          });
-          const json = await res.json().catch(() => ({}));
-          if (!res.ok) throw new Error(json.error || ('HTTP ' + res.status));
-          const items = json.items || [];
-          const html = renderHoldingNewsItems(items);
-          lists.forEach(list => { list.innerHTML = html; });
-          const m = json.meta || {};
-          const metaText = m.finnhub
-            ? `Filtered to your ${m.holdings_count || 0} holding(s). Queried: ${(m.symbols_queried || []).slice(0,6).join(', ') || '—'}`
-            : `Filtered to your holdings. Add FINNHUB_API_KEY in Supabase secrets for live company news & ex-div (US works best).`;
-          metas.forEach(meta => { meta.textContent = metaText; });
-        } catch (e) {
-          lists.forEach(list => { list.innerHTML = `<p class="text-rose-600">Could not load news: ${e.message || e}</p>`; });
-        }
-      }
-      document.getElementById('btnRefreshHoldingNews')?.addEventListener('click', () => loadHoldingNews());
-      document.getElementById('btnRefreshHoldingNewsCfo')?.addEventListener('click', () => loadHoldingNews());
-
-
-      let lastViewBeforeSettings = 'overview';
-      let currentViewName = 'overview';
-
-      document.getElementById('headerAvatarBtn')?.addEventListener('click', () => {
-        const btn = document.getElementById('headerAvatarBtn');
-        btn?.classList.remove('pulse-once');
-        void btn?.offsetWidth;
-        btn?.classList.add('pulse-once');
-
-        if (currentViewName === 'settings') {
-          // Second click: return to where the user was
-          showView(lastViewBeforeSettings || 'overview');
-        } else {
-          lastViewBeforeSettings = currentViewName || 'overview';
-          showView('settings');
-        }
-        if (window.innerWidth < 1024) closeSidebar();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      });
-
-      // ---- Floating AI CFO chat ----
-      async function buildChatSnapshot() {
-        const rates = await getRatesToAed();
-        const { data: holdings } = await supabaseClient.from('holdings').select('*');
-        const { data: props } = await supabaseClient.from('properties').select('*');
-        const { data: insts } = await supabaseClient.from('installments').select('*');
-        let liquid = 0;
-        const markets = {};
-        (holdings || []).forEach(h => {
-          const cur = (h.currency || 'AED').toUpperCase();
-          const aed = (Number(h.shares)||0) * (Number(h.avg_buy_price)||0) * (rates[cur] != null ? rates[cur] : 1);
-          liquid += aed;
-          const m = h.market || 'OTHER';
-          markets[m] = (markets[m] || 0) + aed;
-        });
-        let re = 0;
-        (props || []).forEach(p => { re += Number(p.total_price) || 0; });
-        const today = new Date(); today.setHours(0,0,0,0);
-        let due30 = 0, overdue = 0;
-        (insts || []).forEach(i => {
-          if ((i.status||'').toLowerCase() === 'paid') return;
-          const days = Math.round((new Date(i.due_date+'T00:00:00') - today) / 86400000);
-          const amt = Number(i.amount) || 0;
-          if (days < 0) overdue += amt;
-          else if (days <= 30) due30 += amt;
-        });
-        return {
-          liquid_aed: Math.round(liquid),
-          real_estate_aed: Math.round(re),
-          combined_aed: Math.round(liquid + re),
-          markets,
-          installments: { overdue_aed: Math.round(overdue), due_30d_aed: Math.round(due30) },
-          golden_visa: { holder: !!goldenVisaHolder, property_aed: Math.round(re), target_aed: 2000000 }
-        };
-      }
-
-      function appendChatBubble(role, message) {
-        const box = document.getElementById('aiChatMessages');
-        if (!box) return;
-        const div = document.createElement('div');
-        div.className = role === 'user'
-          ? 'ml-8 bg-brand-700 text-white rounded-xl px-3 py-2 shadow-sm whitespace-pre-wrap'
-          : 'mr-4 bg-white border border-zinc-100 rounded-xl px-3 py-2 text-zinc-700 shadow-sm whitespace-pre-wrap';
-        div.textContent = message;
-        box.appendChild(div);
-        box.scrollTop = box.scrollHeight;
-      }
-
-      document.getElementById('aiChatFab')?.addEventListener('click', () => {
-        document.getElementById('aiChatPanel')?.classList.toggle('hidden');
-      });
-      document.getElementById('aiChatClose')?.addEventListener('click', () => {
-        document.getElementById('aiChatPanel')?.classList.add('hidden');
-      });
-      document.getElementById('aiChatForm')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const input = document.getElementById('aiChatInput');
-        const q = (input?.value || '').trim();
-        if (!q) return;
-        input.value = '';
-        appendChatBubble('user', q);
-        appendChatBubble('bot', 'Thinking…');
-        const box = document.getElementById('aiChatMessages');
-        const thinking = box?.lastElementChild;
-        try {
-          const snapshot = await buildChatSnapshot();
-          const { data: sessionData } = await supabaseClient.auth.getSession();
-          const token = sessionData?.session?.access_token;
-          const res = await fetch(`${SUPABASE_URL}/functions/v1/ai-cfo-narrative`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token || SUPABASE_ANON_KEY}`,
-              'apikey': SUPABASE_ANON_KEY
-            },
-            body: JSON.stringify({ snapshot, question: q })
-          });
-          const json = await res.json().catch(() => ({}));
-          if (!res.ok) throw new Error(json.error || ('HTTP ' + res.status));
-          if (thinking) thinking.textContent = json.narrative || 'No reply.';
-        } catch (err) {
-          if (thinking) thinking.textContent = 'Could not answer right now. ' + (err.message || err);
-        }
-      });
-
-      // View Switcher
-      function showView(name) {
-        currentViewName = name;
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.querySelectorAll('.sidebar-link').forEach(l => {
-          l.classList.remove('active');
-          l.classList.add('text-zinc-500');
-        });
-        const target = document.getElementById('view-' + name);
-        if (target) target.classList.add('active');
-        // Sidebar highlight is handled by click handler (supports portfolio filters)
-        if (name !== 'portfolio') {
-          const btn = document.querySelector(`.sidebar-link[data-view="${name}"]:not([data-asset-filter])`);
-          if (btn && typeof setSidebarActive === 'function') setSidebarActive(btn);
-          else {
-            document.querySelectorAll('.sidebar-link').forEach(l => {
-              l.classList.remove('active');
-              l.classList.add('text-zinc-500');
-            });
-            document.querySelectorAll(`.sidebar-link[data-view="${name}"]`).forEach(b => {
-              b.classList.add('active');
-              b.classList.remove('text-zinc-500');
-            });
-          }
-        }
-      
-        if (name === 'ai-insights') { generateAiCfoInsights(); loadHoldingNews(); }
-        if (name === 'overview') loadHoldingNews();
-        if (name === 'cash') loadCashAccounts();
-        if (name === 'alt-assets') { loadAltAssets(); updateAltFormFields(); }
-        if (name === 'portfolio') { loadDividends(); if (typeof applyPortfolioAssetFilter === 'function') applyPortfolioAssetFilter(); }
-      }
-
-
-
-      // ---- Other assets (MF, FD, Bonds, Vehicles, Business) ----
-      let altTabFilter = 'all';
-      window.__lastAltAed = 0;
-
-      const ALT_LABELS = {
-        mutual_fund: 'Mutual Fund',
-        fixed_deposit: 'Fixed Deposit',
-        bond_sukuk: 'Bond / Sukuk',
-        vehicle: 'Vehicle',
-        business: 'Business'
-      };
-
-      function updateAltFormFields() {
-        const t = document.getElementById('altClass')?.value || 'mutual_fund';
-        const nameL = document.getElementById('altNameLabel');
-        const instL = document.getElementById('altInstLabel');
-        const qtyL = document.getElementById('altQtyLabel');
-        const invL = document.getElementById('altInvestedLabel');
-        const valL = document.getElementById('altValueLabel');
-        const rateL = document.getElementById('altRateLabel');
-        const refL = document.getElementById('altRefLabel');
-        const show = (id, on) => { const el = document.getElementById(id); if (el) el.classList.toggle('hidden', !on); };
-        show('altFieldQty', t === 'mutual_fund' || t === 'bond_sukuk' || t === 'vehicle');
-        show('altFieldRate', t === 'fixed_deposit' || t === 'bond_sukuk');
-        show('altFieldOwn', t === 'business');
-        show('altFieldStart', t !== 'vehicle');
-        show('altFieldMaturity', t === 'fixed_deposit' || t === 'bond_sukuk');
-        if (nameL) nameL.textContent = ({ mutual_fund: 'Scheme / fund name', fixed_deposit: 'FD name / bank product', bond_sukuk: 'Bond or sukuk name', vehicle: 'Make & model', business: 'Business / company name' })[t];
-        if (instL) instL.textContent = ({ mutual_fund: 'AMC / platform', fixed_deposit: 'Bank', bond_sukuk: 'Issuer', vehicle: 'Dealer / financed by', business: 'Jurisdiction / free zone' })[t];
-        if (qtyL) qtyL.textContent = ({ mutual_fund: 'Units', bond_sukuk: 'Face units / count', vehicle: 'Count (usually 1)' })[t] || 'Quantity';
-        if (invL) invL.textContent = ({ mutual_fund: 'Amount invested', fixed_deposit: 'Principal', bond_sukuk: 'Amount invested', vehicle: 'Purchase price', business: 'Capital invested' })[t];
-        if (valL) valL.textContent = ({ mutual_fund: 'Current value (NAV × units)', fixed_deposit: 'Maturity value (est.)', bond_sukuk: 'Current market value', vehicle: 'Current market value', business: 'Your share value (est.)' })[t];
-        if (rateL) rateL.textContent = t === 'bond_sukuk' ? 'Coupon % p.a.' : 'Interest % p.a.';
-        if (refL) refL.textContent = ({ mutual_fund: 'Folio number', fixed_deposit: 'Account / FD number', bond_sukuk: 'ISIN / certificate no.', vehicle: 'Plate / chassis', business: 'Trade license / share cert.' })[t];
-      }
-
-      document.getElementById('altClass')?.addEventListener('change', updateAltFormFields);
-      document.getElementById('btnToggleAltForm')?.addEventListener('click', () => {
-        document.getElementById('altFormPanel')?.classList.remove('hidden');
-        updateAltFormFields();
-      });
-      document.getElementById('btnCancelAlt')?.addEventListener('click', () => {
-        document.getElementById('altFormPanel')?.classList.add('hidden');
-      });
-      document.querySelectorAll('[data-alt-tab]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          altTabFilter = btn.getAttribute('data-alt-tab') || 'all';
-          document.querySelectorAll('.alt-tab').forEach(b => {
-            const on = b.getAttribute('data-alt-tab') === altTabFilter;
-            b.className = 'alt-tab rounded-full px-3.5 py-1.5 text-[12px] font-semibold ' + (on ? 'bg-brand-700 text-white' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200');
-          });
-          loadAltAssets();
-        });
-      });
-
-      async function loadAltAssets() {
-        const list = document.getElementById('altAssetsList');
-        if (!list || !currentUser) return;
-        list.innerHTML = '<p class="text-[13px] text-zinc-400">Loading…</p>';
-        const { data, error } = await supabaseClient
-          .from('alt_assets')
-          .select('*')
-          .eq('user_id', currentUser.id)
-          .order('created_at', { ascending: false });
-        if (error) {
-          list.innerHTML = '<p class="text-[13px] text-zinc-400">Run <strong>alt-assets-setup.sql</strong> in Supabase to enable Mutual Funds, FDs, Bonds, Vehicles & Business.</p>';
-          window.__lastAltAed = 0;
-          if (typeof refreshTotalNetWorth === 'function') refreshTotalNetWorth();
-          return;
-        }
-        const rates = await getRatesToAed();
-        const sums = { mutual_fund: 0, fixed_deposit: 0, bond_sukuk: 0, vehicle: 0, business: 0 };
-        let totalAed = 0;
-        const rows = (data || []).map(r => {
-          const cur = (r.currency || 'AED').toUpperCase();
-          const raw = Number(r.current_value) || Number(r.invested_amount) || 0;
-          const aed = raw * (rates[cur] != null ? rates[cur] : (cur === 'AED' ? 1 : 0));
-          if (sums[r.asset_class] != null) sums[r.asset_class] += aed;
-          totalAed += aed;
-          return { ...r, _aed: aed };
-        });
-        window.__lastAltAed = totalAed;
-        window.__lastAltSums = sums;
-        const fmt = n => 'AED ' + Math.round(n).toLocaleString();
-        const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = fmt(v); };
-        set('altSumMf', sums.mutual_fund);
-        set('altSumFd', sums.fixed_deposit);
-        set('altSumBond', sums.bond_sukuk);
-        set('altSumVeh', sums.vehicle);
-        set('altSumBiz', sums.business);
-        if (typeof refreshTotalNetWorth === 'function') refreshTotalNetWorth();
-
-        const filtered = altTabFilter === 'all' ? rows : rows.filter(r => r.asset_class === altTabFilter);
-        if (!filtered.length) {
-          list.innerHTML = '<p class="text-[13px] text-zinc-400 py-4">No entries yet. Use + Add entry.</p>';
-          return;
-        }
-        const accent = {
-          mutual_fund: 'bg-indigo-50 text-indigo-700 ring-indigo-100',
-          fixed_deposit: 'bg-sky-50 text-sky-800 ring-sky-100',
-          bond_sukuk: 'bg-teal-50 text-teal-800 ring-teal-100',
-          vehicle: 'bg-orange-50 text-orange-800 ring-orange-100',
-          business: 'bg-fuchsia-50 text-fuchsia-800 ring-fuchsia-100'
-        };
-        list.innerHTML = filtered.map(r => {
-          const letter = (r.name || '?').charAt(0).toUpperCase();
-          const meta = [
-            ALT_LABELS[r.asset_class] || r.asset_class,
-            r.institution,
-            r.rate != null ? (r.rate + '%') : null,
-            r.ownership_pct != null ? (r.ownership_pct + '% own') : null,
-            r.maturity_date ? ('Mat. ' + r.maturity_date) : null
-          ].filter(Boolean).join(' · ');
-          const cur = (r.currency || 'AED').toUpperCase();
-          const val = Number(r.current_value) || Number(r.invested_amount) || 0;
-          return `<div class="group flex items-center gap-3 rounded-2xl border-2 border-zinc-100 bg-white hover:border-zinc-200 hover:shadow-soft px-4 py-3.5 transition">
-            <div class="w-10 h-10 rounded-xl ${accent[r.asset_class]||'bg-zinc-50'} ring-1 flex items-center justify-center text-[13px] font-bold shrink-0">${letter}</div>
-            <div class="flex-1 min-w-0">
-              <p class="font-semibold text-zinc-900 truncate text-[14px]">${r.name}</p>
-              <p class="text-[11.5px] text-zinc-400 truncate">${meta}</p>
-              ${r.folio_ref ? `<p class="text-[11px] text-zinc-400">Ref: ${r.folio_ref}</p>` : ''}
-            </div>
-            <div class="text-right shrink-0">
-              <p class="tabular-nums font-semibold text-zinc-900 text-[14px]">${cur} ${val.toLocaleString(undefined,{maximumFractionDigits:0})}</p>
-              <p class="text-[11px] text-zinc-400 tabular-nums">≈ AED ${Math.round(r._aed).toLocaleString()}</p>
-            </div>
-            <button type="button" onclick="deleteAltAsset('${r.id}')" class="opacity-70 sm:opacity-0 sm:group-hover:opacity-100 text-[11px] font-semibold text-rose-500 px-1">Delete</button>
-          </div>`;
-        }).join('');
-      }
-
-      document.getElementById('btnSaveAlt')?.addEventListener('click', async () => {
-        if (!currentUser) return;
-        const asset_class = document.getElementById('altClass').value;
-        const name = document.getElementById('altName').value.trim();
-        if (!name) { alert('Enter a name'); return; }
-        const invested = parseFloat(document.getElementById('altInvested').value);
-        let current = parseFloat(document.getElementById('altCurrent').value);
-        if (isNaN(current) && !isNaN(invested)) current = invested;
-        const row = {
-          user_id: currentUser.id,
-          asset_class,
-          name,
-          institution: document.getElementById('altInstitution').value.trim() || null,
-          currency: document.getElementById('altCurrency').value,
-          quantity: parseFloat(document.getElementById('altQuantity').value) || null,
-          invested_amount: isNaN(invested) ? 0 : invested,
-          current_value: isNaN(current) ? 0 : current,
-          rate: parseFloat(document.getElementById('altRate').value) || null,
-          ownership_pct: parseFloat(document.getElementById('altOwnPct').value) || null,
-          start_date: document.getElementById('altStart').value || null,
-          maturity_date: document.getElementById('altMaturity').value || null,
-          folio_ref: document.getElementById('altFolio').value.trim() || null,
-          notes: document.getElementById('altNotes').value.trim() || null
-        };
-        const { error } = await supabaseClient.from('alt_assets').insert([row]);
-        if (error) { alert(error.message + '\\n\\nRun alt-assets-setup.sql in Supabase if the table is missing.'); return; }
-        document.getElementById('altFormPanel').classList.add('hidden');
-        ['altName','altInstitution','altQuantity','altInvested','altCurrent','altRate','altOwnPct','altStart','altMaturity','altFolio','altNotes'].forEach(id => {
-          const el = document.getElementById(id); if (el) el.value = '';
-        });
-        loadAltAssets();
-      });
-
-      window.deleteAltAsset = async function(id) {
-        if (!confirm('Delete this entry?')) return;
-        const { error } = await supabaseClient.from('alt_assets').delete().eq('id', id);
-        if (error) alert(error.message);
-        else loadAltAssets();
-      };
-
-
-      // ---- Cash & Bank ----
-      document.getElementById('btnToggleCashForm')?.addEventListener('click', () => {
-        document.getElementById('cashFormPanel')?.classList.remove('hidden');
-      });
-      document.getElementById('btnCancelCash')?.addEventListener('click', () => {
-        document.getElementById('cashFormPanel')?.classList.add('hidden');
-      });
-
-      function toggleCashLoanFields() {
-        const t = document.getElementById('cashType')?.value || '';
-        const loanTypes = ['credit_card','mortgage','vehicle_loan','personal_loan','business_loan','debt'];
-        document.getElementById('cashLoanFields')?.classList.toggle('hidden', !loanTypes.includes(t));
-      }
-      document.getElementById('cashType')?.addEventListener('change', toggleCashLoanFields);
-
-
-      async function loadCashAccounts() {
-        const lists = {
-          bank: document.getElementById('cashListBank'),
-          credit_card: document.getElementById('cashListCards'),
-          receivable: document.getElementById('cashListRecv'),
-          mortgage: document.getElementById('cashListMortgage'),
-          vehicle_loan: document.getElementById('cashListVehicle'),
-          personal_loan: document.getElementById('cashListPersonal'),
-          business_loan: document.getElementById('cashListBusiness'),
-          debt: document.getElementById('cashListDebt')
-        };
-        Object.values(lists).forEach(el => { if (el) el.innerHTML = '<p class="text-[13px] text-zinc-400">Loading…</p>'; });
-        if (!currentUser) return;
-        const { data, error } = await supabaseClient
-          .from('cash_accounts')
-          .select('*')
-          .eq('user_id', currentUser.id)
-          .order('created_at', { ascending: false });
-        if (error) {
-          Object.values(lists).forEach(el => {
-            if (el) el.innerHTML = '<p class="text-[13px] text-zinc-400">Run cash-bank-setup.sql in Supabase to enable this section.</p>';
-          });
-          return;
-        }
-        const rates = await getRatesToAed();
-        const sums = { bank: 0, credit_card: 0, receivable: 0, mortgage: 0, vehicle_loan: 0, personal_loan: 0, business_loan: 0, debt: 0 };
-        const buckets = { bank: [], credit_card: [], receivable: [], mortgage: [], vehicle_loan: [], personal_loan: [], business_loan: [], debt: [] };
-        (data || []).forEach(row => {
-          const t = row.account_type || 'bank';
-          if (!buckets[t]) buckets[t] = [];
-          buckets[t].push(row);
-          const cur = (row.currency || 'AED').toUpperCase();
-          const aed = (Number(row.balance) || 0) * (rates[cur] != null ? rates[cur] : (cur === 'AED' ? 1 : 0));
-          if (sums[t] != null) sums[t] += aed;
-        });
-        const fmt = n => 'AED ' + Math.round(n).toLocaleString();
-        const elB = document.getElementById('cashSumBank');
-        const elC = document.getElementById('cashSumCards');
-        const elR = document.getElementById('cashSumRecv');
-        const elD = document.getElementById('cashSumDebt');
-        if (elB) elB.textContent = fmt(sums.bank);
-        if (elC) elC.textContent = fmt(sums.credit_card);
-        if (elR) elR.textContent = fmt(sums.receivable);
-        const allLoans = (sums.mortgage||0) + (sums.vehicle_loan||0) + (sums.personal_loan||0) + (sums.business_loan||0) + (sums.debt||0);
-        if (elD) elD.textContent = fmt(allLoans);
-        // credit cards stay separate on card; liabilities for net worth = cards + all loans
-        window.__lastCashSums = {
-          bank: sums.bank,
-          credit_card: sums.credit_card,
-          receivable: sums.receivable,
-          debt: allLoans,
-          mortgage: sums.mortgage,
-          vehicle_loan: sums.vehicle_loan,
-          personal_loan: sums.personal_loan,
-          business_loan: sums.business_loan
-        };
-        refreshTotalNetWorth();
-
-        const render = (type) => {
-          const el = lists[type];
-          if (!el) return;
-          const rows = buckets[type] || [];
-          if (!rows.length) {
-            el.innerHTML = '<p class="text-[12.5px] text-zinc-400 py-2 px-1">No entries yet — use + Add entry.</p>';
-            return;
-          }
-          const accent = {
-              bank: 'bg-emerald-50 text-emerald-700 ring-emerald-100',
-              credit_card: 'bg-rose-50 text-rose-700 ring-rose-100',
-              receivable: 'bg-teal-50 text-teal-700 ring-teal-100',
-              mortgage: 'bg-violet-50 text-violet-800 ring-violet-100',
-              vehicle_loan: 'bg-orange-50 text-orange-800 ring-orange-100',
-              personal_loan: 'bg-sky-50 text-sky-800 ring-sky-100',
-              business_loan: 'bg-fuchsia-50 text-fuchsia-800 ring-fuchsia-100',
-              debt: 'bg-amber-50 text-amber-800 ring-amber-100'
-            }[type] || 'bg-zinc-50 text-zinc-600 ring-zinc-100';
-          el.innerHTML = rows.map(r => {
-            const cur = (r.currency || 'AED').toUpperCase();
-            const bal = Number(r.balance) || 0;
-            const aed = bal * (rates[cur] != null ? rates[cur] : (cur === 'AED' ? 1 : 0));
-            const letter = (r.name || '?').charAt(0).toUpperCase();
-            return `<div class="group flex items-center gap-3 rounded-xl border border-zinc-100/90 bg-zinc-50/40 hover:bg-white hover:border-zinc-200 hover:shadow-soft px-3.5 py-3 transition">
-              <div class="w-10 h-10 rounded-xl ${accent} ring-1 flex items-center justify-center text-[13px] font-bold shrink-0">${letter}</div>
-              <div class="flex-1 min-w-0">
-                <p class="font-semibold text-zinc-900 truncate text-[14px]">${r.name}</p>
-                <p class="text-[11.5px] text-zinc-400 truncate">${r.note || type.replace(/_/g,' ')}</p>
-              </div>
-              <div class="text-right shrink-0">
-                <p class="tabular-nums font-semibold text-zinc-900 text-[14px]">${cur} ${bal.toLocaleString(undefined,{maximumFractionDigits:2})}</p>
-                <p class="text-[11px] text-zinc-400 tabular-nums">≈ AED ${aed.toLocaleString(undefined,{maximumFractionDigits:0})}</p>
-              </div>
-              <button onclick="deleteCashAccount('${r.id}')" class="opacity-60 sm:opacity-0 sm:group-hover:opacity-100 text-[11px] font-semibold text-rose-500 hover:text-rose-600 px-1 transition">Delete</button>
-            </div>`;
-          }).join('');
-        };
-        render('bank');
-        render('receivable');
-        render('credit_card');
-        render('mortgage');
-        render('vehicle_loan');
-        render('personal_loan');
-        render('business_loan');
-        render('debt');
-      }
-
-      document.getElementById('btnSaveCash')?.addEventListener('click', async () => {
-        if (!currentUser) return;
-        const account_type = document.getElementById('cashType').value;
-        const name = document.getElementById('cashName').value.trim();
-        const currency = document.getElementById('cashCurrency').value;
-        const balance = parseFloat(document.getElementById('cashAmount').value);
-        const note = document.getElementById('cashNote').value.trim() || null;
-        if (!name || isNaN(balance)) {
-          alert('Enter a name and amount.');
-          return;
-        }
-        const rate = parseFloat(document.getElementById('cashRate')?.value);
-        const emi = parseFloat(document.getElementById('cashEmi')?.value);
-        let noteFinal = note || '';
-        if (!isNaN(rate) || !isNaN(emi)) {
-          const bits = [];
-          if (!isNaN(rate)) bits.push(rate + '% p.a.');
-          if (!isNaN(emi)) bits.push('EMI ' + emi);
-          noteFinal = (bits.join(' · ') + (noteFinal ? ' · ' + noteFinal : '')).trim();
-        }
-        const row = {
-          user_id: currentUser.id,
-          account_type,
-          name,
-          currency,
-          balance,
-          note: noteFinal || null
-        };
-        // Optional columns if migration applied
-        if (!isNaN(rate)) row.interest_rate = rate;
-        if (!isNaN(emi)) row.monthly_emi = emi;
-        let { error } = await supabaseClient.from('cash_accounts').insert([row]);
-        if (error && /interest_rate|monthly_emi|schema cache/i.test(error.message)) {
-          delete row.interest_rate;
-          delete row.monthly_emi;
-          ({ error } = await supabaseClient.from('cash_accounts').insert([row]));
-        }
-        if (error) { alert(error.message); return; }
-        document.getElementById('cashName').value = '';
-        document.getElementById('cashAmount').value = '';
-        document.getElementById('cashNote').value = '';
-        document.getElementById('cashFormPanel').classList.add('hidden');
-        loadCashAccounts();
-      });
-
-      window.deleteCashAccount = async function(id) {
-        if (!confirm('Delete this entry?')) return;
-        const { error } = await supabaseClient.from('cash_accounts').delete().eq('id', id);
-        if (error) alert(error.message);
-        else loadCashAccounts();
-      };
-
-
-      let portfolioAssetFilter = 'all';
-
-
-      function refreshTotalNetWorth() {
-        const liquid = Number(window.__lastLiveAed) || 0;
-        const re = Number(window.__lastReVal) || 0;
-        const alt = Number(window.__lastAltAed) || 0;
-        const cash = window.__lastCashSums || { bank: 0, credit_card: 0, receivable: 0, debt: 0 };
-        const bank = Number(cash.bank) || 0;
-        const recv = Number(cash.receivable) || 0;
-        const cards = Number(cash.credit_card) || 0;
-        const debt = Number(cash.debt) || 0;
-        // Net worth = liquid + RE + other assets + bank + receivable − cards − debts
-        const total = liquid + re + alt + bank + recv - cards - debt;
-        const el = document.getElementById('totalNetWorthCard');
-        if (el) el.textContent = 'AED ' + total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        const sub = document.getElementById('totalNetWorthSub');
-        if (sub) {
-          sub.textContent = 'Holdings + property + other + cash − liabilities';
-        }
-        const liqSub = document.getElementById('liquidValueSub');
-        if (liqSub) {
-          liqSub.textContent = 'AED ' + liquid.toLocaleString(undefined, { maximumFractionDigits: 0 }) + ' live value';
-        }
-        const k = window.__holdingsByKind || {};
-        const fmt0 = (n) => 'AED ' + Math.round(n || 0).toLocaleString();
-        const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = fmt0(v); };
-        set('ovStocksVal', k.stocks && k.stocks.v);
-        set('ovGoldVal', k.gold && k.gold.v);
-        set('ovCryptoVal', k.crypto && k.crypto.v);
-        set('ovCashPosVal', bank + recv);
-        set('ovCashNegVal', cards + debt);
-      }
-
-      function updatePortfolioKindCards() {
-        const k = window.__holdingsByKind || {};
-        const fmt = (n) => 'AED ' + (n || 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
-        const set = (idV, idM, obj) => {
-          const elV = document.getElementById(idV);
-          const elM = document.getElementById(idM);
-          if (elV) elV.textContent = fmt(obj?.v || 0);
-          if (elM) {
-            const pnl = obj?.pnl || 0;
-            const sign = pnl >= 0 ? '+' : '';
-            elM.textContent = `${obj?.c || 0} lines · ${sign}${Math.round(pnl).toLocaleString()} AED P/L`;
-          }
-        };
-        set('cardStocksValue', 'cardStocksMeta', k.stocks);
-        set('cardGoldValue', 'cardGoldMeta', k.gold);
-        set('cardCryptoValue', 'cardCryptoMeta', k.crypto);
-      }
-
-      function applyPortfolioAssetFilter() {
-        const tbody = document.getElementById('portfolioTableBody');
-        if (!tbody) return;
-        tbody.querySelectorAll('tr[data-section-header]').forEach(r => r.remove());
-        const rows = [...tbody.querySelectorAll('tr[data-asset-kind]')];
-
-        const title = document.getElementById('portfolioPageTitle');
-        const sub = document.getElementById('portfolioPageSub');
-        const banner = document.getElementById('portfolioFocusBanner');
-        const focusText = document.getElementById('portfolioFocusText');
-        const cards = document.getElementById('portfolioKindCards');
-
-        const labels = {
-          all: { t: 'Portfolio', s: 'Stocks & ETFs, gold & silver, and crypto — separated by type' },
-          stocks: { t: 'Stocks & ETFs', s: 'Equity and ETF holdings only' },
-          gold: { t: 'Gold & Silver', s: 'Precious metals dashboard — gold and silver only' },
-          crypto: { t: 'Crypto', s: 'Crypto dashboard — digital assets only' }
-        };
-        const L = labels[portfolioAssetFilter] || labels.all;
-        if (title) title.textContent = L.t;
-        if (sub) sub.textContent = L.s;
-
-        const divSec = document.getElementById('dividendsSection');
-        if (divSec) {
-          // Dividends only on Stocks & ETFs screen
-          divSec.classList.toggle('hidden', portfolioAssetFilter !== 'stocks');
-        }
-
-        if (portfolioAssetFilter === 'all') {
-          if (cards) cards.classList.remove('hidden');
-          if (banner) banner.classList.add('hidden');
-          const titles = { stocks: 'Stocks & ETFs', gold: 'Gold & Silver', crypto: 'Crypto', cash: 'Cash & Bank' };
-          const seen = {};
-          rows.forEach(tr => {
-            const kind = tr.getAttribute('data-asset-kind') || 'stocks';
-            tr.style.display = '';
-            if (!seen[kind]) {
-              seen[kind] = true;
-              const hr = document.createElement('tr');
-              hr.setAttribute('data-section-header', kind);
-              const dots = { stocks: 'bg-brand-600', gold: 'bg-amber-500', crypto: 'bg-violet-500', cash: 'bg-emerald-500' };
-              const bgs = { stocks: 'from-brand-50/80 to-white', gold: 'from-amber-50/90 to-white', crypto: 'from-violet-50/80 to-white', cash: 'from-emerald-50/80 to-white' };
-              hr.innerHTML = '<td colspan="6" class="px-5 py-3 bg-gradient-to-r ' + (bgs[kind]||'from-zinc-50 to-white') + ' border-y border-zinc-200/80">' +
-                '<div class="flex items-center gap-2">' +
-                '<span class="w-1.5 h-1.5 rounded-full ' + (dots[kind]||'bg-zinc-400') + '"></span>' +
-                '<span class="text-[11px] font-bold uppercase tracking-wider text-zinc-600">' + (titles[kind] || kind) + '</span>' +
-                '</div></td>';
-              tr.parentNode.insertBefore(hr, tr);
-            }
-          });
-        } else {
-          if (cards) cards.classList.add('hidden');
-          if (banner) banner.classList.remove('hidden');
-          const k = window.__holdingsByKind && window.__holdingsByKind[portfolioAssetFilter];
-          const val = k ? k.v : 0;
-          const cnt = k ? k.c : 0;
-          const pnl = k ? k.pnl : 0;
-          if (focusText) {
-            focusText.textContent = L.t + ' dashboard · ' + cnt + ' holding(s) · AED ' + val.toLocaleString(undefined,{maximumFractionDigits:0}) + ' · P/L ' + (pnl>=0?'+':'') + Math.round(pnl).toLocaleString() + ' AED';
-          }
-          rows.forEach(tr => {
-            const kind = tr.getAttribute('data-asset-kind') || 'stocks';
-            tr.style.display = (kind === portfolioAssetFilter) ? '' : 'none';
-          });
-        }
-      }
-
-      function setSidebarActive(btn) {
-        document.querySelectorAll('.sidebar-link').forEach(l => {
-          l.classList.remove('active');
-          l.classList.add('text-zinc-500');
-        });
-        if (btn) {
-          btn.classList.add('active');
-          btn.classList.remove('text-zinc-500');
-        }
-      }
-
-      document.querySelectorAll('[data-view]').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.preventDefault();
-          const view = btn.getAttribute('data-view');
-          const filter = btn.getAttribute('data-asset-filter');
-          if (view === 'portfolio') {
-            portfolioAssetFilter = filter || 'all';
-          }
-          showView(view);
-          // Highlight the exact nav item clicked (not all portfolio links)
-          setSidebarActive(btn);
-          if (view === 'portfolio') {
-            applyPortfolioAssetFilter();
-            if (portfolioAssetFilter === 'stocks') loadDividends();
-          }
-          if (window.innerWidth < 1024) closeSidebar();
-        });
-      });
-    });
-  </script>
-
-  <!-- AI CFO floating chat -->
-  <button type="button" id="aiChatFab" class="fixed bottom-5 right-5 z-[60] w-14 h-14 rounded-full bg-brand-700 hover:bg-brand-800 text-white shadow-card flex items-center justify-center transition" aria-label="Open AI CFO chat">
-    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 12c0 4.556-4.03 8.25-9 8.25a9.76 9.76 0 01-2.53-.33L4.5 21l1.2-3.6A7.9 7.9 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"/></svg>
-  </button>
-  <div id="aiChatPanel" class="hidden fixed bottom-24 right-5 z-[60] w-[min(100vw-1.5rem,360px)] max-h-[min(70vh,520px)] bg-white rounded-2xl border border-zinc-200 shadow-card flex flex-col overflow-hidden">
-    <div class="px-4 py-3 border-b border-zinc-100 bg-gradient-to-r from-brand-700 to-brand-800 text-white flex items-center justify-between gap-2">
-      <div>
-        <p class="text-[13px] font-semibold">AI CFO</p>
-        <p class="text-[10px] text-white/70">Simple analysis · not a financial advisor</p>
-      </div>
-      <button type="button" id="aiChatClose" class="p-1 rounded-lg hover:bg-white/10" aria-label="Close">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-    </div>
-    <div id="aiChatMessages" class="flex-1 overflow-y-auto p-3 space-y-2 text-[13px] bg-zinc-50/80">
-      <div class="bg-white border border-zinc-100 rounded-xl px-3 py-2 text-zinc-600 shadow-sm">
-        Ask a simple question about your CrossCap data (installments, concentration, Golden Visa progress). This helps you manage records — it is not formal financial advice.
-      </div>
-    </div>
-    <form id="aiChatForm" class="p-3 border-t border-zinc-100 bg-white flex gap-2">
-      <input id="aiChatInput" type="text" maxlength="400" placeholder="e.g. What should I prioritise this month?" class="flex-1 rounded-xl border border-zinc-200 px-3 py-2 text-[13px]" />
-      <button type="submit" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[12px] font-semibold px-3 py-2 shrink-0">Send</button>
-    </form>
-  </div>
-
-  <script>
-    // PWA service worker
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", function () {
-        navigator.serviceWorker.register("/sw.js").catch(function (err) {
-          console.warn("SW registration failed", err);
-        });
-      });
-    }
-  </script>
-</body>
-</html>
+                title: g.I seem to be encountering an error. Can I try something else for you?
