@@ -95,17 +95,10 @@
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const SUPABASE_URL = 'https://auth.crosscap.app';
+      const SUPABASE_URL = 'https://mbweotdviwxmutxdjlpj.supabase.co';
       const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1id2VvdGR2aXd4bXV0eGRqbHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MTAxNDQsImV4cCI6MjEwMjM4NjE0NH0.2hbHdyxS7zqiP-CexUsu8hI0nsgkdjCBeIKcQrmJCAw';
 
       const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-      // Auto-redirect if session is active
-      supabaseClient.auth.onAuthStateChange((event, session) => {
-        if (session) {
-          window.location.href = '/dashboard';
-        }
-      });
 
       const errorBox = document.getElementById('auth-error');
       function showError(msg) {
@@ -117,14 +110,25 @@
         }
       }
 
-      // Google Sign In
+      // Auto-redirect if session exists
+      supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+          window.location.href = '/dashboard.html';
+        }
+      });
+
+      // Google Sign-In (Forces account chooser & direct callback)
       const googleBtn = document.getElementById('googleBtn');
       if (googleBtn) {
         googleBtn.addEventListener('click', async () => {
           const { error } = await supabaseClient.auth.signInWithOAuth({
             provider: 'google',
             options: {
-              redirectTo: window.location.origin + '/dashboard'
+              redirectTo: window.location.origin + '/dashboard.html',
+              queryParams: {
+                prompt: 'select_account',
+                access_type: 'offline'
+              }
             }
           });
           if (error) showError(error.message);
@@ -136,7 +140,7 @@
       if (emailForm) {
         emailForm.addEventListener('submit', async (e) => {
           e.preventDefault();
-          const email = document.getElementById('email').value;
+          const email = document.getElementById('email').value.trim();
           const password = document.getElementById('password').value;
 
           let { error } = await supabaseClient.auth.signInWithPassword({ email, password });
@@ -146,21 +150,20 @@
               showError(signUpRes.error.message);
               return;
             }
-            window.location.href = '/dashboard';
+            window.location.href = '/dashboard.html';
             return;
           }
 
           if (error) {
             showError(error.message);
           } else {
-            window.location.href = '/dashboard';
+            window.location.href = '/dashboard.html';
           }
         });
       }
     });
   </script>
   <script>
-    // PWA service worker
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
         navigator.serviceWorker.register("/sw.js").catch(function (err) {
