@@ -1,90 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Privacy Policy — CrossCap</title>
-  <meta name="description" content="How CrossCap collects, uses, and protects your data." />
-  <meta name="theme-color" content="#7e22ce" />
-  <link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - CrossCap</title>
+  <link rel="icon" type="image/png" href="assets/favicon-32.png">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: { brand: { 50:'#faf5ff',100:'#f3e8ff',600:'#9333ea',700:'#7e22ce',800:'#6b21a8' } },
-          fontFamily: { sans: ['-apple-system','BlinkMacSystemFont','"SF Pro Text"','"Segoe UI"', 'Roboto','sans-serif'] }
-        }
-      }
-    }
-  </script>
 </head>
-<body class="bg-white text-zinc-900 antialiased">
-  <header class="border-b border-zinc-100">
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-      <a href="index.html" class="flex items-center gap-2 font-semibold text-[15px]">
-        <img src="assets/logo.png" alt="" class="w-7 h-7 rounded-lg" width="28" height="28" />
-        CrossCap
+<body class="bg-slate-950 text-slate-300 min-h-screen flex flex-col justify-between">
+  <!-- Header / Navigation -->
+  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3">
+        <img src="assets/logo.svg" alt="CrossCap Logo" class="h-8 w-auto">
+        <span class="font-bold text-lg tracking-tight text-white">CrossCap</span>
       </a>
-      <a href="index.html" class="text-[13px] text-zinc-500 hover:text-zinc-900">Home</a>
+      <div class="flex items-center gap-4">
+        <a href="login.html" class="text-sm font-medium text-slate-300 hover:text-white transition">Sign In</a>
+        <a href="dashboard.html" class="text-sm font-medium bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold px-4 py-2 rounded-lg transition">Launch App</a>
+      </div>
     </div>
   </header>
-  <main class="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
-    <p class="text-[12px] font-semibold text-brand-600 uppercase tracking-wide mb-2">Legal</p>
-    <h1 class="text-3xl font-semibold tracking-tight mb-2">Privacy Policy</h1>
-    <p class="text-[13px] text-zinc-400 mb-10">Last updated: 25 August 2026</p>
 
-    <div class="prose prose-zinc max-w-none space-y-6 text-[15px] leading-relaxed text-zinc-600">
-      <p>CrossCap (“we”, “our”) is a wealth management dashboard for UAE-based expats and investors. This policy explains what data we process when you use <strong>crosscap.app</strong> and related services.</p>
-
-      <h2 class="text-lg font-semibold text-zinc-900 pt-2">1. Who we are</h2>
-      <p>CrossCap is operated as a software product. For privacy questions contact <a class="text-brand-700 font-medium hover:underline" href="mailto:support.crosscap@gmail.com">support.crosscap@gmail.com</a>.</p>
-
-      <h2 class="text-lg font-semibold text-zinc-900 pt-2">2. Data we collect</h2>
-      <ul class="list-disc pl-5 space-y-2">
-        <li><strong>Account data</strong> — email and profile details from Google Sign-In (name, email, optional photo).</li>
-        <li><strong>Portfolio data you enter</strong> — stock holdings, quantities, cost basis, property details, installments, cash/bank balances, goals, and related notes.</li>
-        <li><strong>Files you upload</strong> — e.g. sales/purchase agreements or profile photos, stored in secured cloud storage tied to your account.</li>
-        <li><strong>Technical data</strong> — basic logs needed to run authentication and prevent abuse (IP, device/browser type where provided by our providers).</li>
-      </ul>
-
-      <h2 class="text-lg font-semibold text-zinc-900 pt-2">3. How we use data</h2>
-      <ul class="list-disc pl-5 space-y-2">
-        <li>To provide the dashboard (net worth, reminders, goals, AI features you choose to run).</li>
-        <li>To secure accounts and improve reliability.</li>
-        <li>To respond to support requests you send us.</li>
-      </ul>
-      <p>We do <strong>not</strong> sell your personal data. Market prices may be fetched from third-party market data sources; those requests typically use tickers you configured, not your identity.</p>
-
-      <h2 class="text-lg font-semibold text-zinc-900 pt-2">4. AI features</h2>
-      <p>Optional features (e.g. SPA text/image extraction, AI CFO narrative) may send the content you submit to a third-party AI provider to generate a response. Do not upload documents you are not allowed to process. AI output is for record-keeping assistance only — not legal, tax, or investment advice.</p>
-
-      <h2 class="text-lg font-semibold text-zinc-900 pt-2">5. Storage &amp; security</h2>
-      <p>Data is stored with industry providers (e.g. Supabase / cloud hosting) with access controls and row-level security so users only access their own records under normal operation. No method of transmission or storage is 100% secure.</p>
-
-      <h2 class="text-lg font-semibold text-zinc-900 pt-2">6. Sharing</h2>
-      <p>We share data only with infrastructure and auth providers needed to run the service (e.g. Google for login, hosting, database), or when required by law.</p>
-
-      <h2 class="text-lg font-semibold text-zinc-900 pt-2">7. Retention &amp; deletion</h2>
-      <p>We keep data while your account is active. You may request deletion of your account and associated portfolio data by emailing support. Some logs may be retained for a limited period for security and legal compliance.</p>
-
-      <h2 class="text-lg font-semibold text-zinc-900 pt-2">8. Your choices</h2>
-      <p>You can update profile fields in Settings, export a backup from Reports (where available), and contact us to correct or delete data. You may disconnect Google access via your Google account permissions.</p>
-
-      <h2 class="text-lg font-semibold text-zinc-900 pt-2">9. Children</h2>
-      <p>CrossCap is not directed at children under 16. We do not knowingly collect their data.</p>
-
-      <h2 class="text-lg font-semibold text-zinc-900 pt-2">10. Changes</h2>
-      <p>We may update this policy. The “Last updated” date will change; continued use after updates means you accept the revised policy where permitted by law.</p>
-
-      <h2 class="text-lg font-semibold text-zinc-900 pt-2">11. Contact</h2>
-      <p><a class="text-brand-700 font-medium hover:underline" href="mailto:support.crosscap@gmail.com">support.crosscap@gmail.com</a></p>
+  <!-- Main Content -->
+  <main class="max-w-3xl mx-auto px-6 py-16 flex-1 text-sm leading-relaxed space-y-8">
+    <div>
+      <h1 class="text-3xl font-extrabold text-white mb-2">Privacy Policy</h1>
+      <p class="text-slate-500 text-xs">Last updated: August 2026</p>
     </div>
+
+    <section class="space-y-3">
+      <h2 class="text-lg font-bold text-white">1. Information We Collect</h2>
+      <p>We collect information you provide directly to us when creating an account, configuring portfolio tracking, or contacting support.</p>
+    </section>
+
+    <section class="space-y-3">
+      <h2 class="text-lg font-bold text-white">2. How We Use Information</h2>
+      <p>We use the data collected strictly to operate, maintain, and provide the features of the CrossCap application, including calculating net worth metrics, cash flow tracking, and AI financial summaries.</p>
+    </section>
+
+    <section class="space-y-3">
+      <h2 class="text-lg font-bold text-white">3. Data Security</h2>
+      <p>CrossCap implements industry-standard encryption protocols and secure database row-level security (RLS) policies to protect your financial logs and authentication credentials.</p>
+    </section>
+
+    <section class="space-y-3">
+      <h2 class="text-lg font-bold text-white">4. Contact Us</h2>
+      <p>If you have any questions about this Privacy Policy or your personal data, please reach out to us at <a href="mailto:support@crosscap.app" class="text-emerald-400 hover:underline">support@crosscap.app</a>.</p>
+    </section>
   </main>
-  <footer class="border-t border-zinc-100 py-8 text-center text-[13px] text-zinc-400">
-    <a href="index.html" class="hover:text-zinc-700">Home</a> ·
-    <a href="terms.html" class="hover:text-zinc-700">Terms</a> ·
-    <a href="support.html" class="hover:text-zinc-700">Support</a>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800 bg-slate-950 py-8">
+    <div class="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      <p>&copy; 2026 CrossCap. All rights reserved.</p>
+      <div class="flex gap-6">
+        <a href="privacy.html" class="hover:text-slate-400 transition">Privacy Policy</a>
+        <a href="terms.html" class="hover:text-slate-400 transition">Terms of Service</a>
+        <a href="support.html" class="hover:text-slate-400 transition">Support</a>
+      </div>
+    </div>
   </footer>
 </body>
 </html>
