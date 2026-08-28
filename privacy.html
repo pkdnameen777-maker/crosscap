@@ -86,5 +86,15 @@
     <a href="/terms" class="hover:text-zinc-700">Terms</a> ·
     <a href="/support" class="hover:text-zinc-700">Support</a>
   </footer>
+  <script>
+    // PWA service worker
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("/sw.js").catch(function (err) {
+          console.warn("SW registration failed", err);
+        });
+      });
+    }
+  </script>
 </body>
 </html>
