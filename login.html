@@ -100,6 +100,13 @@
 
       const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+      // Auto-redirect if session is active
+      supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (session) {
+          window.location.href = '/dashboard';
+        }
+      });
+
       const errorBox = document.getElementById('auth-error');
       function showError(msg) {
         if (errorBox) {
@@ -110,22 +117,14 @@
         }
       }
 
-      // Auto-redirect if session is active
-      supabaseClient.auth.onAuthStateChange((event, session) => {
-        if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
-          window.location.href = '/dashboard.html';
-        }
-      });
-
       // Google Sign In
       const googleBtn = document.getElementById('googleBtn');
       if (googleBtn) {
         googleBtn.addEventListener('click', async () => {
-          const destination = window.location.origin + '/dashboard.html';
           const { error } = await supabaseClient.auth.signInWithOAuth({
             provider: 'google',
             options: {
-              redirectTo: destination
+              redirectTo: window.location.origin + '/dashboard'
             }
           });
           if (error) showError(error.message);
@@ -137,7 +136,7 @@
       if (emailForm) {
         emailForm.addEventListener('submit', async (e) => {
           e.preventDefault();
-          const email = document.getElementById('email').value.trim();
+          const email = document.getElementById('email').value;
           const password = document.getElementById('password').value;
 
           let { error } = await supabaseClient.auth.signInWithPassword({ email, password });
@@ -147,14 +146,14 @@
               showError(signUpRes.error.message);
               return;
             }
-            window.location.href = '/dashboard.html';
+            window.location.href = '/dashboard';
             return;
           }
 
           if (error) {
             showError(error.message);
           } else {
-            window.location.href = '/dashboard.html';
+            window.location.href = '/dashboard';
           }
         });
       }
