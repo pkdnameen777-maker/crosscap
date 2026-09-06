@@ -230,7 +230,7 @@
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
               <h2 class="font-display text-xl font-semibold tracking-tight text-zinc-900">Portfolio overview</h2>
-              <p class="text-[13px] text-zinc-500 mt-0.5">Real-time consolidated net worth in AED</p>
+              <p class="text-[13px] text-zinc-500 mt-0.5">Real-time consolidated net worth in <span id="overviewBaseCurrencyLabel">AED</span></p>
             </div>
             <button data-view="add-asset" class="inline-flex items-center gap-2 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13.5px] font-semibold px-4 py-2.5 shadow-soft transition">
               + Add Asset
@@ -312,7 +312,7 @@
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               <div>
                 <h3 class="text-[15px] font-semibold text-zinc-900">Portfolio performance</h3>
-                <p class="text-[12px] text-zinc-400">Invested cost basis vs current value (AED)</p>
+                <p class="text-[12px] text-zinc-400">Invested cost basis vs current value (<span id="perfBaseCurrencyLabel">AED</span>)</p>
               </div>
               <div id="perfRangeBtns" class="flex flex-wrap gap-1.5">
                 <button data-range="1D" class="perf-range text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-zinc-200 text-zinc-500 hover:bg-zinc-50">1D</button>
@@ -374,7 +374,7 @@
 
           <!-- Currency exposure (sub totals) -->
           <div class="mb-2">
-            <h3 class="text-[13px] font-semibold text-zinc-500 mb-3">Currency exposure (before FX to AED)</h3>
+            <h3 class="text-[13px] font-semibold text-zinc-500 mb-3">Currency exposure (before FX to <span id="exposureBaseCurrencyLabel">AED</span>)</h3>
             <div id="currencyBreakdown" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               <div class="bg-white rounded-xl border border-zinc-100 p-4 text-sm text-zinc-400">No foreign currency holdings yet</div>
             </div>
@@ -1294,7 +1294,28 @@
               <div class="grid sm:grid-cols-2 gap-3">
                 <div>
                   <label class="block text-[12px] font-medium text-zinc-600 mb-1">Base currency</label>
-                  <input type="text" value="AED" disabled class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px] bg-zinc-50 text-zinc-500" />
+                  <select id="profileBaseCurrency" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]">
+                    <option value="AED">AED — UAE Dirham</option>
+                    <option value="USD">USD — US Dollar</option>
+                    <option value="EUR">EUR — Euro</option>
+                    <option value="GBP">GBP — British Pound</option>
+                    <option value="INR">INR — Indian Rupee</option>
+                    <option value="SAR">SAR — Saudi Riyal</option>
+                    <option value="QAR">QAR — Qatari Riyal</option>
+                    <option value="KWD">KWD — Kuwaiti Dinar</option>
+                    <option value="BHD">BHD — Bahraini Dinar</option>
+                    <option value="OMR">OMR — Omani Rial</option>
+                    <option value="PKR">PKR — Pakistani Rupee</option>
+                    <option value="SGD">SGD — Singapore Dollar</option>
+                    <option value="AUD">AUD — Australian Dollar</option>
+                    <option value="CAD">CAD — Canadian Dollar</option>
+                    <option value="CHF">CHF — Swiss Franc</option>
+                    <option value="JPY">JPY — Japanese Yen</option>
+                    <option value="HKD">HKD — Hong Kong Dollar</option>
+                    <option value="CNY">CNY — Chinese Yuan</option>
+                    <option value="EGP">EGP — Egyptian Pound</option>
+                  </select>
+                  <p class="text-[11px] text-zinc-400 mt-1">All consolidated totals convert to this currency via live FX.</p>
                 </div>
                 <div>
                   <label class="block text-[12px] font-medium text-zinc-600 mb-1">Preferred language</label>
@@ -1447,6 +1468,28 @@
         document.getElementById('profileNomineeRelation').value = data?.nominee_relation || '';
         document.getElementById('profileNomineePhone').value = data?.nominee_phone || '';
         document.getElementById('profileLanguage').value = data?.language || 'en';
+        const bc = (data?.base_currency || localStorage.getItem('cc_base_currency') || 'AED').toUpperCase();
+        const bcEl = document.getElementById('profileBaseCurrency');
+        if (bcEl) {
+          if (![...bcEl.options].some(o => o.value === bc)) {
+            const opt = document.createElement('option');
+            opt.value = bc; opt.textContent = bc;
+            bcEl.appendChild(opt);
+          }
+          bcEl.value = bc;
+        }
+        const prevBase = baseCurrency;
+        setBaseCurrency(bc);
+        if (prevBase !== bc) {
+          fxCache = null;
+          fxCacheBase = null;
+          try {
+            if (typeof loadPortfolio === 'function') loadPortfolio();
+            if (typeof loadProperties === 'function') loadProperties();
+            if (typeof loadCashAccounts === 'function') loadCashAccounts();
+            if (typeof loadAltAssets === 'function') loadAltAssets();
+          } catch (e) { console.warn('reload after profile base currency', e); }
+        }
         document.getElementById('profileEmailAlerts').checked = !!data?.email_alerts;
         document.getElementById('profileWhatsappAlerts').checked = !!data?.whatsapp_alerts;
         document.getElementById('profileAvatarPath').value = data?.avatar_path || '';
@@ -1457,7 +1500,7 @@
         goldenVisaHolder = !!data?.golden_visa_holder;
         goldenVisaClaimedAt = data?.golden_visa_claimed_at || null;
         if (typeof updateGoldenVisaProgress === 'function') {
-          updateGoldenVisaProgress(window.__lastReVal || 0);
+          updateGoldenVisaProgress(window.__lastReAed != null ? window.__lastReAed : (window.__lastReVal || 0));
         }
       }
 
@@ -1508,12 +1551,18 @@
           nominee_relation: document.getElementById('profileNomineeRelation').value || null,
           nominee_phone: document.getElementById('profileNomineePhone').value.trim() || null,
           language: document.getElementById('profileLanguage').value || 'en',
+          base_currency: (document.getElementById('profileBaseCurrency')?.value || baseCurrency || 'AED').toUpperCase(),
           email_alerts: document.getElementById('profileEmailAlerts').checked,
           whatsapp_alerts: document.getElementById('profileWhatsappAlerts').checked,
           avatar_path: document.getElementById('profileAvatarPath').value.trim() || null,
           updated_at: new Date().toISOString()
         };
-        const { error } = await supabaseClient.from('profiles').upsert(row, { onConflict: 'id' });
+        let { error } = await supabaseClient.from('profiles').upsert(row, { onConflict: 'id' });
+        if (error && /base_currency/i.test(error.message || '')) {
+          const { base_currency, ...rest } = row;
+          ({ error } = await supabaseClient.from('profiles').upsert(rest, { onConflict: 'id' }));
+          console.warn('Run profiles-base-currency.sql to persist base currency on the server', error);
+        }
         if (error) {
           status.textContent = 'Error: ' + error.message;
           status.className = 'text-[12px] text-center text-rose-600';
@@ -1528,7 +1577,22 @@
           const sn = document.getElementById('sidebarUserName');
           if (sn) sn.textContent = row.full_name;
         }
-        status.textContent = 'Profile saved';
+        const nextBase = (row.base_currency || 'AED').toUpperCase();
+        const baseChanged = nextBase !== baseCurrency;
+        setBaseCurrency(nextBase);
+        if (baseChanged) {
+          fxCache = null;
+          fxCacheBase = null;
+          // Recompute all consolidated totals in the new base currency
+          try {
+            if (typeof loadPortfolio === 'function') loadPortfolio();
+            if (typeof loadProperties === 'function') loadProperties();
+            if (typeof loadCashAccounts === 'function') loadCashAccounts();
+            if (typeof loadAltAssets === 'function') loadAltAssets();
+            if (typeof loadGoals === 'function') loadGoals();
+          } catch (e) { console.warn('reload after base currency change', e); }
+        }
+        status.textContent = baseChanged ? 'Profile saved · totals updated to ' + nextBase : 'Profile saved';
         status.className = 'text-[12px] text-center text-emerald-600';
       });
 
@@ -2026,31 +2090,79 @@
       window.editHolding = editHolding;
 
 
-      // FX rates → AED (cached briefly)
+      // Base display currency (persisted locally + on profile)
+      let baseCurrency = (localStorage.getItem('cc_base_currency') || 'AED').toUpperCase();
       let fxCache = null;
+      let fxCacheBase = null;
+
+      function setBaseCurrency(code) {
+        const c = String(code || 'AED').toUpperCase();
+        baseCurrency = c;
+        try { localStorage.setItem('cc_base_currency', c); } catch (_) {}
+        document.querySelectorAll('#overviewBaseCurrencyLabel, #exposureBaseCurrencyLabel, #perfBaseCurrencyLabel').forEach(el => {
+          if (el) el.textContent = c;
+        });
+      }
+
+      function formatMoney(n, opts) {
+        opts = opts || {};
+        const max = opts.maximumFractionDigits != null ? opts.maximumFractionDigits : 2;
+        const min = opts.minimumFractionDigits != null ? opts.minimumFractionDigits : (max === 0 ? 0 : 2);
+        const num = Number(n);
+        const safe = Number.isFinite(num) ? num : 0;
+        return baseCurrency + ' ' + safe.toLocaleString(undefined, { minimumFractionDigits: min, maximumFractionDigits: max });
+      }
+
+      // Sync labels from stored preference on boot
+      try { setBaseCurrency(baseCurrency); } catch (_) {}
+
+      // FX rates → base currency (cached briefly; names kept for compatibility)
       async function getRatesToAed() {
-        if (fxCache) return fxCache;
+        if (fxCache && fxCacheBase === baseCurrency) return fxCache;
         try {
-          // Free API: rates vs USD, then derive to AED
           const res = await fetch('https://open.er-api.com/v6/latest/USD');
           const data = await res.json();
           const rates = data.rates || {};
-          const usdToAed = rates.AED || 3.6725; // fallback peg
-          // Convert: 1 UNIT = (USD per unit) * AED per USD
-          // rates[X] = how many X per 1 USD → 1 X = 1/rates[X] USD
+          const usdToAed = rates.AED || 3.6725;
           const toAed = { AED: 1, USD: usdToAed };
           ['INR','GBP','SAR','CNY','JPY','HKD','EUR','QAR','KWD','BHD','PKR','SGD','AUD','EGP','OMR','CAD','CHF','NZD','ZAR','TRY','THB','MYR','IDR','PHP','KRW','SEK','NOK','DKK','PLN','MXN','BRL','NGN','KES','BDT','LKR','NPR','MAD','JOD'].forEach(c => {
             if (rates[c]) toAed[c] = usdToAed / rates[c];
           });
-          fxCache = toAed;
-          return toAed;
+          // Convert AED-based map into baseCurrency units
+          const basePerAed = baseCurrency === 'AED' ? 1 : (1 / (toAed[baseCurrency] || 1));
+          const toBase = {};
+          Object.keys(toAed).forEach(c => { toBase[c] = toAed[c] * basePerAed; });
+          // Ensure base itself is exactly 1
+          toBase[baseCurrency] = 1;
+          if (baseCurrency !== 'AED' && rates[baseCurrency]) {
+            // Prefer direct path via USD when available
+            const usdPerBase = 1 / rates[baseCurrency];
+            Object.keys(toBase).forEach(c => {
+              if (c === baseCurrency) toBase[c] = 1;
+              else if (c === 'USD') toBase[c] = rates[baseCurrency];
+              else if (rates[c]) toBase[c] = rates[baseCurrency] / rates[c];
+              else toBase[c] = toAed[c] * basePerAed;
+            });
+            toBase.AED = rates[baseCurrency] / (rates.AED || usdToAed);
+          }
+          fxCache = toBase;
+          fxCacheBase = baseCurrency;
+          return toBase;
         } catch (e) {
           console.warn('FX fetch failed, using fallbacks', e);
-          return {
+          const fallbackAed = {
             AED: 1, USD: 3.6725, INR: 0.044, GBP: 4.65,
             SAR: 0.979, CNY: 0.51, JPY: 0.024, HKD: 0.47, EUR: 4.0,
-            QAR: 1.01, KWD: 12.0, BHD: 9.75, PKR: 0.013, SGD: 2.75, AUD: 2.4, EGP: 0.075
+            QAR: 1.01, KWD: 12.0, BHD: 9.75, PKR: 0.013, SGD: 2.75, AUD: 2.4, EGP: 0.075,
+            OMR: 9.54, CAD: 2.7, CHF: 4.1, CNY: 0.51
           };
+          const basePerAed = baseCurrency === 'AED' ? 1 : (1 / (fallbackAed[baseCurrency] || 1));
+          const toBase = {};
+          Object.keys(fallbackAed).forEach(c => { toBase[c] = fallbackAed[c] * basePerAed; });
+          toBase[baseCurrency] = 1;
+          fxCache = toBase;
+          fxCacheBase = baseCurrency;
+          return toBase;
         }
       }
 
@@ -2222,10 +2334,10 @@
         savePortfolioSnapshot(invested, current);
         const pnl = current - invested;
         const pnlEl = document.getElementById('perfPnL');
-        document.getElementById('perfInvested').textContent = 'AED ' + invested.toLocaleString(undefined, { maximumFractionDigits: 0 });
-        document.getElementById('perfCurrent').textContent = 'AED ' + current.toLocaleString(undefined, { maximumFractionDigits: 0 });
+        document.getElementById('perfInvested').textContent = formatMoney(invested, { maximumFractionDigits: 0, minimumFractionDigits: 0 });
+        document.getElementById('perfCurrent').textContent = formatMoney(current, { maximumFractionDigits: 0, minimumFractionDigits: 0 });
         if (pnlEl) {
-          pnlEl.textContent = (pnl >= 0 ? '+' : '') + 'AED ' + pnl.toLocaleString(undefined, { maximumFractionDigits: 0 });
+          pnlEl.textContent = (pnl >= 0 ? '+' : '') + formatMoney(pnl, { maximumFractionDigits: 0, minimumFractionDigits: 0 });
           pnlEl.className = 'text-[15px] font-semibold tabular-nums ' + (pnl >= 0 ? 'text-emerald-600' : 'text-rose-600');
         }
 
@@ -2270,7 +2382,7 @@
             plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } },
             scales: {
               x: { grid: { display: false }, ticks: { maxTicksLimit: 6, font: { size: 10 } } },
-              y: { grid: { color: '#f4f4f5' }, ticks: { font: { size: 10 }, callback: v => 'AED ' + Number(v).toLocaleString() } }
+              y: { grid: { color: '#f4f4f5' }, ticks: { font: { size: 10 }, callback: v => formatMoney(Number(v), { maximumFractionDigits: 0, minimumFractionDigits: 0 }) } }
             }
           }
         });
@@ -2420,8 +2532,8 @@
                   <div class="text-[11px] ${liveOk ? 'text-zinc-500' : 'text-zinc-400'}">${liveOk ? ('Live ' + priceLocal.toFixed(2) + ' ' + liveCurrency + (liveUnit === 'g' ? '/g' : '')) : 'No live price'}</div>
                 </td>
                 <td class="px-5 py-4 text-right">
-                  <div class="font-semibold tabular-nums">${liveAed.toLocaleString(undefined, { minimumFractionDigits: 2 })} <span class="text-zinc-400 text-xs font-normal">AED</span></div>
-                  <div class="text-[11px] tabular-nums ${pnlCls}">${pnlSign}${pnlAed.toLocaleString(undefined, { maximumFractionDigits: 0 })} AED P/L</div>
+                  <div class="font-semibold tabular-nums">${liveAed.toLocaleString(undefined, { minimumFractionDigits: 2 })} <span class="text-zinc-400 text-xs font-normal">${baseCurrency}</span></div>
+                  <div class="text-[11px] tabular-nums ${pnlCls}">${pnlSign}${pnlAed.toLocaleString(undefined, { maximumFractionDigits: 0 })} ${baseCurrency} P/L</div>
                 </td>
                 <td class="px-5 py-4 text-right whitespace-nowrap">
                   <button onclick="editHolding('${item.id}', '${String(item.symbol).replace(/'/g, "\\'")}', '${item.market || ''}', ${shares}, ${avg}, '${cur}')" class="text-[11px] font-semibold text-brand-700 hover:underline mr-2">Edit</button>
@@ -2457,7 +2569,7 @@
                 <div class="bg-white rounded-xl border border-zinc-100 p-4 shadow-soft">
                   <p class="text-[11px] font-medium text-zinc-400 mb-1">${cur} exposure</p>
                   <p class="font-display text-[18px] font-semibold text-zinc-900 tabular-nums">${local.toLocaleString(undefined, { minimumFractionDigits: 2 })} <span class="text-sm font-medium text-zinc-500">${cur}</span></p>
-                  <p class="text-[12px] text-emerald-600 mt-1 tabular-nums">≈ AED ${aed.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                  <p class="text-[12px] text-emerald-600 mt-1 tabular-nums">≈ ${baseCurrency} ${aed.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
                 </div>
               `;
             }).join('');
@@ -2489,11 +2601,11 @@
 
         if (bar) bar.style.width = pct.toFixed(1) + '%';
         if (pctEl) pctEl.textContent = pct.toFixed(1) + '% complete';
-        if (curEl) curEl.textContent = 'AED ' + current.toLocaleString(undefined, { maximumFractionDigits: 0 });
+        if (curEl) curEl.textContent = 'AED ' + Math.round(current).toLocaleString();
         if (remEl) {
           remEl.textContent = eligible
             ? 'Target reached'
-            : 'AED ' + remaining.toLocaleString(undefined, { maximumFractionDigits: 0 }) + ' to go';
+            : 'AED ' + Math.round(remaining).toLocaleString() + ' to go';
         }
 
         if (goldenVisaHolder) {
@@ -2549,7 +2661,7 @@
         if (error) { alert(error.message); return; }
         goldenVisaHolder = true;
         goldenVisaClaimedAt = now;
-        updateGoldenVisaProgress(window.__lastReVal || 0);
+        updateGoldenVisaProgress(window.__lastReAed != null ? window.__lastReAed : (window.__lastReVal || 0));
       });
 
       // Load Real Estate + installments + 30-day radar
@@ -2568,10 +2680,16 @@
         container.innerHTML = '';
         let totalReVal = 0;
         const radarItems = [];
+        // Real-estate amounts are stored in AED; convert into selected base currency
+        const reRates = await getRatesToAed();
+        const aedToBase = reRates.AED != null ? reRates.AED : (baseCurrency === 'AED' ? 1 : 0);
 
+        let totalReAed = 0;
         if (properties && properties.length > 0) {
           for (const p of properties) {
-            totalReVal += parseFloat(p.total_price || 0);
+            const priceAed = parseFloat(p.total_price || 0);
+            totalReAed += priceAed;
+            totalReVal += priceAed * aedToBase;
             const isOffplan = (p.property_type || '').toUpperCase().includes('OFF');
             let instHtml = '';
 
@@ -2618,7 +2736,7 @@
                       <span class="font-medium text-zinc-800 truncate" title="${(i.stage || 'Installment').replace(/"/g, '&quot;')}">${i.stage || 'Installment'}</span>
                       <input type="date" value="${i.due_date}" class="w-full sm:w-[9.5rem] rounded-lg border border-zinc-200 bg-white px-2 py-1.5 text-[12px] text-zinc-700"
                         onchange="updateInstallmentDate('${i.id}', this.value)" />
-                      <span class="tabular-nums font-semibold text-zinc-800 sm:text-right">AED ${amtStr}</span>
+                      <span class="tabular-nums font-semibold text-zinc-800 sm:text-right">${formatMoney(Number(i.amount) * aedToBase, { maximumFractionDigits: 2 })}</span>
                       <span class="justify-self-start sm:justify-self-center text-[11px] font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap ${badge}">${label}</span>
                       <div class="flex items-center gap-2 sm:justify-end">
                         ${st !== 'paid' ? `<button onclick="markInstallment('${i.id}','paid')" class="text-[11px] font-semibold text-emerald-700 hover:underline whitespace-nowrap">Mark paid</button>` : `<button onclick="markInstallment('${i.id}','scheduled')" class="text-[11px] text-zinc-500 hover:underline">Undo</button>`}
@@ -2662,14 +2780,14 @@
                     <button onclick="deleteProperty('${p.id}')" class="text-[11px] text-rose-500 hover:underline">Delete</button>
                   </div>
                 </div>
-                <p class="text-[17px] font-semibold text-zinc-900 mt-3 tabular-nums">AED ${parseFloat(p.total_price).toLocaleString()}</p>
+                <p class="text-[17px] font-semibold text-zinc-900 mt-3 tabular-nums">${formatMoney(parseFloat(p.total_price || 0) * aedToBase, { maximumFractionDigits: 0, minimumFractionDigits: 0 })}</p>
                 ${!isOffplan && p.monthly_rent ? `
                 <div class="mt-3 border-t border-zinc-100 pt-3">
                   <div class="flex items-center justify-between mb-2">
                     <p class="text-[12px] font-semibold text-zinc-500">Rental income</p>
                     <button onclick="logRentReceived('${p.id}', ${Number(p.monthly_rent)}, ${Number(p.rent_due_day)||1})" class="text-[11px] font-semibold text-brand-700 hover:underline">+ Mark rent received</button>
                   </div>
-                  <p class="text-[13px] text-zinc-700">AED ${Number(p.monthly_rent).toLocaleString()} / month · due day ${p.rent_due_day || 1}</p>
+                  <p class="text-[13px] text-zinc-700">${formatMoney(Number(p.monthly_rent) * aedToBase, { maximumFractionDigits: 0, minimumFractionDigits: 0 })} / month · due day ${p.rent_due_day || 1}</p>
                   <div id="rentHist-${p.id}" class="mt-2 space-y-1 text-[12px] text-zinc-500">Loading rent log…</div>
                 </div>` : (!isOffplan ? `<div class="mt-3 border-t border-zinc-100 pt-3">
                   <p class="text-[12px] text-zinc-500 mb-1">Rental income not set</p>
@@ -2689,11 +2807,12 @@
         }
 
         document.getElementById('reAssetsCard').textContent =
-          `AED ${totalReVal.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+          formatMoney(totalReVal, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-        // Golden Visa goal (UAE property only = all logged properties are UAE-focused)
+        // Golden Visa goal is always measured in AED (UAE regulation)
         window.__lastReVal = totalReVal;
-        updateGoldenVisaProgress(totalReVal);
+        window.__lastReAed = totalReAed;
+        updateGoldenVisaProgress(totalReAed);
         if (typeof lastHoldingsAed !== 'undefined' && lastHoldingsAed) {
           renderAllocation(lastHoldingsAed);
         }
@@ -3131,7 +3250,7 @@
               </div>
               <div class="relative flex justify-between text-[12px] mb-1">
                 <span class="font-semibold ${isClaimed ? 'text-amber-800' : isDone ? 'text-emerald-700' : 'text-brand-700'}">${pct.toFixed(1)}% complete</span>
-                <span class="text-zinc-500">${isDone ? 'Target reached' : ('AED ' + remaining.toLocaleString(undefined,{maximumFractionDigits:0}) + ' to go')}</span>
+                <span class="text-zinc-500">${isDone ? 'Target reached' : (formatMoney(remaining, { maximumFractionDigits: 0, minimumFractionDigits: 0 }) + ' to go')}</span>
               </div>
               ${footerHtml}
               <div class="relative mt-3 space-y-1.5">${contribHtml || (!isClaimed ? '<p class="text-[12px] text-zinc-400">No contributions yet. Add AED 1,000 (or any amount) when you set money aside.</p>' : '')}</div>
@@ -3799,13 +3918,13 @@
         if (!data || !data.length) {
           box.innerHTML = '<p class="text-zinc-400">No dividends logged yet. Use "+ Log received" after you get paid.</p>';
           const tot0 = document.getElementById('dividendsTotalAed');
-          if (tot0) tot0.textContent = 'AED 0';
+          if (tot0) tot0.textContent = formatMoney(0);
           return;
         }
         let divTotal = 0;
         data.forEach(d => { divTotal += Number(d.amount_aed || d.amount || 0); });
         const totEl = document.getElementById('dividendsTotalAed');
-        if (totEl) totEl.textContent = 'AED ' + divTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        if (totEl) totEl.textContent = formatMoney(divTotal, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         const header = `<div class="hidden sm:grid sm:grid-cols-[5.5rem_minmax(0,1.2fr)_4.5rem_7rem_6.5rem_4rem] gap-3 px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
           <span>Status</span>
           <span>Ticker</span>
@@ -4192,7 +4311,7 @@
         });
         window.__lastAltAed = totalAed;
         window.__lastAltSums = sums;
-        const fmt = n => 'AED ' + Math.round(n).toLocaleString();
+        const fmt = n => formatMoney(Math.round(n), { maximumFractionDigits: 0, minimumFractionDigits: 0 });
         const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = fmt(v); };
         set('altSumMf', sums.mutual_fund);
         set('altSumFd', sums.fixed_deposit);
@@ -4332,7 +4451,7 @@
           const aed = (Number(row.balance) || 0) * (rates[cur] != null ? rates[cur] : (cur === 'AED' ? 1 : 0));
           if (sums[t] != null) sums[t] += aed;
         });
-        const fmt = n => 'AED ' + Math.round(n).toLocaleString();
+        const fmt = n => formatMoney(Math.round(n), { maximumFractionDigits: 0, minimumFractionDigits: 0 });
         const elB = document.getElementById('cashSumBank');
         const elC = document.getElementById('cashSumCards');
         const elR = document.getElementById('cashSumRecv');
@@ -4470,17 +4589,17 @@
         // Net worth = liquid + RE + other assets + bank + receivable − cards − debts
         const total = liquid + re + alt + bank + recv - cards - debt;
         const el = document.getElementById('totalNetWorthCard');
-        if (el) el.textContent = 'AED ' + total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        if (el) el.textContent = formatMoney(total, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         const sub = document.getElementById('totalNetWorthSub');
         if (sub) {
           sub.textContent = 'Holdings + property + other + cash − liabilities';
         }
         const liqSub = document.getElementById('liquidValueSub');
         if (liqSub) {
-          liqSub.textContent = 'AED ' + liquid.toLocaleString(undefined, { maximumFractionDigits: 0 }) + ' live value';
+          liqSub.textContent = formatMoney(liquid, { maximumFractionDigits: 0 }) + ' live value';
         }
         const k = window.__holdingsByKind || {};
-        const fmt0 = (n) => 'AED ' + Math.round(n || 0).toLocaleString();
+        const fmt0 = (n) => formatMoney(Math.round(n || 0), { maximumFractionDigits: 0, minimumFractionDigits: 0 });
         const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = fmt0(v); };
         set('ovStocksVal', k.stocks && k.stocks.v);
         set('ovGoldVal', k.gold && k.gold.v);
@@ -4491,7 +4610,7 @@
 
       function updatePortfolioKindCards() {
         const k = window.__holdingsByKind || {};
-        const fmt = (n) => 'AED ' + (n || 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
+        const fmt = (n) => formatMoney(n || 0, { maximumFractionDigits: 0, minimumFractionDigits: 0 });
         const set = (idV, idM, obj) => {
           const elV = document.getElementById(idV);
           const elM = document.getElementById(idM);
@@ -4499,7 +4618,7 @@
           if (elM) {
             const pnl = obj?.pnl || 0;
             const sign = pnl >= 0 ? '+' : '';
-            elM.textContent = `${obj?.c || 0} lines · ${sign}${Math.round(pnl).toLocaleString()} AED P/L`;
+            elM.textContent = `${obj?.c || 0} lines · ${sign}${Math.round(pnl).toLocaleString()} ${baseCurrency} P/L`;
           }
         };
         set('cardStocksValue', 'cardStocksMeta', k.stocks);
