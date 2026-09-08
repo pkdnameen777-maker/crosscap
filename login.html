@@ -54,7 +54,7 @@
         <div class="text-center mb-8">
           <img src="assets/logo.png" alt="CrossCap" class="w-14 h-14 rounded-2xl mx-auto mb-5 object-contain shadow" width="56" height="56" />
           <h1 class="font-display text-[22px] font-semibold text-zinc-900 tracking-tight mb-1.5">Welcome to CrossCap</h1>
-          <p class="text-[14px] text-zinc-500">Sign in to access your AED wealth dashboard</p>
+          <p class="text-[14px] text-zinc-500">Sign in to access your multi-currency wealth dashboard</p>
         </div>
 
         <div id="auth-error" class="hidden mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs leading-relaxed"></div>
@@ -95,10 +95,17 @@
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const SUPABASE_URL = 'https://mbweotdviwxmutxdjlpj.supabase.co';
+      const SUPABASE_URL = 'https://auth.crosscap.app';
       const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1id2VvdGR2aXd4bXV0eGRqbHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MTAxNDQsImV4cCI6MjEwMjM4NjE0NH0.2hbHdyxS7zqiP-CexUsu8hI0nsgkdjCBeIKcQrmJCAw';
 
       const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      // Auto-redirect if session is active
+      supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (session) {
+          window.location.href = '/dashboard';
+        }
+      });
 
       const errorBox = document.getElementById('auth-error');
       function showError(msg) {
@@ -110,25 +117,14 @@
         }
       }
 
-      // Auto-redirect if session exists
-      supabaseClient.auth.onAuthStateChange((event, session) => {
-        if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
-          window.location.href = '/dashboard.html';
-        }
-      });
-
-      // Google Sign-In (Forces account chooser & direct callback)
+      // Google Sign In
       const googleBtn = document.getElementById('googleBtn');
       if (googleBtn) {
         googleBtn.addEventListener('click', async () => {
           const { error } = await supabaseClient.auth.signInWithOAuth({
             provider: 'google',
             options: {
-              redirectTo: window.location.origin + '/dashboard.html',
-              queryParams: {
-                prompt: 'select_account',
-                access_type: 'offline'
-              }
+              redirectTo: window.location.origin + '/dashboard'
             }
           });
           if (error) showError(error.message);
@@ -140,7 +136,7 @@
       if (emailForm) {
         emailForm.addEventListener('submit', async (e) => {
           e.preventDefault();
-          const email = document.getElementById('email').value.trim();
+          const email = document.getElementById('email').value;
           const password = document.getElementById('password').value;
 
           let { error } = await supabaseClient.auth.signInWithPassword({ email, password });
@@ -150,20 +146,21 @@
               showError(signUpRes.error.message);
               return;
             }
-            window.location.href = '/dashboard.html';
+            window.location.href = '/dashboard';
             return;
           }
 
           if (error) {
             showError(error.message);
           } else {
-            window.location.href = '/dashboard.html';
+            window.location.href = '/dashboard';
           }
         });
       }
     });
   </script>
   <script>
+    // PWA service worker
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
         navigator.serviceWorker.register("/sw.js").catch(function (err) {
