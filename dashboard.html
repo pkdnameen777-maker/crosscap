@@ -531,7 +531,7 @@
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
               <h2 class="font-display text-xl font-semibold tracking-tight">Real Estate</h2>
-              <p class="text-[13px] text-zinc-500 mt-0.5">Off-Plan installments &amp; Ready properties · UAE</p>
+              <p class="text-[13px] text-zinc-500 mt-0.5">Off-Plan installments &amp; Ready properties · GCC / UAE</p>
             </div>
             <button id="togglePropertyForm" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13px] font-semibold px-4 py-2.5">+ Add Property</button>
           </div>
@@ -749,15 +749,15 @@
                 <label class="block text-[12px] font-medium text-zinc-600 mb-1">Currency</label>
                 <select id="cashCurrency" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]">
                   <option value="AED" selected>AED — UAE Dirham</option>
-                  <option value="USD">USD — US Dollar</option>
-                  <option value="EUR">EUR — Euro</option>
-                  <option value="GBP">GBP — British Pound</option>
-                  <option value="INR">INR — Indian Rupee</option>
                   <option value="SAR">SAR — Saudi Riyal</option>
                   <option value="QAR">QAR — Qatari Riyal</option>
                   <option value="KWD">KWD — Kuwaiti Dinar</option>
                   <option value="BHD">BHD — Bahraini Dinar</option>
                   <option value="OMR">OMR — Omani Rial</option>
+                  <option value="USD">USD — US Dollar</option>
+                  <option value="EUR">EUR — Euro</option>
+                  <option value="GBP">GBP — British Pound</option>
+                  <option value="INR">INR — Indian Rupee</option>
                   <option value="EGP">EGP — Egyptian Pound</option>
                   <option value="PKR">PKR — Pakistani Rupee</option>
                   <option value="CNY">CNY — Chinese Yuan</option>
@@ -950,14 +950,15 @@
                 <label class="block text-[12px] font-medium text-zinc-600 mb-1">Currency</label>
                 <select id="altCurrency" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]">
                   <option value="AED" selected>AED</option>
-                  <option value="USD">USD</option>
-                  <option value="INR">INR</option>
-                  <option value="EUR">EUR</option>
-                  <option value="GBP">GBP</option>
                   <option value="SAR">SAR</option>
                   <option value="QAR">QAR</option>
                   <option value="KWD">KWD</option>
                   <option value="BHD">BHD</option>
+                  <option value="OMR">OMR</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                  <option value="GBP">GBP</option>
+                  <option value="INR">INR</option>
                   <option value="PKR">PKR</option>
                   <option value="SGD">SGD</option>
                   <option value="HKD">HKD</option>
@@ -1020,7 +1021,7 @@
             <div>
               <p class="text-[11px] font-bold uppercase tracking-wider text-brand-600 mb-1">AI CFO</p>
               <h2 class="font-display text-xl font-semibold tracking-tight text-zinc-900">Your wealth briefing</h2>
-              <p class="text-[13px] text-zinc-500 mt-1">Concentration, cash-flow risk, and Golden Visa — based on your live CrossCap data.</p>
+              <p class="text-[13px] text-zinc-500 mt-1">Full net worth: liquid, property, other assets, cash & liabilities, installments, goals — plus Golden Visa.</p>
             </div>
             <button type="button" id="btnRefreshInsights" class="rounded-xl border border-zinc-200 hover:bg-zinc-50 text-[13px] font-semibold px-4 py-2.5 text-zinc-700">Refresh insights</button>
           </div>
@@ -1040,7 +1041,7 @@
           </div>
 
           <div id="aiCfoInsights" class="space-y-3 max-w-2xl mb-6">
-            <p class="text-sm text-zinc-400">Analyzing portfolio…</p>
+            <p class="text-sm text-zinc-400">Analyzing full net worth…</p>
           </div>
 
           <div class="cc-panel p-5 max-w-2xl">
@@ -1295,25 +1296,29 @@
                 <div>
                   <label class="block text-[12px] font-medium text-zinc-600 mb-1">Base currency</label>
                   <select id="profileBaseCurrency" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]">
-                    <option value="AED">AED — UAE Dirham</option>
-                    <option value="USD">USD — US Dollar</option>
-                    <option value="EUR">EUR — Euro</option>
-                    <option value="GBP">GBP — British Pound</option>
-                    <option value="INR">INR — Indian Rupee</option>
-                    <option value="SAR">SAR — Saudi Riyal</option>
-                    <option value="QAR">QAR — Qatari Riyal</option>
-                    <option value="KWD">KWD — Kuwaiti Dinar</option>
-                    <option value="BHD">BHD — Bahraini Dinar</option>
-                    <option value="OMR">OMR — Omani Rial</option>
-                    <option value="PKR">PKR — Pakistani Rupee</option>
-                    <option value="SGD">SGD — Singapore Dollar</option>
-                    <option value="AUD">AUD — Australian Dollar</option>
-                    <option value="CAD">CAD — Canadian Dollar</option>
-                    <option value="CHF">CHF — Swiss Franc</option>
-                    <option value="JPY">JPY — Japanese Yen</option>
-                    <option value="HKD">HKD — Hong Kong Dollar</option>
-                    <option value="CNY">CNY — Chinese Yuan</option>
-                    <option value="EGP">EGP — Egyptian Pound</option>
+                    <optgroup label="GCC">
+                      <option value="AED">AED — UAE Dirham</option>
+                      <option value="SAR">SAR — Saudi Riyal</option>
+                      <option value="QAR">QAR — Qatari Riyal</option>
+                      <option value="KWD">KWD — Kuwaiti Dinar</option>
+                      <option value="BHD">BHD — Bahraini Dinar</option>
+                      <option value="OMR">OMR — Omani Rial</option>
+                    </optgroup>
+                    <optgroup label="Other">
+                      <option value="USD">USD — US Dollar</option>
+                      <option value="EUR">EUR — Euro</option>
+                      <option value="GBP">GBP — British Pound</option>
+                      <option value="INR">INR — Indian Rupee</option>
+                      <option value="PKR">PKR — Pakistani Rupee</option>
+                      <option value="EGP">EGP — Egyptian Pound</option>
+                      <option value="SGD">SGD — Singapore Dollar</option>
+                      <option value="HKD">HKD — Hong Kong Dollar</option>
+                      <option value="CNY">CNY — Chinese Yuan</option>
+                      <option value="JPY">JPY — Japanese Yen</option>
+                      <option value="AUD">AUD — Australian Dollar</option>
+                      <option value="CAD">CAD — Canadian Dollar</option>
+                      <option value="CHF">CHF — Swiss Franc</option>
+                    </optgroup>
                   </select>
                   <p class="text-[11px] text-zinc-400 mt-1">All consolidated totals convert to this currency via live FX.</p>
                 </div>
@@ -2864,176 +2869,243 @@
 
 
 
-      // ---- AI CFO (rule-based insights from live data) ----
+      // ---- AI CFO (rule-based insights from live data — full net worth) ----
       async function generateAiCfoInsights() {
         const box = document.getElementById('aiCfoInsights');
         const sumEl = document.getElementById('aiCfoSummaryText');
         if (!box) return;
 
         const rates = await getRatesToAed();
-        const { data: holdings } = await supabaseClient.from('holdings').select('*');
-        const { data: props } = await supabaseClient.from('properties').select('*');
-        const { data: insts } = await supabaseClient.from('installments').select('*');
-        const { data: goals } = await supabaseClient.from('goals').select('*').eq('user_id', currentUser?.id || '');
+        const uid = currentUser?.id;
+        const [{ data: holdings }, { data: props }, { data: insts }, { data: goals }, { data: cashRows }, { data: altRows }] = await Promise.all([
+          supabaseClient.from('holdings').select('*').eq('user_id', uid),
+          supabaseClient.from('properties').select('*').eq('user_id', uid),
+          supabaseClient.from('installments').select('*'),
+          supabaseClient.from('goals').select('*').eq('user_id', uid || ''),
+          supabaseClient.from('cash_accounts').select('*').eq('user_id', uid),
+          supabaseClient.from('alt_assets').select('*').eq('user_id', uid)
+        ]);
 
         const insights = [];
         const push = (level, title, body, tip) => insights.push({ level, title, body, tip });
+        const money = (n) => formatMoney(n, { maximumFractionDigits: 0, minimumFractionDigits: 0 });
 
-        // --- Liquid portfolio ---
-        let liquidAed = 0;
+        // --- Liquid portfolio (stocks / gold / crypto cost or prefer live if available) ---
+        let liquidCost = 0;
         const byMarket = {};
         const bySymbol = {};
+        const byKind = { stocks: 0, gold: 0, crypto: 0, other: 0 };
         (holdings || []).forEach(h => {
           const cur = (h.currency || 'AED').toUpperCase();
           const local = (Number(h.shares) || 0) * (Number(h.avg_buy_price) || 0);
-          const aed = local * (rates[cur] != null ? rates[cur] : 1);
-          liquidAed += aed;
+          const val = local * (rates[cur] != null ? rates[cur] : 1);
+          liquidCost += val;
           const m = h.market || 'OTHER';
-          byMarket[m] = (byMarket[m] || 0) + aed;
-          bySymbol[h.symbol] = (bySymbol[h.symbol] || 0) + aed;
+          byMarket[m] = (byMarket[m] || 0) + val;
+          bySymbol[h.symbol] = (bySymbol[h.symbol] || 0) + val;
+          const mk = String(h.market || '').toUpperCase();
+          if (mk.includes('GOLD') || mk.includes('SILVER')) byKind.gold += val;
+          else if (mk === 'CRYPTO') byKind.crypto += val;
+          else if (mk.startsWith('OTHER')) byKind.other += val;
+          else byKind.stocks += val;
+        });
+        const liquidLive = Number(window.__lastLiveAed);
+        const liquidAed = (Number.isFinite(liquidLive) && liquidLive > 0) ? liquidLive : liquidCost;
+
+        // --- Real estate (stored AED → base) ---
+        let reAedRaw = 0;
+        (props || []).forEach(p => { reAedRaw += Number(p.total_price) || 0; });
+        const aedToBase = rates.AED != null ? rates.AED : (baseCurrency === 'AED' ? 1 : 0);
+        const reBase = reAedRaw * aedToBase;
+
+        // --- Cash & liabilities ---
+        const cashSums = { bank: 0, credit_card: 0, receivable: 0, debt: 0 };
+        (cashRows || []).forEach(row => {
+          const cur = (row.currency || 'AED').toUpperCase();
+          const v = (Number(row.balance) || 0) * (rates[cur] != null ? rates[cur] : (cur === baseCurrency ? 1 : 0));
+          const t = row.account_type || 'bank';
+          if (cashSums[t] != null) cashSums[t] += v;
+          else cashSums.bank += v;
+        });
+        const cashAssets = cashSums.bank + cashSums.receivable;
+        const cashLiab = cashSums.credit_card + cashSums.debt;
+
+        // --- Other / alt assets ---
+        let altBase = 0;
+        const altByClass = {};
+        (altRows || []).forEach(r => {
+          const cur = (r.currency || 'AED').toUpperCase();
+          const raw = Number(r.current_value) || Number(r.invested_amount) || 0;
+          const v = raw * (rates[cur] != null ? rates[cur] : (cur === baseCurrency ? 1 : 0));
+          altBase += v;
+          const cls = r.asset_class || 'other';
+          altByClass[cls] = (altByClass[cls] || 0) + v;
         });
 
-        // --- Real estate ---
-        let reAed = 0;
-        (props || []).forEach(p => { reAed += Number(p.total_price) || 0; });
-        const totalWealth = liquidAed + reAed;
+        // Prefer cached totals if already loaded this session
+        if (window.__lastAltAed != null && Number(window.__lastAltAed) >= 0) altBase = Number(window.__lastAltAed);
+        if (window.__lastCashSums) {
+          const c = window.__lastCashSums;
+          cashSums.bank = Number(c.bank) || cashSums.bank;
+          cashSums.credit_card = Number(c.credit_card) || cashSums.credit_card;
+          cashSums.receivable = Number(c.receivable) || cashSums.receivable;
+          cashSums.debt = Number(c.debt) || cashSums.debt;
+        }
+        const cashAssetsF = (Number(cashSums.bank) || 0) + (Number(cashSums.receivable) || 0);
+        const cashLiabF = (Number(cashSums.credit_card) || 0) + (Number(cashSums.debt) || 0);
+        const reBaseF = (window.__lastReVal != null && Number(window.__lastReVal) >= 0) ? Number(window.__lastReVal) : reBase;
 
-        // Concentration by market
-        if (liquidAed > 0) {
+        const grossAssets = liquidAed + reBaseF + altBase + cashAssetsF;
+        const netWorth = grossAssets - cashLiabF;
+        const totalWealth = netWorth;
+
+        if (sumEl) {
+          sumEl.textContent = `Full net worth ≈ ${money(netWorth)} · liquid ${money(liquidAed)} · property ${money(reBaseF)} · other ${money(altBase)} · cash ${money(cashAssetsF)} · liabilities −${money(cashLiabF)} (${baseCurrency})`;
+        }
+
+        // Concentration by market (liquid only)
+        if (liquidAed > 0 && liquidCost > 0) {
           const markets = Object.entries(byMarket).sort((a,b) => b[1]-a[1]);
           const top = markets[0];
-          const topPct = (top[1] / liquidAed) * 100;
+          const topPct = (top[1] / liquidCost) * 100;
           if (topPct >= 70) {
             push('high', 'High market concentration',
-              `${topPct.toFixed(0)}% of liquid holdings are in ${top[0]} (≈ AED ${top[1].toLocaleString(undefined,{maximumFractionDigits:0})}).`,
-              'Consider diversifying across UAE, US, and India so one market shock hurts less.');
+              `${topPct.toFixed(0)}% of liquid holdings are in ${top[0]} (≈ ${money(top[1])}).`,
+              'Consider diversifying across GCC, US, and India so one market shock hurts less.');
           } else if (topPct >= 45) {
             push('medium', 'Moderate concentration',
               `${topPct.toFixed(0)}% of your liquid book sits in ${top[0]}.`,
-              'Healthy tilt is fine for expats; keep an eye if this rises above ~60%.');
+              'Healthy tilt is fine for GCC-based investors; keep an eye if this rises above ~60%.');
           } else {
             push('low', 'Diversified liquid book',
               `Largest market is ${top[0]} at ${topPct.toFixed(0)}% of liquid holdings.`,
               'Allocation looks balanced across markets.');
           }
-
           const syms = Object.entries(bySymbol).sort((a,b) => b[1]-a[1]);
-          if (syms[0] && (syms[0][1] / liquidAed) >= 0.4) {
+          if (syms[0] && (syms[0][1] / liquidCost) >= 0.4) {
             push('medium', 'Single-name risk',
-              `${syms[0][0]} alone is ${((syms[0][1]/liquidAed)*100).toFixed(0)}% of liquid assets.`,
+              `${syms[0][0]} alone is ${((syms[0][1]/liquidCost)*100).toFixed(0)}% of liquid assets.`,
               'Large single positions amplify volatility — size only what you can hold through drawdowns.');
           }
-        } else {
+        } else if (!(holdings || []).length) {
           push('info', 'No liquid holdings yet',
-            'Stocks, gold, or crypto are not logged, so concentration cannot be measured.',
-            'Add assets under Portfolio to unlock allocation insights.');
+            'Stocks, gold, or crypto are not logged, so market concentration cannot be measured.',
+            'Add assets under Portfolio when ready.');
         }
 
-        // Real estate weight
-        if (totalWealth > 0) {
-          const rePct = (reAed / totalWealth) * 100;
-          if (rePct >= 85) {
-            push('medium', 'Property-heavy wealth',
-              `Real estate is ${rePct.toFixed(0)}% of combined wealth (AED ${reAed.toLocaleString(undefined,{maximumFractionDigits:0})} of ${totalWealth.toLocaleString(undefined,{maximumFractionDigits:0})}).`,
-              'Illiquid property needs cash buffer for installments and life expenses.');
-          } else if (reAed > 0) {
-            push('low', 'Property + liquid mix',
-              `UAE real estate is ${rePct.toFixed(0)}% of combined wealth; liquid is ${(100-rePct).toFixed(0)}%.`,
-              'A mix of property equity and liquid assets is typical for UAE expats.');
+        // Asset-class mix across full net worth
+        if (grossAssets > 0) {
+          const parts = [
+            ['Stocks & ETFs', byKind.stocks],
+            ['Gold & silver', byKind.gold],
+            ['Crypto', byKind.crypto],
+            ['Real estate', reBaseF],
+            ['Other assets', altBase],
+            ['Cash & receivables', cashAssetsF]
+          ].filter(([,v]) => v > 0).sort((a,b) => b[1]-a[1]);
+          const mixLine = parts.slice(0, 5).map(([n,v]) => `${n} ${((v/grossAssets)*100).toFixed(0)}%`).join(' · ');
+          push('low', 'Full balance-sheet mix',
+            `Gross assets ≈ ${money(grossAssets)}. ${mixLine || '—'}.`,
+            'AI CFO reviews every sleeve — not only stocks and gold.');
+          if (cashLiabF > 0 && cashLiabF / Math.max(grossAssets, 1) >= 0.25) {
+            push('high', 'Elevated liabilities',
+              `Cards and debts are ${money(cashLiabF)} (${((cashLiabF/grossAssets)*100).toFixed(0)}% of gross assets). Net worth ≈ ${money(netWorth)}.`,
+              'Prioritise high-interest balances and keep installment cash ready.');
+          } else if (cashLiabF > 0) {
+            push('medium', 'Liabilities on the books',
+              `Credit cards + debts ≈ ${money(cashLiabF)}. Net worth after liabilities ≈ ${money(netWorth)}.`,
+              'Track due dates so interest does not erode portfolio gains.');
+          }
+          if (altBase > 0) {
+            const topAlt = Object.entries(altByClass).sort((a,b)=>b[1]-a[1])[0];
+            push('info', 'Other assets included',
+              `Mutual funds, FDs, bonds, vehicles, business stakes, etc. total ≈ ${money(altBase)}${topAlt ? ` (largest class: ${topAlt[0]})` : ''}.`,
+              'Keep valuations updated so net worth stays realistic.');
+          }
+          if (cashAssetsF > 0) {
+            push('info', 'Cash & receivables',
+              `Bank ≈ ${money(cashSums.bank)} · receivables ≈ ${money(cashSums.receivable)}.`,
+              'Cash buffer should cover near-term installments and living costs.');
           }
         }
 
-        // Installment cash-flow risk
-        const today = new Date();
-        today.setHours(0,0,0,0);
-        let due30 = 0, due90 = 0, overdue = 0, overdueCount = 0, nextInst = null;
+        // Real estate weight vs full net assets
+        if (grossAssets > 0 && reBaseF > 0) {
+          const rePct = (reBaseF / grossAssets) * 100;
+          if (rePct >= 85) {
+            push('medium', 'Property-heavy wealth',
+              `Real estate is ${rePct.toFixed(0)}% of gross assets (${money(reBaseF)} of ${money(grossAssets)}).`,
+              'Illiquid property needs cash buffer for installments and life expenses.');
+          } else {
+            push('low', 'Property + liquid mix',
+              `Real estate is ${rePct.toFixed(0)}% of gross assets; other sleeves make up ${(100-rePct).toFixed(0)}%.`,
+              'A mix of property equity and liquid assets is typical for GCC-based investors.');
+          }
+        }
+
+        // Installments
+        const today = new Date(); today.setHours(0,0,0,0);
+        let due30 = 0, due90 = 0, overdue = 0, overdueCount = 0;
+        let nextInst = null;
         (insts || []).forEach(i => {
           if ((i.status || '').toLowerCase() === 'paid') return;
-          const d = new Date(i.due_date + 'T00:00:00');
-          const days = Math.round((d - today) / 86400000);
-          const amt = Number(i.amount) || 0;
+          const days = Math.round((new Date(i.due_date + 'T00:00:00') - today) / 86400000);
+          const amt = (Number(i.amount) || 0) * aedToBase;
           if (days < 0) { overdue += amt; overdueCount++; }
-          else if (days <= 30) {
-            due30 += amt;
-            if (!nextInst || days < nextInst.days) nextInst = { days, amt, stage: i.stage, due: i.due_date };
-          } else if (days <= 90) due90 += amt;
+          else if (days <= 30) due30 += amt;
+          else if (days <= 90) due90 += amt;
+          if (days >= 0 && (!nextInst || days < nextInst.days)) {
+            nextInst = { days, amount: amt, stage: i.stage || i.label || 'Installment' };
+          }
         });
-
         if (overdueCount > 0) {
           push('high', 'Overdue installments',
-            `${overdueCount} payment(s) past due · about AED ${overdue.toLocaleString(undefined,{maximumFractionDigits:0})}.`,
-            'Clear overdue amounts first to avoid developer penalties and credit stress.');
-        }
-        if (due30 > 0) {
-          push('high', '30-day cash outflow',
-            `About AED ${due30.toLocaleString(undefined,{maximumFractionDigits:0})} in installments due within 30 days` +
-            (nextInst ? ` (next: ${nextInst.stage || 'Installment'} in ${nextInst.days}d).` : '.'),
-            'Keep this amount liquid in AED — do not rely only on volatile stocks.');
-        } else if (due90 > 0) {
-          push('medium', 'Upcoming 90-day payments',
-            `AED ${due90.toLocaleString(undefined,{maximumFractionDigits:0})} scheduled in the next 3 months.`,
+            `${overdueCount} payment(s) past due · about ${money(overdue)}.`,
+            'Clear arrears first to avoid late fees and developer friction.');
+        } else if (due30 > 0) {
+          push('medium', 'Installments due in 30 days',
+            `About ${money(due30)} in installments due within 30 days` + (nextInst ? ` (next: ${nextInst.stage} in ${nextInst.days}d)` : '') + '.',
             'Plan transfers ahead so FX and salary timing do not force rushed sales.');
-        } else if ((props || []).length) {
-          push('low', 'Installment pressure looks light',
-            'No unpaid installments in the next 30 days.',
-            'Still review the Real Estate schedule monthly.');
+        } else if (due90 > 0) {
+          push('info', 'Installments on the horizon',
+            `About ${money(due90)} due within 90 days.`,
+            'Keep a dedicated cash line for off-plan schedules.');
         }
 
-        // Golden Visa
+        // Golden Visa (always AED property total)
         const gvTarget = 2000000;
-        const gvPct = Math.min(100, (reAed / gvTarget) * 100);
-        if (goldenVisaHolder) {
-          push('low', 'Golden Visa goal claimed',
-            'You marked Golden Visa Holder in CrossCap after reaching the property threshold.',
-            'Keep SPA documents and ICP confirmation stored safely.');
-        } else if (reAed >= gvTarget) {
-          push('medium', 'Golden Visa threshold met',
-            `UAE property value ≈ AED ${reAed.toLocaleString(undefined,{maximumFractionDigits:0})} (≥ 2M).`,
-            'Open Goals → check ICP eligibility, then claim Golden Visa Holder.');
-        } else if (reAed > 0) {
+        const gvPropAed = window.__lastReAed != null ? Number(window.__lastReAed) : reAedRaw;
+        const gvPct = Math.min(100, (gvPropAed / gvTarget) * 100);
+        if (gvPropAed >= gvTarget) {
+          push('low', 'Golden Visa property threshold',
+            `UAE property value ≈ AED ${gvPropAed.toLocaleString(undefined,{maximumFractionDigits:0})} (≥ 2M).`,
+            'Confirm eligibility rules with official channels; stocks do not count.');
+        } else if (gvPropAed > 0) {
           push('info', 'Golden Visa progress',
-            `${gvPct.toFixed(0)}% of the AED 2M property path (AED ${(gvTarget - reAed).toLocaleString(undefined,{maximumFractionDigits:0})} to go).`,
-            'Only UAE real estate counts — stocks do not help this milestone.');
+            `UAE property ≈ AED ${Math.round(gvPropAed).toLocaleString()} (${gvPct.toFixed(0)}% of AED 2M).`,
+            'Only UAE real estate counts — stocks and overseas assets do not help this milestone.');
         }
 
         // Goals
-        const activeGoals = (goals || []).filter(g => g.status === 'active' || g.status === 'completed');
+        const activeGoals = (goals || []).filter(g => g.status !== 'claimed');
         if (activeGoals.length) {
-          push('info', 'Active savings goals',
-            `You have ${activeGoals.length} custom goal(s) under Goals.`,
-            'Contribute on a fixed cadence (e.g. AED 1,000/month) so progress stays automatic.');
+          push('info', 'Active goals',
+            `${activeGoals.length} goal(s) tracked: ${activeGoals.slice(0,3).map(g => g.title || 'Goal').join(', ')}.`,
+            'Link contributions to cash flow so goals stay funded.');
         }
 
-        // Metals note
-        const metals = (holdings || []).filter(h => String(h.market||'').toUpperCase().includes('GOLD') || String(h.market||'').toUpperCase().includes('SILVER'));
-        if (metals.length) {
-          push('info', 'Precious metals logged',
-            `${metals.length} gold/silver line(s) — live prices are per gram in USD, converted to AED.`,
-            'Confirm quantities are in grams so P/L stays accurate.');
+        if (!insights.length) {
+          push('info', 'Getting started',
+            'Your AI CFO is ready. Add holdings, cash, other assets, or GCC property to get a full net-worth briefing.',
+            'The more complete your records, the better the briefing.');
         }
-
-        // Executive summary
-        let summary = '';
-        if (totalWealth <= 0) {
-          summary = 'Your AI CFO is ready. Add stocks or UAE property to get a personalised briefing on risk and cash flow.';
-        } else {
-          const parts = [];
-          parts.push(`Combined picture: ≈ AED ${totalWealth.toLocaleString(undefined,{maximumFractionDigits:0})} (liquid ${liquidAed.toLocaleString(undefined,{maximumFractionDigits:0})} + property ${reAed.toLocaleString(undefined,{maximumFractionDigits:0})}).`);
-          if (due30 > 0) parts.push(`Priority: fund AED ${due30.toLocaleString(undefined,{maximumFractionDigits:0})} of installments due in 30 days.`);
-          else if (!goldenVisaHolder && reAed >= gvTarget) parts.push('Priority: confirm Golden Visa eligibility on ICP.');
-          else if (liquidAed > 0) parts.push('Priority: review concentration and keep an AED cash buffer.');
-          summary = parts.join(' ');
-        }
-        if (sumEl) sumEl.textContent = summary;
 
         const levelStyle = {
-          high: { border: 'border-rose-200', bg: 'bg-rose-50/60', badge: 'bg-rose-500 text-white', label: 'High priority' },
-          medium: { border: 'border-amber-200', bg: 'bg-amber-50/50', badge: 'bg-amber-500 text-white', label: 'Watch' },
+          high: { border: 'border-rose-200', bg: 'bg-rose-50/40', badge: 'bg-rose-600 text-white', label: 'Priority' },
+          medium: { border: 'border-amber-200', bg: 'bg-amber-50/40', badge: 'bg-amber-600 text-white', label: 'Watch' },
           low: { border: 'border-emerald-200', bg: 'bg-emerald-50/40', badge: 'bg-emerald-600 text-white', label: 'Healthy' },
           info: { border: 'border-zinc-200', bg: 'bg-white', badge: 'bg-zinc-200 text-zinc-700', label: 'Note' }
         };
-
-        // Sort: high → medium → low → info
         const order = { high: 0, medium: 1, low: 2, info: 3 };
         insights.sort((a, b) => order[a.level] - order[b.level]);
 
@@ -3053,28 +3125,50 @@
           }).join('');
         }
 
-        // Gemini senior FM narrative (free tier key)
         const snapshot = {
-          liquid_aed: Math.round(liquidAed),
-          real_estate_aed: Math.round(reAed),
-          combined_aed: Math.round(totalWealth),
-          markets: byMarket,
-          top_holdings: Object.entries(bySymbol).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([s,v])=>({symbol:s, aed: Math.round(v)})),
+          base_currency: baseCurrency,
+          net_worth: Math.round(netWorth),
+          gross_assets: Math.round(grossAssets),
+          liquid_portfolio: Math.round(liquidAed),
+          liquid_cost_basis: Math.round(liquidCost),
+          real_estate: Math.round(reBaseF),
+          real_estate_aed_raw: Math.round(reAedRaw),
+          other_assets: Math.round(altBase),
+          other_by_class: Object.fromEntries(Object.entries(altByClass).map(([k,v]) => [k, Math.round(v)])),
+          cash: {
+            bank: Math.round(cashSums.bank || 0),
+            receivable: Math.round(cashSums.receivable || 0),
+            credit_card: Math.round(cashSums.credit_card || 0),
+            debt: Math.round(cashSums.debt || 0)
+          },
+          liabilities_total: Math.round(cashLiabF),
+          markets: Object.fromEntries(Object.entries(byMarket).map(([k,v]) => [k, Math.round(v)])),
+          sleeves: {
+            stocks: Math.round(byKind.stocks),
+            gold_silver: Math.round(byKind.gold),
+            crypto: Math.round(byKind.crypto),
+            other_liquid: Math.round(byKind.other)
+          },
+          top_holdings: Object.entries(bySymbol).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([s,v])=>({symbol:s, value: Math.round(v)})),
           installments: {
-            overdue_aed: Math.round(overdue),
+            overdue: Math.round(overdue),
             overdue_count: overdueCount,
-            due_30d_aed: Math.round(due30),
-            due_90d_aed: Math.round(due90),
-            next: nextInst
+            due_30d: Math.round(due30),
+            due_90d: Math.round(due90),
+            next: nextInst ? { days: nextInst.days, amount: Math.round(nextInst.amount), stage: nextInst.stage } : null
           },
           golden_visa: {
             holder: !!goldenVisaHolder,
-            property_aed: Math.round(reAed),
+            property_aed: Math.round(gvPropAed),
             target_aed: gvTarget,
             pct: Math.round(gvPct)
           },
-          active_goals: (goals || []).filter(g => g.status !== 'claimed').map(g => ({ title: g.title, target: g.target_amount, status: g.status })),
-          rule_insights: insights.map(i => ({ level: i.level, title: i.title, body: i.body }))
+          active_goals: activeGoals.map(g => ({ title: g.title, target: g.target_amount, status: g.status })),
+          rule_insights: insights.map(i => ({ level: i.level, title: i.title, body: i.body })),
+          // backward-compatible keys
+          liquid_aed: Math.round(liquidAed),
+          real_estate_aed: Math.round(reBaseF),
+          combined_aed: Math.round(netWorth)
         };
         await fetchGeminiCfoNarrative(snapshot);
       }
@@ -3084,7 +3178,7 @@
         const textEl = document.getElementById('aiCfoNarrativeText');
         if (!textEl) return;
         if (status) status.textContent = 'Gemini writing…';
-        textEl.textContent = 'Senior financial manager is reviewing your numbers…';
+        textEl.textContent = 'Senior financial manager is reviewing your full balance sheet…';
         try {
           const { data: sessionData } = await supabaseClient.auth.getSession();
           const token = sessionData?.session?.access_token;
@@ -4111,36 +4205,83 @@
       // ---- Floating AI CFO chat ----
       async function buildChatSnapshot() {
         const rates = await getRatesToAed();
-        const { data: holdings } = await supabaseClient.from('holdings').select('*');
-        const { data: props } = await supabaseClient.from('properties').select('*');
-        const { data: insts } = await supabaseClient.from('installments').select('*');
+        const uid = currentUser?.id;
+        const [{ data: holdings }, { data: props }, { data: insts }, { data: cashRows }, { data: altRows }] = await Promise.all([
+          supabaseClient.from('holdings').select('*').eq('user_id', uid),
+          supabaseClient.from('properties').select('*').eq('user_id', uid),
+          supabaseClient.from('installments').select('*'),
+          supabaseClient.from('cash_accounts').select('*').eq('user_id', uid),
+          supabaseClient.from('alt_assets').select('*').eq('user_id', uid)
+        ]);
+        const aedToBase = rates.AED != null ? rates.AED : (baseCurrency === 'AED' ? 1 : 0);
         let liquid = 0;
         const markets = {};
+        const sleeves = { stocks: 0, gold_silver: 0, crypto: 0 };
         (holdings || []).forEach(h => {
           const cur = (h.currency || 'AED').toUpperCase();
           const aed = (Number(h.shares)||0) * (Number(h.avg_buy_price)||0) * (rates[cur] != null ? rates[cur] : 1);
           liquid += aed;
           const m = h.market || 'OTHER';
           markets[m] = (markets[m] || 0) + aed;
+          const mk = String(h.market || '').toUpperCase();
+          if (mk.includes('GOLD') || mk.includes('SILVER')) sleeves.gold_silver += aed;
+          else if (mk === 'CRYPTO') sleeves.crypto += aed;
+          else sleeves.stocks += aed;
         });
-        let re = 0;
-        (props || []).forEach(p => { re += Number(p.total_price) || 0; });
+        if (window.__lastLiveAed != null && Number(window.__lastLiveAed) > 0) liquid = Number(window.__lastLiveAed);
+        let reRaw = 0;
+        (props || []).forEach(p => { reRaw += Number(p.total_price) || 0; });
+        const re = (window.__lastReVal != null) ? Number(window.__lastReVal) : reRaw * aedToBase;
+        const cash = window.__lastCashSums || { bank: 0, credit_card: 0, receivable: 0, debt: 0 };
+        if (!window.__lastCashSums && cashRows) {
+          (cashRows || []).forEach(row => {
+            const cur = (row.currency || 'AED').toUpperCase();
+            const v = (Number(row.balance) || 0) * (rates[cur] != null ? rates[cur] : 1);
+            const t = row.account_type || 'bank';
+            if (cash[t] != null) cash[t] += v;
+          });
+        }
+        let alt = Number(window.__lastAltAed) || 0;
+        if (!alt && altRows) {
+          (altRows || []).forEach(r => {
+            const cur = (r.currency || 'AED').toUpperCase();
+            const raw = Number(r.current_value) || Number(r.invested_amount) || 0;
+            alt += raw * (rates[cur] != null ? rates[cur] : 1);
+          });
+        }
+        const bank = Number(cash.bank) || 0, recv = Number(cash.receivable) || 0;
+        const cards = Number(cash.credit_card) || 0, debt = Number(cash.debt) || 0;
+        const gross = liquid + re + alt + bank + recv;
+        const net = gross - cards - debt;
         const today = new Date(); today.setHours(0,0,0,0);
         let due30 = 0, overdue = 0;
         (insts || []).forEach(i => {
           if ((i.status||'').toLowerCase() === 'paid') return;
           const days = Math.round((new Date(i.due_date+'T00:00:00') - today) / 86400000);
-          const amt = Number(i.amount) || 0;
+          const amt = (Number(i.amount) || 0) * aedToBase;
           if (days < 0) overdue += amt;
           else if (days <= 30) due30 += amt;
         });
         return {
+          base_currency: baseCurrency,
+          net_worth: Math.round(net),
+          gross_assets: Math.round(gross),
+          liquid_portfolio: Math.round(liquid),
+          real_estate: Math.round(re),
+          other_assets: Math.round(alt),
+          cash: { bank: Math.round(bank), receivable: Math.round(recv), credit_card: Math.round(cards), debt: Math.round(debt) },
+          liabilities_total: Math.round(cards + debt),
+          sleeves: Object.fromEntries(Object.entries(sleeves).map(([k,v]) => [k, Math.round(v)])),
+          markets: Object.fromEntries(Object.entries(markets).map(([k,v]) => [k, Math.round(v)])),
+          installments: { overdue: Math.round(overdue), due_30d: Math.round(due30) },
+          golden_visa: {
+            holder: !!goldenVisaHolder,
+            property_aed: Math.round(window.__lastReAed != null ? window.__lastReAed : reRaw),
+            target_aed: 2000000
+          },
           liquid_aed: Math.round(liquid),
           real_estate_aed: Math.round(re),
-          combined_aed: Math.round(liquid + re),
-          markets,
-          installments: { overdue_aed: Math.round(overdue), due_30d_aed: Math.round(due30) },
-          golden_visa: { holder: !!goldenVisaHolder, property_aed: Math.round(re), target_aed: 2000000 }
+          combined_aed: Math.round(net)
         };
       }
 
@@ -4741,11 +4882,11 @@
     </div>
     <div id="aiChatMessages" class="flex-1 overflow-y-auto p-3 space-y-2 text-[13px] bg-zinc-50/80">
       <div class="bg-white border border-zinc-100 rounded-xl px-3 py-2 text-zinc-600 shadow-sm">
-        Ask a simple question about your CrossCap data (installments, concentration, Golden Visa progress). This helps you manage records — it is not formal financial advice.
+        Ask about your full net worth: stocks, gold, crypto, cash, debts, other assets, real estate, installments, or Golden Visa. Record guidance only — not formal financial advice.
       </div>
     </div>
     <form id="aiChatForm" class="p-3 border-t border-zinc-100 bg-white flex gap-2">
-      <input id="aiChatInput" type="text" maxlength="400" placeholder="e.g. What should I prioritise this month?" class="flex-1 rounded-xl border border-zinc-200 px-3 py-2 text-[13px]" />
+      <input id="aiChatInput" type="text" maxlength="400" placeholder="e.g. How is my full net worth split?" class="flex-1 rounded-xl border border-zinc-200 px-3 py-2 text-[13px]" />
       <button type="submit" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[12px] font-semibold px-3 py-2 shrink-0">Send</button>
     </form>
   </div>
