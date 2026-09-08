@@ -1,7 +1,7 @@
 {
-  "name": "CrossCap — UAE Wealth OS",
+  "name": "CrossCap — GCC Wealth OS",
   "short_name": "CrossCap",
-  "description": "The UAE-First Wealth OS for Global Expats and Investors",
+  "description": "The GCC-First Wealth OS for Global Expats and Investors",
   "start_url": "/dashboard",
   "scope": "/",
   "display": "standalone",

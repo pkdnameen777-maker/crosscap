@@ -1473,6 +1473,8 @@
         document.getElementById('profileNomineeRelation').value = data?.nominee_relation || '';
         document.getElementById('profileNomineePhone').value = data?.nominee_phone || '';
         document.getElementById('profileLanguage').value = data?.language || 'en';
+        const hasServerCurrency = !!(data && data.base_currency);
+        if (hasServerCurrency) markCurrencyOnboardingDone();
         const bc = (data?.base_currency || localStorage.getItem('cc_base_currency') || 'AED').toUpperCase();
         const bcEl = document.getElementById('profileBaseCurrency');
         if (bcEl) {
@@ -1494,6 +1496,12 @@
             if (typeof loadCashAccounts === 'function') loadCashAccounts();
             if (typeof loadAltAssets === 'function') loadAltAssets();
           } catch (e) { console.warn('reload after profile base currency', e); }
+        }
+        // First login only: pick base currency once
+        if (!isCurrencyOnboardingDone()) {
+          setTimeout(() => showCurrencyOnboarding(), 400);
+        } else {
+          setTimeout(() => maybeShowPwaInstall(), 900);
         }
         document.getElementById('profileEmailAlerts').checked = !!data?.email_alerts;
         document.getElementById('profileWhatsappAlerts').checked = !!data?.whatsapp_alerts;
@@ -1584,7 +1592,8 @@
         }
         const nextBase = (row.base_currency || 'AED').toUpperCase();
         const baseChanged = nextBase !== baseCurrency;
-        setBaseCurrency(nextBase);
+        setBaseCurrency(nextBase, { markChosen: true });
+        markCurrencyOnboardingDone();
         if (baseChanged) {
           fxCache = null;
           fxCacheBase = null;
@@ -2100,14 +2109,185 @@
       let fxCache = null;
       let fxCacheBase = null;
 
-      function setBaseCurrency(code) {
+      function setBaseCurrency(code, opts) {
+        opts = opts || {};
         const c = String(code || 'AED').toUpperCase();
         baseCurrency = c;
-        try { localStorage.setItem('cc_base_currency', c); } catch (_) {}
+        try {
+          localStorage.setItem('cc_base_currency', c);
+          if (opts.markChosen) localStorage.setItem('cc_currency_onboarding_done', '1');
+        } catch (_) {}
         document.querySelectorAll('#overviewBaseCurrencyLabel, #exposureBaseCurrencyLabel, #perfBaseCurrencyLabel').forEach(el => {
           if (el) el.textContent = c;
         });
+        const bcEl = document.getElementById('profileBaseCurrency');
+        if (bcEl && [...bcEl.options].some(o => o.value === c)) bcEl.value = c;
       }
+
+      function isCurrencyOnboardingDone() {
+        try {
+          if (localStorage.getItem('cc_currency_onboarding_done') === '1') return true;
+        } catch (_) {}
+        return false;
+      }
+
+      function markCurrencyOnboardingDone() {
+        try { localStorage.setItem('cc_currency_onboarding_done', '1'); } catch (_) {}
+      }
+
+      function isPwaInstallDismissed() {
+        try {
+          if (localStorage.getItem('cc_pwa_install_dismissed') === '1') return true;
+        } catch (_) {}
+        return false;
+      }
+
+      function markPwaInstallDismissed() {
+        try { localStorage.setItem('cc_pwa_install_dismissed', '1'); } catch (_) {}
+      }
+
+      function isRunningAsInstalledPwa() {
+        try {
+          if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return true;
+          if (window.navigator.standalone === true) return true;
+        } catch (_) {}
+        return false;
+      }
+
+      function showCurrencyOnboarding() {
+        const modal = document.getElementById('currencyOnboarding');
+        if (!modal) return;
+        const sel = document.getElementById('onboardingBaseCurrency');
+        if (sel) {
+          const cur = (baseCurrency || 'AED').toUpperCase();
+          if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+        }
+        modal.classList.remove('hidden');
+      }
+
+      function hideCurrencyOnboarding() {
+        document.getElementById('currencyOnboarding')?.classList.add('hidden');
+      }
+
+      async function completeCurrencyOnboarding() {
+        const sel = document.getElementById('onboardingBaseCurrency');
+        const code = (sel?.value || 'AED').toUpperCase();
+        setBaseCurrency(code, { markChosen: true });
+        markCurrencyOnboardingDone();
+        hideCurrencyOnboarding();
+        fxCache = null;
+        fxCacheBase = null;
+        // Persist to profile if logged in
+        if (currentUser) {
+          try {
+            let { error } = await supabaseClient.from('profiles').upsert({
+              id: currentUser.id,
+              base_currency: code,
+              updated_at: new Date().toISOString()
+            }, { onConflict: 'id' });
+            if (error && /base_currency/i.test(error.message || '')) {
+              console.warn('base_currency column missing — local only');
+            }
+          } catch (e) {
+            console.warn('save base currency', e);
+          }
+        }
+        try {
+          if (typeof loadPortfolio === 'function') loadPortfolio();
+          if (typeof loadProperties === 'function') loadProperties();
+          if (typeof loadCashAccounts === 'function') loadCashAccounts();
+          if (typeof loadAltAssets === 'function') loadAltAssets();
+        } catch (_) {}
+        // After currency set, maybe show install (once)
+        setTimeout(() => maybeShowPwaInstall(), 600);
+      }
+
+      let deferredPwaPrompt = null;
+
+      function showPwaInstallBanner() {
+        if (isPwaInstallDismissed() || isRunningAsInstalledPwa()) return;
+        const ban = document.getElementById('pwaInstallBanner');
+        if (ban) ban.classList.remove('hidden');
+      }
+
+      function hidePwaInstallBanner() {
+        document.getElementById('pwaInstallBanner')?.classList.add('hidden');
+      }
+
+      function maybeShowPwaInstall() {
+        if (isPwaInstallDismissed() || isRunningAsInstalledPwa()) return;
+        // Only show if browser fired beforeinstallprompt (Chrome/Edge/Android)
+        // or we already have deferred prompt; iOS gets a soft tip once via same banner if we choose
+        if (deferredPwaPrompt) {
+          showPwaInstallBanner();
+          return;
+        }
+        // iOS Safari: no beforeinstallprompt — show gentle tip once if not installed
+        const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent || '');
+        if (isIOS && !isRunningAsInstalledPwa()) {
+          const tip = document.getElementById('pwaInstallBanner');
+          if (tip) {
+            const btn = document.getElementById('pwaInstallBtn');
+            if (btn) {
+              btn.textContent = 'How to install';
+              btn.onclick = () => {
+                alert('On iPhone: tap Share → Add to Home Screen');
+                markPwaInstallDismissed();
+                hidePwaInstallBanner();
+              };
+            }
+            showPwaInstallBanner();
+          }
+        }
+      }
+
+      function setupPwaInstallHandlers() {
+        window.addEventListener('beforeinstallprompt', (e) => {
+          e.preventDefault();
+          deferredPwaPrompt = e;
+          if (isCurrencyOnboardingDone() && !isPwaInstallDismissed() && !isRunningAsInstalledPwa()) {
+            // slight delay so it doesn't fight currency modal
+            setTimeout(() => {
+              if (!document.getElementById('currencyOnboarding') || document.getElementById('currencyOnboarding').classList.contains('hidden')) {
+                showPwaInstallBanner();
+              }
+            }, 800);
+          }
+        });
+        window.addEventListener('appinstalled', () => {
+          deferredPwaPrompt = null;
+          markPwaInstallDismissed();
+          hidePwaInstallBanner();
+        });
+        document.getElementById('pwaInstallBtn')?.addEventListener('click', async () => {
+          if (!deferredPwaPrompt) {
+            // fallback: already handled for iOS above
+            return;
+          }
+          deferredPwaPrompt.prompt();
+          try {
+            const choice = await deferredPwaPrompt.userChoice;
+            // Whether accepted or dismissed, never nag again
+            markPwaInstallDismissed();
+            hidePwaInstallBanner();
+            if (choice && choice.outcome === 'dismissed') {
+              // explicit decline — stay dismissed forever
+            }
+          } catch (_) {
+            markPwaInstallDismissed();
+            hidePwaInstallBanner();
+          }
+          deferredPwaPrompt = null;
+        });
+        const dismiss = () => {
+          markPwaInstallDismissed();
+          hidePwaInstallBanner();
+        };
+        document.getElementById('pwaInstallDismiss')?.addEventListener('click', dismiss);
+        document.getElementById('pwaInstallClose')?.addEventListener('click', dismiss);
+        document.getElementById('onboardingCurrencySave')?.addEventListener('click', () => completeCurrencyOnboarding());
+      }
+      // setupPwaInstallHandlers() deferred until modals exist in DOM
 
       function formatMoney(n, opts) {
         opts = opts || {};
@@ -4866,6 +5046,66 @@
     });
   </script>
 
+  <!-- First-time base currency onboarding (once only) -->
+  <div id="currencyOnboarding" class="hidden fixed inset-0 z-[80] flex items-center justify-center p-4 bg-zinc-900/50 backdrop-blur-sm">
+    <div class="w-full max-w-md rounded-2xl bg-white shadow-card border border-zinc-100 overflow-hidden">
+      <div class="px-6 pt-6 pb-2">
+        <p class="text-[11px] font-bold uppercase tracking-wider text-brand-600 mb-1">Welcome to CrossCap</p>
+        <h2 class="font-display text-xl font-semibold text-zinc-900 tracking-tight">Choose your base currency</h2>
+        <p class="text-[13px] text-zinc-500 mt-2 leading-relaxed">All consolidated totals (net worth, portfolio, cash, property) convert to this currency. You can change it later in Settings — we only ask once.</p>
+      </div>
+      <div class="px-6 py-4">
+        <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Base currency</label>
+        <select id="onboardingBaseCurrency" class="w-full rounded-xl border border-zinc-200 px-3 py-3 text-[15px] font-medium text-zinc-900 focus:outline-none focus:ring-2 focus:ring-brand-400">
+          <optgroup label="GCC">
+            <option value="AED" selected>AED — UAE Dirham</option>
+            <option value="SAR">SAR — Saudi Riyal</option>
+            <option value="QAR">QAR — Qatari Riyal</option>
+            <option value="KWD">KWD — Kuwaiti Dinar</option>
+            <option value="BHD">BHD — Bahraini Dinar</option>
+            <option value="OMR">OMR — Omani Rial</option>
+          </optgroup>
+          <optgroup label="Other">
+            <option value="USD">USD — US Dollar</option>
+            <option value="EUR">EUR — Euro</option>
+            <option value="GBP">GBP — British Pound</option>
+            <option value="INR">INR — Indian Rupee</option>
+            <option value="PKR">PKR — Pakistani Rupee</option>
+            <option value="EGP">EGP — Egyptian Pound</option>
+            <option value="SGD">SGD — Singapore Dollar</option>
+            <option value="HKD">HKD — Hong Kong Dollar</option>
+            <option value="CNY">CNY — Chinese Yuan</option>
+            <option value="JPY">JPY — Japanese Yen</option>
+            <option value="AUD">AUD — Australian Dollar</option>
+            <option value="CAD">CAD — Canadian Dollar</option>
+            <option value="CHF">CHF — Swiss Franc</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="px-6 pb-6 flex gap-2">
+        <button type="button" id="onboardingCurrencySave" class="flex-1 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[14px] font-semibold py-3 transition">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PWA install prompt (once only; never again if dismissed) -->
+  <div id="pwaInstallBanner" class="hidden fixed bottom-5 left-4 right-4 sm:left-auto sm:right-5 sm:w-[360px] z-[70] rounded-2xl bg-white border border-zinc-200 shadow-card p-4">
+    <div class="flex gap-3 items-start">
+      <img src="assets/icon-192.png" alt="" class="w-11 h-11 rounded-xl shrink-0 ring-1 ring-zinc-100" width="44" height="44" />
+      <div class="flex-1 min-w-0">
+        <p class="text-[14px] font-semibold text-zinc-900">Install CrossCap</p>
+        <p class="text-[12px] text-zinc-500 mt-0.5 leading-relaxed">Add to your home screen for quick access like a native app.</p>
+        <div class="flex gap-2 mt-3">
+          <button type="button" id="pwaInstallBtn" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[12px] font-semibold px-3.5 py-2">Install app</button>
+          <button type="button" id="pwaInstallDismiss" class="rounded-xl border border-zinc-200 text-zinc-600 text-[12px] font-semibold px-3.5 py-2 hover:bg-zinc-50">Not now</button>
+        </div>
+      </div>
+      <button type="button" id="pwaInstallClose" class="text-zinc-400 hover:text-zinc-600 p-0.5" aria-label="Dismiss">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+  </div>
+
   <!-- AI CFO floating chat -->
   <button type="button" id="aiChatFab" class="fixed bottom-5 right-5 z-[60] w-14 h-14 rounded-full bg-brand-700 hover:bg-brand-800 text-white shadow-card flex items-center justify-center transition" aria-label="Open AI CFO chat">
     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 12c0 4.556-4.03 8.25-9 8.25a9.76 9.76 0 01-2.53-.33L4.5 21l1.2-3.6A7.9 7.9 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"/></svg>
@@ -4890,6 +5130,11 @@
       <button type="submit" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[12px] font-semibold px-3 py-2 shrink-0">Send</button>
     </form>
   </div>
+
+  <script>
+    // Wire one-time onboarding + install UI after DOM nodes exist
+    if (typeof setupPwaInstallHandlers === 'function') setupPwaInstallHandlers();
+  </script>
 
   <script>
     // PWA service worker
