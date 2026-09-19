@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Security &amp; Privacy | CrossCap GCC Wealth OS</title>
+  <meta name="description" content="How CrossCap protects your wealth data: authentication, hosting, documents, and your controls. Honest security information for expats and investors." />
+  <link rel="canonical" href="https://crosscap.app/security" />
+  <meta property="og:title" content="Security | CrossCap" />
+  <meta property="og:url" content="https://crosscap.app/security" />
+  <meta name="theme-color" content="#7e22ce" />
+  <link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{brand:{700:"#7e22ce"}}}}}</script>
+</head>
+<body class="bg-white text-zinc-900 antialiased">
+  <header class="border-b border-zinc-100">
+    <div class="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2 font-semibold"><img src="assets/logo.png" alt="" class="w-8 h-8 rounded-lg" width="32" height="32" />CrossCap</a>
+      <a href="/login" class="text-sm font-semibold text-brand-700">Login</a>
+    </div>
+  </header>
+  <main class="max-w-3xl mx-auto px-4 py-12 sm:py-16">
+    <h1 class="text-3xl font-semibold tracking-tight mb-4">Security &amp; data handling</h1>
+    <p class="text-[16px] text-zinc-600 leading-relaxed mb-8">
+      CrossCap stores personal wealth records you enter (holdings, property schedules, goals, and profile details). Below is an honest summary of how that works today — not marketing claims we cannot verify.
+    </p>
+
+    <h2 class="text-xl font-semibold mt-8 mb-2">Authentication</h2>
+    <p class="text-[15px] text-zinc-600 mb-4">Sign-in uses Google OAuth via Supabase Auth. We do not store your Google password. Sessions are managed by the authentication provider.</p>
+
+    <h2 class="text-xl font-semibold mt-8 mb-2">Where data is stored</h2>
+    <p class="text-[15px] text-zinc-600 mb-4">Application data is stored in a managed cloud database (Supabase / PostgreSQL). File uploads such as property documents, when enabled, are stored in secured object storage tied to your account.</p>
+
+    <h2 class="text-xl font-semibold mt-8 mb-2">Bank connections</h2>
+    <p class="text-[15px] text-zinc-600 mb-4"><strong>CrossCap does not connect directly to your bank login today.</strong> Cash and balances are entered by you. We do not request or store bank passwords.</p>
+
+    <h2 class="text-xl font-semibold mt-8 mb-2">Market prices</h2>
+    <p class="text-[15px] text-zinc-600 mb-4">Live prices, when available, come from third-party market data providers. Prices can be delayed or unavailable for some symbols.</p>
+
+    <h2 class="text-xl font-semibold mt-8 mb-2">Documents (e.g. SPA uploads)</h2>
+    <p class="text-[15px] text-zinc-600 mb-4">If you upload a sales or purchase agreement for AI extraction, the file is processed to suggest fields you can review before saving. Always verify extracted data. Do not upload documents you are not allowed to process.</p>
+
+    <h2 class="text-xl font-semibold mt-8 mb-2">AI features</h2>
+    <p class="text-[15px] text-zinc-600 mb-4">AI CFO notes and extraction helpers use your portfolio context to generate organisational insights. They are not licensed financial, tax, or legal advice. Provider processing follows each vendor’s terms.</p>
+
+    <h2 class="text-xl font-semibold mt-8 mb-2">What we do not do</h2>
+    <ul class="list-disc pl-5 text-[15px] text-zinc-600 space-y-1 mb-4">
+      <li>We do not sell your portfolio data as a product listing</li>
+      <li>We do not claim “bank-grade” or certified compliance we have not obtained</li>
+      <li>We do not replace official Golden Visa or government eligibility decisions</li>
+    </ul>
+
+    <h2 class="text-xl font-semibold mt-8 mb-2">Your controls</h2>
+    <p class="text-[15px] text-zinc-600 mb-4">You can update profile details, export backups from Reports (when available), and request account or data deletion by emailing <a class="text-brand-700 font-semibold" href="mailto:support@crosscap.app">support@crosscap.app</a>.</p>
+
+    <h2 class="text-xl font-semibold mt-8 mb-2">More detail</h2>
+    <p class="text-[15px] text-zinc-600 mb-8">See our <a href="/privacy" class="text-brand-700 font-semibold hover:underline">Privacy Policy</a> and <a href="/terms" class="text-brand-700 font-semibold hover:underline">Terms</a>.</p>
+
+    <a href="/login" class="inline-flex rounded-xl bg-brand-700 text-white text-sm font-semibold px-5 py-2.5">Open CrossCap</a>
+  </main>
+</body>
+</html>

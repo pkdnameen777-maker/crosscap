@@ -56,6 +56,21 @@
       "source": "/gcc-expat-finance.html",
       "destination": "/gcc-expat-finance",
       "permanent": true
+    },
+    {
+      "source": "/security.html",
+      "destination": "/security",
+      "permanent": true
+    },
+    {
+      "source": "/pricing.html",
+      "destination": "/pricing",
+      "permanent": true
+    },
+    {
+      "source": "/uae-wealth-tracker.html",
+      "destination": "/uae-wealth-tracker",
+      "permanent": true
     }
   ],
   "rewrites": [
@@ -98,6 +113,18 @@
     {
       "source": "/gcc-expat-finance",
       "destination": "/gcc-expat-finance.html"
+    },
+    {
+      "source": "/security",
+      "destination": "/security.html"
+    },
+    {
+      "source": "/pricing",
+      "destination": "/pricing.html"
+    },
+    {
+      "source": "/uae-wealth-tracker",
+      "destination": "/uae-wealth-tracker.html"
     }
   ],
   "headers": [
