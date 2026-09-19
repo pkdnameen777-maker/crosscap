@@ -1,0 +1,9 @@
+# CrossCap — public marketing site
+User-agent: *
+Allow: /
+
+# App surfaces (auth required; low SEO value)
+Disallow: /dashboard
+Disallow: /admin
+
+Sitemap: https://crosscap.app/sitemap.xml

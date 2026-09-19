@@ -36,6 +36,26 @@
       "source": "/admin.html",
       "destination": "/admin",
       "permanent": true
+    },
+    {
+      "source": "/about.html",
+      "destination": "/about",
+      "permanent": true
+    },
+    {
+      "source": "/net-worth-tracker.html",
+      "destination": "/net-worth-tracker",
+      "permanent": true
+    },
+    {
+      "source": "/property-installment-tracker.html",
+      "destination": "/property-installment-tracker",
+      "permanent": true
+    },
+    {
+      "source": "/gcc-expat-finance.html",
+      "destination": "/gcc-expat-finance",
+      "permanent": true
     }
   ],
   "rewrites": [
@@ -62,6 +82,22 @@
     {
       "source": "/admin",
       "destination": "/admin.html"
+    },
+    {
+      "source": "/about",
+      "destination": "/about.html"
+    },
+    {
+      "source": "/net-worth-tracker",
+      "destination": "/net-worth-tracker.html"
+    },
+    {
+      "source": "/property-installment-tracker",
+      "destination": "/property-installment-tracker.html"
+    },
+    {
+      "source": "/gcc-expat-finance",
+      "destination": "/gcc-expat-finance.html"
     }
   ],
   "headers": [
