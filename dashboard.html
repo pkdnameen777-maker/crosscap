@@ -466,6 +466,18 @@
         z-index: 95 !important;
       }
     }
+
+    @media (min-width: 1024px) {
+      #pwaInstallBanner { bottom: 1.25rem !important; }
+    }
+    @media (max-width: 1023px) {
+      #pwaInstallBanner {
+        bottom: calc(5.75rem + env(safe-area-inset-bottom, 12px)) !important;
+        left: 0.75rem !important;
+        right: 0.75rem !important;
+        z-index: 70 !important;
+      }
+    }
   </style>
 </head>
 <body class="bg-zinc-50/80 text-zinc-900 min-h-screen">
@@ -3460,15 +3472,21 @@
 
                   const amtStr = Number(i.amount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
                   instHtml += `
-                    <div class="grid grid-cols-1 sm:grid-cols-[minmax(0,1.4fr)_9.5rem_7.5rem_5.5rem_6.5rem] gap-2 sm:gap-3 items-center text-[13px] bg-zinc-50 rounded-xl px-3 py-2.5">
-                      <span class="font-medium text-zinc-800 truncate" title="${(i.stage || 'Installment').replace(/"/g, '&quot;')}">${i.stage || 'Installment'}</span>
-                      <input type="date" value="${i.due_date}" class="w-full sm:w-[9.5rem] rounded-lg border border-zinc-200 bg-white px-2 py-1.5 text-[12px] text-zinc-700"
+                    <div class="inst-card text-[13px] bg-zinc-50 rounded-xl px-3 py-3 space-y-2.5">
+                      <div class="flex items-start justify-between gap-2">
+                        <span class="font-semibold text-zinc-900 text-[14px] leading-tight" title="${(i.stage || 'Installment').replace(/"/g, '&quot;')}">${i.stage || 'Installment'}</span>
+                        <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap shrink-0 ${badge}">${label}</span>
+                      </div>
+                      <input type="date" value="${i.due_date}" class="w-full rounded-lg border border-zinc-200 bg-white px-2.5 py-2 text-[13px] text-zinc-700"
                         onchange="updateInstallmentDate('${i.id}', this.value)" />
-                      <span class="tabular-nums font-semibold text-zinc-800 sm:text-right">${formatMoney(Number(i.amount) * aedToBase, { maximumFractionDigits: 2 })}</span>
-                      <span class="justify-self-start sm:justify-self-center text-[11px] font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap ${badge}">${label}</span>
-                      <div class="flex items-center gap-2 sm:justify-end">
-                        ${st !== 'paid' ? `<button type="button" onclick="markInstallment('${i.id}','paid')" class="btn-act btn-act-ok">Mark paid</button>` : `<button type="button" onclick="markInstallment('${i.id}','scheduled')" class="btn-act btn-act-muted">Undo</button>`}
-                        <button type="button" onclick="deleteInstallment('${i.id}')" class="btn-act btn-act-del">Delete</button>
+                      <div class="flex items-center justify-between gap-3 pt-0.5">
+                        <span class="tabular-nums font-semibold text-zinc-900 text-[15px]">${formatMoney(Number(i.amount) * aedToBase, { maximumFractionDigits: 2 })}</span>
+                      </div>
+                      <div class="flex items-center gap-2 pt-1 border-t border-zinc-200/80">
+                        ${st !== 'paid'
+                          ? `<button type="button" onclick="event.preventDefault();event.stopPropagation();markInstallment('${i.id}','paid')" class="btn-act btn-act-ok flex-1 justify-center py-2.5 text-[12px]">Mark paid</button>`
+                          : `<button type="button" onclick="event.preventDefault();event.stopPropagation();markInstallment('${i.id}','scheduled')" class="btn-act btn-act-muted flex-1 justify-center py-2.5 text-[12px]">Undo</button>`}
+                        <button type="button" onclick="event.preventDefault();event.stopPropagation();deleteInstallment('${i.id}')" class="btn-act btn-act-del flex-1 justify-center py-2.5 text-[12px]">Delete</button>
                       </div>
                     </div>`;
                 }
@@ -5608,20 +5626,43 @@
             <option value="BHD">BHD — Bahraini Dinar</option>
             <option value="OMR">OMR — Omani Rial</option>
           </optgroup>
-          <optgroup label="Other">
+          <optgroup label="South Asia">
+            <option value="INR">INR — Indian Rupee</option>
+            <option value="PKR">PKR — Pakistani Rupee</option>
+            <option value="BDT">BDT — Bangladeshi Taka</option>
+            <option value="LKR">LKR — Sri Lankan Rupee</option>
+            <option value="NPR">NPR — Nepalese Rupee</option>
+          </optgroup>
+          <optgroup label="Major">
             <option value="USD">USD — US Dollar</option>
             <option value="EUR">EUR — Euro</option>
             <option value="GBP">GBP — British Pound</option>
-            <option value="INR">INR — Indian Rupee</option>
-            <option value="PKR">PKR — Pakistani Rupee</option>
-            <option value="EGP">EGP — Egyptian Pound</option>
-            <option value="SGD">SGD — Singapore Dollar</option>
-            <option value="HKD">HKD — Hong Kong Dollar</option>
-            <option value="CNY">CNY — Chinese Yuan</option>
+            <option value="CHF">CHF — Swiss Franc</option>
             <option value="JPY">JPY — Japanese Yen</option>
+            <option value="CNY">CNY — Chinese Yuan</option>
+            <option value="HKD">HKD — Hong Kong Dollar</option>
+            <option value="SGD">SGD — Singapore Dollar</option>
             <option value="AUD">AUD — Australian Dollar</option>
             <option value="CAD">CAD — Canadian Dollar</option>
-            <option value="CHF">CHF — Swiss Franc</option>
+            <option value="NZD">NZD — New Zealand Dollar</option>
+          </optgroup>
+          <optgroup label="Other">
+            <option value="EGP">EGP — Egyptian Pound</option>
+            <option value="TRY">TRY — Turkish Lira</option>
+            <option value="ZAR">ZAR — South African Rand</option>
+            <option value="BRL">BRL — Brazilian Real</option>
+            <option value="MXN">MXN — Mexican Peso</option>
+            <option value="KRW">KRW — South Korean Won</option>
+            <option value="THB">THB — Thai Baht</option>
+            <option value="MYR">MYR — Malaysian Ringgit</option>
+            <option value="IDR">IDR — Indonesian Rupiah</option>
+            <option value="PHP">PHP — Philippine Peso</option>
+            <option value="VND">VND — Vietnamese Dong</option>
+            <option value="RUB">RUB — Russian Ruble</option>
+            <option value="SEK">SEK — Swedish Krona</option>
+            <option value="NOK">NOK — Norwegian Krone</option>
+            <option value="DKK">DKK — Danish Krone</option>
+            <option value="PLN">PLN — Polish Zloty</option>
           </optgroup>
         </select>
       </div>
@@ -5632,7 +5673,7 @@
   </div>
 
   <!-- PWA install prompt (once only; never again if dismissed) -->
-  <div id="pwaInstallBanner" class="hidden fixed bottom-5 left-4 right-4 sm:left-auto sm:right-5 sm:w-[360px] z-[70] rounded-2xl bg-white border border-zinc-200 shadow-card p-4">
+  <div id="pwaInstallBanner" class="hidden fixed left-3 right-3 sm:left-auto sm:right-5 sm:w-[360px] z-[70] rounded-2xl bg-white border border-zinc-200 shadow-card p-4" style="bottom: calc(5.75rem + env(safe-area-inset-bottom, 12px));">
     <div class="flex gap-3 items-start">
       <img src="assets/icon-192.png" alt="" class="w-11 h-11 rounded-xl shrink-0 ring-1 ring-zinc-100" width="44" height="44" />
       <div class="flex-1 min-w-0">
