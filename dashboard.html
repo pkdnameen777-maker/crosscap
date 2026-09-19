@@ -215,6 +215,108 @@
     }
     .more-tile .icon-wrap svg { width: 1.25rem; height: 1.25rem; }
     .more-tile:active { opacity: 0.85; }
+
+    /* Action buttons (Edit / Delete / Mark paid) — all breakpoints */
+    .btn-act {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.35rem 0.7rem;
+      border-radius: 0.55rem;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.2;
+      border: 1px solid transparent;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .btn-act-edit {
+      background: #f5f3ff;
+      color: #6d28d9;
+      border-color: #ddd6fe;
+    }
+    .btn-act-edit:hover { background: #ede9fe; }
+    .btn-act-del {
+      background: #fff1f2;
+      color: #e11d48;
+      border-color: #fecdd3;
+    }
+    .btn-act-del:hover { background: #ffe4e6; }
+    .btn-act-ok {
+      background: #ecfdf5;
+      color: #047857;
+      border-color: #a7f3d0;
+    }
+    .btn-act-ok:hover { background: #d1fae5; }
+    .btn-act-muted {
+      background: #f4f4f5;
+      color: #52525b;
+      border-color: #e4e4e7;
+    }
+    .btn-act-row { display: inline-flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
+
+    /* Mobile bottom tab: thicker filled icon when active */
+    .mob-tab.active svg {
+      stroke-width: 2.35;
+    }
+    .mob-tab svg { stroke-width: 1.7; }
+    .sidebar-link.active svg {
+      stroke-width: 2.2;
+    }
+
+    /* Quick access: mobile only */
+    @media (min-width: 1024px) {
+      #homeQuickAccess { display: none !important; }
+    }
+
+    /* Portfolio table → card stack on small screens */
+    @media (max-width: 767px) {
+      #portfolioTableWrap thead { display: none; }
+      #portfolioTableWrap table,
+      #portfolioTableWrap tbody,
+      #portfolioTableWrap tr,
+      #portfolioTableWrap td {
+        display: block;
+        width: 100%;
+      }
+      #portfolioTableWrap tr {
+        border: 1px solid #f4f4f5;
+        border-radius: 1rem;
+        margin-bottom: 0.75rem;
+        padding: 0.85rem 1rem;
+        background: #fff;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+      }
+      #portfolioTableWrap td {
+        padding: 0.2rem 0 !important;
+        text-align: left !important;
+        border: none !important;
+      }
+      #portfolioTableWrap td:first-child {
+        font-size: 15px;
+        font-weight: 600;
+        color: #18181b;
+        margin-bottom: 0.15rem;
+      }
+      #portfolioTableWrap td:nth-child(2) {
+        font-size: 12px;
+        color: #71717a;
+        margin-bottom: 0.45rem;
+      }
+      #portfolioTableWrap td:nth-child(3)::before { content: "Qty · "; color: #a1a1aa; font-size: 11px; }
+      #portfolioTableWrap td:nth-child(4) { margin-top: 0.35rem; }
+      #portfolioTableWrap td:nth-child(5) { margin-top: 0.35rem; margin-bottom: 0.45rem; }
+      #portfolioTableWrap td:last-child {
+        margin-top: 0.5rem;
+        padding-top: 0.55rem !important;
+        border-top: 1px solid #f4f4f5 !important;
+      }
+      /* Property cards tighter on mobile */
+      #propertiesList > div {
+        padding: 1rem !important;
+      }
+    }
   </style>
 </head>
 <body class="bg-zinc-50/80 text-zinc-900 min-h-screen">
@@ -366,7 +468,7 @@
           </div>
 
           <!-- Mobile + desktop quick access (same icons as sidebar) -->
-          <section class="rounded-2xl border border-zinc-100 bg-white p-4 shadow-soft mb-6" id="homeQuickAccess">
+          <section id="homeQuickAccess" class="lg:hidden rounded-2xl border border-zinc-100 bg-white p-4 shadow-soft mb-6 lg:hidden">
             <h3 class="text-[13px] font-semibold text-zinc-800 mb-3">Quick access</h3>
             <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
               <button type="button" class="more-tile" data-view="portfolio" data-asset-filter="stocks">
@@ -580,8 +682,8 @@
             <p id="portfolioFocusText" class="text-[13px] text-brand-900 font-medium"></p>
           </div>
 
-          <div class="cc-panel overflow-hidden">
-            <table class="w-full text-left text-[13.5px]">
+          <div class="overflow-x-auto" id="portfolioTableWrap">
+              <table class="w-full text-left text-[13.5px]">
               <thead>
                 <tr class="text-[11px] text-zinc-400 uppercase tracking-wider border-b border-zinc-100">
                   <th class="px-5 py-3.5 font-medium">Asset</th>
@@ -2977,8 +3079,8 @@
                   <div class="text-[11px] tabular-nums ${pnlCls}">${pnlSign}${pnlAed.toLocaleString(undefined, { maximumFractionDigits: 0 })} ${baseCurrency} P/L</div>
                 </td>
                 <td class="px-5 py-4 text-right whitespace-nowrap">
-                  <button onclick="editHolding('${item.id}', '${String(item.symbol).replace(/'/g, "\\'")}', '${item.market || ''}', ${shares}, ${avg}, '${cur}')" class="text-[11px] font-semibold text-brand-700 hover:underline mr-2">Edit</button>
-                  <button onclick="deleteHolding('${item.id}')" class="text-[11px] font-semibold text-rose-500 hover:underline">Delete</button>
+                  <button onclick="editHolding('${item.id}', '${String(item.symbol).replace(/'/g, "\\'")}', '${item.market || ''}', ${shares}, ${avg}, '${cur}')" class="btn-act btn-act-edit">Edit</button>
+                  <button type="button" onclick="deleteHolding('${item.id}')" class="btn-act btn-act-del">Delete</button>
                 </td>
               </tr>
             `;
@@ -3180,8 +3282,8 @@
                       <span class="tabular-nums font-semibold text-zinc-800 sm:text-right">${formatMoney(Number(i.amount) * aedToBase, { maximumFractionDigits: 2 })}</span>
                       <span class="justify-self-start sm:justify-self-center text-[11px] font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap ${badge}">${label}</span>
                       <div class="flex items-center gap-2 sm:justify-end">
-                        ${st !== 'paid' ? `<button onclick="markInstallment('${i.id}','paid')" class="text-[11px] font-semibold text-emerald-700 hover:underline whitespace-nowrap">Mark paid</button>` : `<button onclick="markInstallment('${i.id}','scheduled')" class="text-[11px] text-zinc-500 hover:underline">Undo</button>`}
-                        <button onclick="deleteInstallment('${i.id}')" class="text-[11px] text-rose-500 hover:underline">Delete</button>
+                        ${st !== 'paid' ? `<button type="button" onclick="markInstallment('${i.id}','paid')" class="btn-act btn-act-ok">Mark paid</button>` : `<button type="button" onclick="markInstallment('${i.id}','scheduled')" class="btn-act btn-act-muted">Undo</button>`}
+                        <button type="button" onclick="deleteInstallment('${i.id}')" class="btn-act btn-act-del">Delete</button>
                       </div>
                     </div>`;
                 }
@@ -3218,7 +3320,7 @@
                   </div>
                   <div class="flex items-center gap-2 shrink-0">
                     <span class="text-[11px] ${badgeCls} px-2.5 py-1 rounded-full font-semibold">${isOffplan ? 'Off-Plan' : 'Ready'}</span>
-                    <button onclick="deleteProperty('${p.id}')" class="text-[11px] text-rose-500 hover:underline">Delete</button>
+                    <button type="button" onclick="deleteProperty('${p.id}')" class="btn-act btn-act-del">Delete</button>
                   </div>
                 </div>
                 <p class="text-[17px] font-semibold text-zinc-900 mt-3 tabular-nums">${formatMoney(parseFloat(p.total_price || 0) * aedToBase, { maximumFractionDigits: 0, minimumFractionDigits: 0 })}</p>
@@ -3226,13 +3328,13 @@
                 <div class="mt-3 border-t border-zinc-100 pt-3">
                   <div class="flex items-center justify-between mb-2">
                     <p class="text-[12px] font-semibold text-zinc-500">Rental income</p>
-                    <button onclick="logRentReceived('${p.id}', ${Number(p.monthly_rent)}, ${Number(p.rent_due_day)||1})" class="text-[11px] font-semibold text-brand-700 hover:underline">+ Mark rent received</button>
+                    <button onclick="logRentReceived('${p.id}', ${Number(p.monthly_rent)}, ${Number(p.rent_due_day)||1})" class="btn-act btn-act-edit">+ Rent received</button>
                   </div>
                   <p class="text-[13px] text-zinc-700">${formatMoney(Number(p.monthly_rent) * aedToBase, { maximumFractionDigits: 0, minimumFractionDigits: 0 })} / month · due day ${p.rent_due_day || 1}</p>
                   <div id="rentHist-${p.id}" class="mt-2 space-y-1 text-[12px] text-zinc-500">Loading rent log…</div>
                 </div>` : (!isOffplan ? `<div class="mt-3 border-t border-zinc-100 pt-3">
                   <p class="text-[12px] text-zinc-500 mb-1">Rental income not set</p>
-                  <button type="button" onclick="setPropertyRent('${p.id}')" class="text-[11px] font-semibold text-brand-700 hover:underline">+ Set monthly rent</button>
+                  <button type="button" onclick="setPropertyRent('${p.id}')" class="btn-act btn-act-edit">+ Set rent</button>
                 </div>` : '')}
                 ${instHtml}
               </div>
@@ -3712,8 +3814,8 @@
               <span class="tabular-nums font-semibold text-zinc-800">AED ${Number(c.amount).toLocaleString()}</span>
               ${st === 'paid'
                 ? `<span class="text-[11px] font-semibold text-emerald-700">Paid</span>`
-                : `<button onclick="markContribution('${c.id}','paid')" class="text-[11px] text-brand-700 font-semibold hover:underline">Mark paid</button>`}
-              ${!isClaimed ? `<button onclick="deleteContribution('${c.id}')" class="text-[11px] text-rose-500 hover:underline">Delete</button>` : ''}
+                : `<button onclick="markContribution('${c.id}','paid')" class="btn-act btn-act-ok">Mark paid</button>`}
+              ${!isClaimed ? `<button onclick="deleteContribution('${c.id}')" class="btn-act btn-act-del">Delete</button>` : ''}
             </div>`;
           });
 
@@ -3749,7 +3851,7 @@
             progressBarClass = 'bg-brand-600';
             footerHtml = `
               <div class="mt-3">
-                <button onclick="addContribution('${g.id}')" class="text-[12px] font-semibold text-brand-700 hover:underline">+ Add contribution</button>
+                <button onclick="addContribution('${g.id}')" class="btn-act btn-act-edit">+ Add contribution</button>
               </div>`;
           }
 
@@ -3768,7 +3870,7 @@
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
                   ${badgeHtml}
-                  <button onclick="deleteGoal('${g.id}')" class="text-[11px] text-rose-500/80 hover:text-rose-600 hover:underline">Delete</button>
+                  <button onclick="deleteGoal('${g.id}')" class="btn-act btn-act-del">Delete</button>
                 </div>
               </div>
               <div class="relative flex justify-between text-[13px] mb-1.5">
@@ -4479,7 +4581,7 @@
             <span class="tabular-nums font-semibold text-zinc-800 sm:text-right">AED ${amt}</span>
             <span class="text-[12px] text-zinc-500 sm:text-center tabular-nums">${date}</span>
             <div class="sm:text-right">
-              <button onclick="deleteDividend('${d.id}')" class="text-[11px] text-rose-500 hover:underline">Delete</button>
+              <button onclick="deleteDividend('${d.id}')" class="btn-act btn-act-del">Delete</button>
             </div>
           </div>`;
         }).join('');
@@ -4931,7 +5033,7 @@
               <p class="tabular-nums font-semibold text-zinc-900 text-[14px]">${cur} ${val.toLocaleString(undefined,{maximumFractionDigits:0})}</p>
               <p class="text-[11px] text-zinc-400 tabular-nums">≈ AED ${Math.round(r._aed).toLocaleString()}</p>
             </div>
-            <button type="button" onclick="deleteAltAsset('${r.id}')" class="opacity-70 sm:opacity-0 sm:group-hover:opacity-100 text-[11px] font-semibold text-rose-500 px-1">Delete</button>
+            <button type="button" onclick="deleteAltAsset('${r.id}')" class="btn-act btn-act-del">Delete</button>
           </div>`;
         }).join('');
       }
@@ -5084,7 +5186,7 @@
                 <p class="tabular-nums font-semibold text-zinc-900 text-[14px]">${cur} ${bal.toLocaleString(undefined,{maximumFractionDigits:2})}</p>
                 <p class="text-[11px] text-zinc-400 tabular-nums">≈ AED ${aed.toLocaleString(undefined,{maximumFractionDigits:0})}</p>
               </div>
-              <button onclick="deleteCashAccount('${r.id}')" class="opacity-60 sm:opacity-0 sm:group-hover:opacity-100 text-[11px] font-semibold text-rose-500 hover:text-rose-600 px-1 transition">Delete</button>
+              <button onclick="deleteCashAccount('${r.id}')" class="btn-act btn-act-del">Delete</button>
             </div>`;
           }).join('');
         };
