@@ -1973,10 +1973,20 @@
         document.getElementById('profileNomineeRelation').value = data?.nominee_relation || '';
         document.getElementById('profileNomineePhone').value = data?.nominee_phone || '';
         document.getElementById('profileLanguage').value = data?.language || 'en';
-        // Base currency: never skip picker for a new account on this device
+        // Server profile base_currency = already chosen for this user (never re-ask)
         const serverBc = data?.base_currency ? String(data.base_currency).toUpperCase() : null;
-        const needCurrencyPick = !isCurrencyOnboardingDone();
-        const bc = (serverBc || localStorage.getItem('cc_base_currency') || 'AED').toUpperCase();
+        if (serverBc) {
+          markCurrencyOnboardingDone();
+          try {
+            localStorage.setItem('cc_base_currency_' + (currentUser?.id || ''), serverBc);
+            localStorage.setItem('cc_base_currency', serverBc);
+          } catch (_) {}
+        }
+        const needCurrencyPick = !serverBc && !isCurrencyOnboardingDone();
+        const bc = (serverBc
+          || (currentUser && localStorage.getItem('cc_base_currency_' + currentUser.id))
+          || localStorage.getItem('cc_base_currency')
+          || 'AED').toUpperCase();
         const bcEl = document.getElementById('profileBaseCurrency');
         if (bcEl) {
           if (![...bcEl.options].some(o => o.value === bc)) {
@@ -2741,43 +2751,79 @@
         const modal = document.getElementById('currencyOnboarding');
         if (modal) {
           modal.classList.add('hidden');
-          modal.style.display = '';
+          modal.style.cssText = '';
+          modal.style.display = 'none';
         }
         document.body.style.overflow = '';
       }
 
       async function completeCurrencyOnboarding() {
-        const sel = document.getElementById('onboardingBaseCurrency');
-        const code = (sel?.value || 'AED').toUpperCase();
-        setBaseCurrency(code, { markChosen: true });
-        markCurrencyOnboardingDone();
-        hideCurrencyOnboarding();
-        fxCache = null;
-        fxCacheBase = null;
-        // Persist to profile if logged in
-        if (currentUser) {
+        try {
+          const btn = document.getElementById('onboardingCurrencySave');
+          if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Saving…';
+          }
+          const sel = document.getElementById('onboardingBaseCurrency');
+          const code = (sel?.value || 'AED').toUpperCase();
+
+          // 1) Local + per-user flag immediately so we never re-ask this session
+          setBaseCurrency(code, { markChosen: true });
+          markCurrencyOnboardingDone();
           try {
-            let { error } = await supabaseClient.from('profiles').upsert({
-              id: currentUser.id,
-              base_currency: code,
-              updated_at: new Date().toISOString()
-            }, { onConflict: 'id' });
-            if (error && /base_currency/i.test(error.message || '')) {
-              console.warn('base_currency column missing — local only');
+            localStorage.setItem('cc_base_currency_' + (currentUser?.id || 'anon'), code);
+            localStorage.setItem('cc_base_currency', code);
+          } catch (_) {}
+
+          fxCache = null;
+          fxCacheBase = null;
+
+          // 2) Persist on profile (source of truth for this email/user)
+          if (currentUser && supabaseClient) {
+            try {
+              const row = {
+                id: currentUser.id,
+                base_currency: code,
+                updated_at: new Date().toISOString()
+              };
+              let { error } = await supabaseClient.from('profiles').upsert(row, { onConflict: 'id' });
+              if (error) {
+                // retry without extra columns
+                console.warn('currency upsert', error.message);
+                ({ error } = await supabaseClient.from('profiles').update({ base_currency: code }).eq('id', currentUser.id));
+                if (error) console.warn('currency update', error.message);
+              }
+            } catch (e) {
+              console.warn('save base currency', e);
             }
-          } catch (e) {
-            console.warn('save base currency', e);
+          }
+
+          // 3) Close modal always
+          hideCurrencyOnboarding();
+
+          // 4) Refresh dashboard numbers
+          try {
+            if (typeof loadPortfolio === 'function') await loadPortfolio();
+            if (typeof loadProperties === 'function') await loadProperties();
+            if (typeof loadCashAccounts === 'function') await loadCashAccounts();
+            if (typeof loadAltAssets === 'function') await loadAltAssets();
+            if (typeof loadGoals === 'function') loadGoals();
+          } catch (_) {}
+
+          setTimeout(() => { try { maybeShowPwaInstall(); } catch(_){} }, 600);
+        } catch (e) {
+          console.error('completeCurrencyOnboarding', e);
+          alert('Could not save currency. Please try again.');
+          hideCurrencyOnboarding();
+        } finally {
+          const btn = document.getElementById('onboardingCurrencySave');
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Continue';
           }
         }
-        try {
-          if (typeof loadPortfolio === 'function') loadPortfolio();
-          if (typeof loadProperties === 'function') loadProperties();
-          if (typeof loadCashAccounts === 'function') loadCashAccounts();
-          if (typeof loadAltAssets === 'function') loadAltAssets();
-        } catch (_) {}
-        // After currency set, maybe show install (once)
-        setTimeout(() => maybeShowPwaInstall(), 600);
       }
+      window.completeCurrencyOnboarding = completeCurrencyOnboarding;
 
       let deferredPwaPrompt = null;
 
@@ -2862,7 +2908,8 @@
         };
         document.getElementById('pwaInstallDismiss')?.addEventListener('click', dismiss);
         document.getElementById('pwaInstallClose')?.addEventListener('click', dismiss);
-        document.getElementById('onboardingCurrencySave')?.addEventListener('click', () => completeCurrencyOnboarding());
+        document.getElementById('onboardingCurrencySave')?.addEventListener('click', (e) => { e.preventDefault(); completeCurrencyOnboarding(); });
+        window.completeCurrencyOnboarding = completeCurrencyOnboarding;
       }
       // setupPwaInstallHandlers() deferred until modals exist in DOM
 
@@ -5701,7 +5748,7 @@
         </select>
       </div>
       <div class="px-6 pb-6 flex gap-2">
-        <button type="button" id="onboardingCurrencySave" class="flex-1 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[14px] font-semibold py-3 transition">Continue</button>
+        <button type="button" id="onboardingCurrencySave" onclick="window.completeCurrencyOnboarding && window.completeCurrencyOnboarding()" class="flex-1 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[14px] font-semibold py-3 transition">Continue</button>
       </div>
     </div>
   </div>
