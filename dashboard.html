@@ -1875,6 +1875,15 @@
           loadPortfolio();
           loadProperties();
           loadProfile();
+
+          // Ensure currency picker shows for first-time users
+          setTimeout(() => {
+            try {
+              if (typeof isCurrencyOnboardingDone === 'function' && !isCurrencyOnboardingDone() && typeof showCurrencyOnboarding === 'function') {
+                showCurrencyOnboarding();
+              }
+            } catch (e) { console.warn('currency onboarding', e); }
+          }, 800);
           loadGoals();
           loadCashAccounts();
           loadAltAssets();
@@ -1964,8 +1973,8 @@
         document.getElementById('profileNomineeRelation').value = data?.nominee_relation || '';
         document.getElementById('profileNomineePhone').value = data?.nominee_phone || '';
         document.getElementById('profileLanguage').value = data?.language || 'en';
-        const hasServerCurrency = !!(data && data.base_currency);
-        if (hasServerCurrency) markCurrencyOnboardingDone();
+        // Only skip onboarding if user already confirmed once (local flag).
+        // Do NOT treat a default/server base_currency as "already chosen".
         const bc = (data?.base_currency || localStorage.getItem('cc_base_currency') || 'AED').toUpperCase();
         const bcEl = document.getElementById('profileBaseCurrency');
         if (bcEl) {
@@ -2699,17 +2708,28 @@
 
       function showCurrencyOnboarding() {
         const modal = document.getElementById('currencyOnboarding');
-        if (!modal) return;
+        if (!modal) {
+          console.warn('currencyOnboarding modal missing');
+          return;
+        }
         const sel = document.getElementById('onboardingBaseCurrency');
         if (sel) {
           const cur = (baseCurrency || 'AED').toUpperCase();
           if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
         }
         modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+        modal.style.zIndex = '100';
+        document.body.style.overflow = 'hidden';
       }
 
       function hideCurrencyOnboarding() {
-        document.getElementById('currencyOnboarding')?.classList.add('hidden');
+        const modal = document.getElementById('currencyOnboarding');
+        if (modal) {
+          modal.classList.add('hidden');
+          modal.style.display = '';
+        }
+        document.body.style.overflow = '';
       }
 
       async function completeCurrencyOnboarding() {
@@ -5608,7 +5628,7 @@
   </script>
 
   <!-- First-time base currency onboarding (once only) -->
-  <div id="currencyOnboarding" class="hidden fixed inset-0 z-[80] flex items-center justify-center p-4 bg-zinc-900/50 backdrop-blur-sm">
+  <div id="currencyOnboarding" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-900/50 backdrop-blur-sm">
     <div class="w-full max-w-md rounded-2xl bg-white shadow-card border border-zinc-100 overflow-hidden">
       <div class="px-6 pt-6 pb-2">
         <p class="text-[11px] font-bold uppercase tracking-wider text-brand-600 mb-1">Welcome to CrossCap</p>
