@@ -270,52 +270,106 @@
       #homeQuickAccess { display: none !important; }
     }
 
-    /* Portfolio table → card stack on small screens */
+    /* Portfolio table → ordered cards on phone only (desktop table unchanged) */
     @media (max-width: 767px) {
       #portfolioTableWrap thead { display: none; }
-      #portfolioTableWrap table,
-      #portfolioTableWrap tbody,
-      #portfolioTableWrap tr,
-      #portfolioTableWrap td {
-        display: block;
-        width: 100%;
-      }
+      #portfolioTableWrap table { border-collapse: separate; border-spacing: 0; width: 100%; }
+      #portfolioTableWrap tbody { display: flex; flex-direction: column; gap: 0.65rem; }
       #portfolioTableWrap tr {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+          "sym sym"
+          "mkt mkt"
+          "qty price"
+          "val val"
+          "act act";
+        gap: 0.2rem 0.75rem;
         border: 1px solid #f4f4f5;
         border-radius: 1rem;
-        margin-bottom: 0.75rem;
-        padding: 0.85rem 1rem;
+        padding: 0.9rem 1rem;
         background: #fff;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        width: 100%;
       }
       #portfolioTableWrap td {
-        padding: 0.2rem 0 !important;
+        display: block;
+        padding: 0 !important;
         text-align: left !important;
         border: none !important;
+        width: auto !important;
       }
-      #portfolioTableWrap td:first-child {
-        font-size: 15px;
+      #portfolioTableWrap td:nth-child(1) { grid-area: sym; font-size: 15px; font-weight: 700; color: #18181b; letter-spacing: -0.01em; }
+      #portfolioTableWrap td:nth-child(2) { grid-area: mkt; font-size: 12px; color: #71717a; margin-bottom: 0.35rem; }
+      #portfolioTableWrap td:nth-child(3) {
+        grid-area: qty;
+        font-size: 13px;
+        color: #3f3f46;
+        background: #fafafa;
+        border-radius: 0.5rem !important;
+        padding: 0.4rem 0.55rem !important;
+      }
+      #portfolioTableWrap td:nth-child(3)::before {
+        content: "Qty";
+        display: block;
+        font-size: 10px;
         font-weight: 600;
-        color: #18181b;
-        margin-bottom: 0.15rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #a1a1aa;
+        margin-bottom: 0.1rem;
       }
-      #portfolioTableWrap td:nth-child(2) {
-        font-size: 12px;
-        color: #71717a;
-        margin-bottom: 0.45rem;
+      #portfolioTableWrap td:nth-child(4) {
+        grid-area: price;
+        font-size: 13px;
+        background: #fafafa;
+        border-radius: 0.5rem !important;
+        padding: 0.4rem 0.55rem !important;
       }
-      #portfolioTableWrap td:nth-child(3)::before { content: "Qty · "; color: #a1a1aa; font-size: 11px; }
-      #portfolioTableWrap td:nth-child(4) { margin-top: 0.35rem; }
-      #portfolioTableWrap td:nth-child(5) { margin-top: 0.35rem; margin-bottom: 0.45rem; }
-      #portfolioTableWrap td:last-child {
-        margin-top: 0.5rem;
-        padding-top: 0.55rem !important;
+      #portfolioTableWrap td:nth-child(4)::before {
+        content: "Cost / live";
+        display: block;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #a1a1aa;
+        margin-bottom: 0.1rem;
+      }
+      #portfolioTableWrap td:nth-child(5) {
+        grid-area: val;
+        margin-top: 0.25rem;
+        padding: 0.45rem 0 !important;
         border-top: 1px solid #f4f4f5 !important;
       }
-      /* Property cards tighter on mobile */
-      #propertiesList > div {
-        padding: 1rem !important;
+      #portfolioTableWrap td:nth-child(5) .font-semibold { font-size: 16px; }
+      #portfolioTableWrap td:nth-child(6) {
+        grid-area: act;
+        border-top: 1px solid #f4f4f5 !important;
+        padding-top: 0.55rem !important;
+        margin-top: 0.15rem;
       }
+      #portfolioTableWrap td:nth-child(6) .btn-act-row { justify-content: flex-start !important; width: 100%; }
+      #propertiesList > div { padding: 1rem !important; }
+    }
+
+    /* Bottom nav: only one bold active; extra lift above iOS home bar */
+    .mob-tab { font-weight: 500; color: #a1a1aa; }
+    .mob-tab.active {
+      color: #5b21b6 !important;
+      font-weight: 700 !important;
+    }
+    .mob-tab.active svg {
+      stroke-width: 2.5 !important;
+    }
+    @media (max-width: 1023px) {
+      main { padding-bottom: 7.25rem !important; }
+      #mobileBottomNav .nav-inner {
+        padding-bottom: calc(0.65rem + env(safe-area-inset-bottom, 12px)) !important;
+        padding-top: 0.45rem !important;
+      }
+      #aiChatFab { bottom: 6.5rem !important; }
+      #aiChatPanel { bottom: 6.5rem !important; }
     }
   </style>
 </head>
@@ -1969,10 +2023,25 @@
         };
         const tab = map[name] || 'more';
         document.querySelectorAll('#mobileBottomNav .mob-tab').forEach(el => {
-          const t = el.getAttribute('data-mob-tab');
-          if (t === tab) el.classList.add('active');
-          else el.classList.remove('active');
+          el.classList.remove('active');
         });
+        document.querySelectorAll('#mobileBottomNav .mob-tab').forEach(el => {
+          if (el.getAttribute('data-mob-tab') === tab) el.classList.add('active');
+        });
+        // Desktop sidebar: only matching item bold
+        document.querySelectorAll('.sidebar-link').forEach(el => {
+          el.classList.remove('active');
+          el.classList.add('text-zinc-500');
+        });
+        if (name === 'portfolio') {
+          /* filter-specific highlighting handled by setSidebarActive on click */
+        } else {
+          const btn = document.querySelector(`.sidebar-link[data-view="${name}"]:not([data-asset-filter])`);
+          if (btn) {
+            btn.classList.add('active');
+            btn.classList.remove('text-zinc-500');
+          }
+        }
       }
 
       document.getElementById('moreSignOut')?.addEventListener('click', async () => {
