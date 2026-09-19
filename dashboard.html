@@ -270,12 +270,53 @@
       #homeQuickAccess { display: none !important; }
     }
 
-    /* Portfolio table → ordered cards on phone only (desktop table unchanged) */
+    
+    .pf-sym-plain { display: inline; }
+    .pf-sym-row { display: none; }
     @media (max-width: 767px) {
+      .pf-sym-plain { display: none !important; }
+      .pf-sym-row { display: flex !important; }
+    }
+
+    /* Portfolio mobile cards: Live top-right, P/L under cost, Edit|Delete symmetric */
+    .pf-sym-row { display: contents; }
+    .pf-live-badge { display: none; }
+    .pf-pnl-mobile { display: none; }
+    @media (min-width: 768px) {
+      .pf-pnl-mobile { display: none !important; }
+      .pf-live-desktop { display: block; }
+      .pf-pnl-desktop { display: block; }
+    }
+    @media (max-width: 767px) {
+      .pf-live-desktop { display: none !important; }
+      .pf-pnl-desktop { display: none !important; }
+      .pf-pnl-mobile { display: block !important; }
+      .pf-live-badge {
+        display: inline-flex !important;
+        align-items: center;
+        max-width: 48%;
+        font-size: 10px;
+        font-weight: 600;
+        padding: 0.2rem 0.45rem;
+        border-radius: 999px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .pf-live-badge.is-live { background: #ecfdf5; color: #047857; }
+      .pf-live-badge.is-off { background: #f4f4f5; color: #71717a; }
+      .pf-sym-row {
+        display: flex !important;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.5rem;
+        width: 100%;
+      }
+      .pf-sym-name { font-size: 15px; font-weight: 700; color: #18181b; letter-spacing: -0.02em; }
       #portfolioTableWrap thead { display: none; }
-      #portfolioTableWrap table { border-collapse: separate; border-spacing: 0; width: 100%; }
+      #portfolioTableWrap table { width: 100%; border-collapse: separate; border-spacing: 0; }
       #portfolioTableWrap tbody { display: flex; flex-direction: column; gap: 0.65rem; }
-      #portfolioTableWrap tr {
+      #portfolioTableWrap tr.pf-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
         grid-template-areas:
@@ -284,32 +325,25 @@
           "qty price"
           "val val"
           "act act";
-        gap: 0.2rem 0.75rem;
-        border: 1px solid #f4f4f5;
+        gap: 0.25rem 0.6rem;
+        border: 1px solid #f0f0f0;
         border-radius: 1rem;
-        padding: 0.9rem 1rem;
+        padding: 0.85rem 0.95rem;
         background: #fff;
         box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-        width: 100%;
       }
-      #portfolioTableWrap td {
-        display: block;
-        padding: 0 !important;
-        text-align: left !important;
-        border: none !important;
-        width: auto !important;
-      }
-      #portfolioTableWrap td:nth-child(1) { grid-area: sym; font-size: 15px; font-weight: 700; color: #18181b; letter-spacing: -0.01em; }
-      #portfolioTableWrap td:nth-child(2) { grid-area: mkt; font-size: 12px; color: #71717a; margin-bottom: 0.35rem; }
-      #portfolioTableWrap td:nth-child(3) {
+      #portfolioTableWrap td { border: none !important; padding: 0 !important; text-align: left !important; width: auto !important; }
+      #portfolioTableWrap td.pf-sym { grid-area: sym; }
+      #portfolioTableWrap td.pf-mkt { grid-area: mkt; font-size: 12px; color: #71717a; margin-bottom: 0.2rem; }
+      #portfolioTableWrap td.pf-qty {
         grid-area: qty;
-        font-size: 13px;
-        color: #3f3f46;
         background: #fafafa;
-        border-radius: 0.5rem !important;
-        padding: 0.4rem 0.55rem !important;
+        border-radius: 0.55rem !important;
+        padding: 0.45rem 0.55rem !important;
+        font-size: 13px;
+        font-weight: 600;
       }
-      #portfolioTableWrap td:nth-child(3)::before {
+      #portfolioTableWrap td.pf-qty::before {
         content: "Qty";
         display: block;
         font-size: 10px;
@@ -319,15 +353,15 @@
         color: #a1a1aa;
         margin-bottom: 0.1rem;
       }
-      #portfolioTableWrap td:nth-child(4) {
+      #portfolioTableWrap td.pf-price {
         grid-area: price;
-        font-size: 13px;
         background: #fafafa;
-        border-radius: 0.5rem !important;
-        padding: 0.4rem 0.55rem !important;
+        border-radius: 0.55rem !important;
+        padding: 0.45rem 0.55rem !important;
+        font-size: 13px;
       }
-      #portfolioTableWrap td:nth-child(4)::before {
-        content: "Cost / live";
+      #portfolioTableWrap td.pf-price::before {
+        content: "Cost";
         display: block;
         font-size: 10px;
         font-weight: 600;
@@ -336,24 +370,35 @@
         color: #a1a1aa;
         margin-bottom: 0.1rem;
       }
-      #portfolioTableWrap td:nth-child(5) {
+      #portfolioTableWrap td.pf-val {
         grid-area: val;
-        margin-top: 0.25rem;
-        padding: 0.45rem 0 !important;
-        border-top: 1px solid #f4f4f5 !important;
-      }
-      #portfolioTableWrap td:nth-child(5) .font-semibold { font-size: 16px; }
-      #portfolioTableWrap td:nth-child(6) {
-        grid-area: act;
-        border-top: 1px solid #f4f4f5 !important;
-        padding-top: 0.55rem !important;
         margin-top: 0.15rem;
+        padding-top: 0.45rem !important;
+        border-top: 1px solid #f4f4f5 !important;
+        font-size: 16px;
       }
-      #portfolioTableWrap td:nth-child(6) .btn-act-row { justify-content: flex-start !important; width: 100%; }
+      #portfolioTableWrap td.pf-act {
+        grid-area: act;
+        padding-top: 0.55rem !important;
+        border-top: 1px solid #f4f4f5 !important;
+      }
+      #portfolioTableWrap .pf-actions {
+        display: flex !important;
+        justify-content: space-between !important;
+        width: 100%;
+        gap: 0.5rem;
+      }
+      #portfolioTableWrap .pf-actions .btn-act {
+        flex: 1;
+        text-align: center;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.65rem;
+        font-size: 12px;
+      }
       #propertiesList > div { padding: 1rem !important; }
     }
 
-    /* Bottom nav: only one bold active; extra lift above iOS home bar */
+/* Bottom nav: only one bold active; extra lift above iOS home bar */
     .mob-tab { font-weight: 500; color: #a1a1aa; }
     .mob-tab.active {
       color: #5b21b6 !important;
@@ -370,6 +415,56 @@
       }
       #aiChatFab { bottom: 6.5rem !important; }
       #aiChatPanel { bottom: 6.5rem !important; }
+    }
+
+    /* === Mobile nav lock (final overrides) === */
+    @media (max-width: 1023px) {
+      #mobileBottomNav {
+        display: flex !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 100 !important;
+        background: rgba(255,255,255,0.97) !important;
+        backdrop-filter: blur(12px);
+        border-top: 1px solid #f4f4f5;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      #mobileBottomNav .nav-inner {
+        padding: 0.4rem 0.4rem calc(0.75rem + env(safe-area-inset-bottom, 14px)) !important;
+      }
+      #mobileBottomNav .mob-tab {
+        color: #a1a1aa !important;
+        font-weight: 500 !important;
+      }
+      #mobileBottomNav .mob-tab svg {
+        stroke: currentColor !important;
+        stroke-width: 1.65 !important;
+        color: #a1a1aa !important;
+      }
+      #mobileBottomNav .mob-tab.active {
+        color: #5b21b6 !important;
+        font-weight: 700 !important;
+      }
+      #mobileBottomNav .mob-tab.active svg {
+        stroke: #5b21b6 !important;
+        stroke-width: 2.55 !important;
+        color: #5b21b6 !important;
+      }
+      main { padding-bottom: 7.5rem !important; }
+      #aiChatFab {
+        bottom: calc(5.5rem + env(safe-area-inset-bottom, 14px)) !important;
+        right: 1rem !important;
+        z-index: 90 !important;
+        width: 3rem !important;
+        height: 3rem !important;
+      }
+      #aiChatPanel {
+        bottom: calc(5.5rem + env(safe-area-inset-bottom, 14px)) !important;
+        right: 0.75rem !important;
+        z-index: 95 !important;
+      }
     }
   </style>
 </head>
@@ -2007,6 +2102,15 @@
       };
       document.getElementById('menuBtn')?.addEventListener('click', openSidebar);
 
+      // Mobile bottom tabs: exclusive active state
+      document.querySelectorAll('#mobileBottomNav [data-view]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const v = btn.getAttribute('data-view');
+          if (typeof setMobileTabActive === 'function') setMobileTabActive(v === 'add-asset' ? 'add-asset' : v);
+        });
+      });
+
+
       function setMobileTabActive(name) {
         const map = {
           overview: 'overview',
@@ -3134,22 +3238,34 @@
             const pnlCls = pnlAed >= 0 ? 'text-emerald-600' : 'text-rose-600';
             const pnlSign = pnlAed >= 0 ? '+' : '';
 
+            const liveBadge = liveOk
+              ? ('Live ' + priceLocal.toFixed(2) + ' ' + liveCurrency + (liveUnit === 'g' ? '/g' : ''))
+              : 'No live';
             tbody.innerHTML += `
-              <tr class="hover:bg-zinc-50/50" data-asset-kind="${assetKind}">
-                <td class="px-5 py-4 font-medium text-zinc-900">${item.symbol}</td>
-                <td class="px-5 py-4 text-zinc-500">${item.market} <span class="text-zinc-400">· ${cur}</span></td>
-                <td class="px-5 py-4 text-right tabular-nums">${shares.toLocaleString()}</td>
-                <td class="px-5 py-4 text-right tabular-nums">
-                  <div>${avg.toFixed(2)} <span class="text-zinc-400 text-xs">${cur}</span></div>
-                  <div class="text-[11px] ${liveOk ? 'text-zinc-500' : 'text-zinc-400'}">${liveOk ? ('Live ' + priceLocal.toFixed(2) + ' ' + liveCurrency + (liveUnit === 'g' ? '/g' : '')) : 'No live price'}</div>
+              <tr class="pf-row hover:bg-zinc-50/50" data-asset-kind="${assetKind}">
+                <td class="pf-sym px-5 py-4 font-medium text-zinc-900">
+                  <div class="pf-sym-row">
+                    <span class="pf-sym-name">${item.symbol}</span>
+                    <span class="pf-live-badge ${liveOk ? 'is-live' : 'is-off'}">${liveBadge}</span>
+                  </div>
+                  <span class="pf-sym-plain md-only">${item.symbol}</span>
                 </td>
-                <td class="px-5 py-4 text-right">
+                <td class="pf-mkt px-5 py-4 text-zinc-500">${item.market} <span class="text-zinc-400">· ${cur}</span></td>
+                <td class="pf-qty px-5 py-4 text-right tabular-nums">${shares.toLocaleString()}</td>
+                <td class="pf-price px-5 py-4 text-right tabular-nums">
+                  <div class="pf-cost">${avg.toFixed(2)} <span class="text-zinc-400 text-xs">${cur}</span></div>
+                  <div class="pf-pnl-mobile text-[11px] tabular-nums ${pnlCls}">${pnlSign}${pnlAed.toLocaleString(undefined, { maximumFractionDigits: 0 })} ${baseCurrency} P/L</div>
+                  <div class="pf-live-desktop text-[11px] ${liveOk ? 'text-zinc-500' : 'text-zinc-400'}">${liveOk ? ('Live ' + priceLocal.toFixed(2) + ' ' + liveCurrency + (liveUnit === 'g' ? '/g' : '')) : 'No live price'}</div>
+                </td>
+                <td class="pf-val px-5 py-4 text-right">
                   <div class="font-semibold tabular-nums">${liveAed.toLocaleString(undefined, { minimumFractionDigits: 2 })} <span class="text-zinc-400 text-xs font-normal">${baseCurrency}</span></div>
-                  <div class="text-[11px] tabular-nums ${pnlCls}">${pnlSign}${pnlAed.toLocaleString(undefined, { maximumFractionDigits: 0 })} ${baseCurrency} P/L</div>
+                  <div class="pf-pnl-desktop text-[11px] tabular-nums ${pnlCls}">${pnlSign}${pnlAed.toLocaleString(undefined, { maximumFractionDigits: 0 })} ${baseCurrency} P/L</div>
                 </td>
-                <td class="px-5 py-4 text-right whitespace-nowrap">
-                  <button onclick="editHolding('${item.id}', '${String(item.symbol).replace(/'/g, "\\'")}', '${item.market || ''}', ${shares}, ${avg}, '${cur}')" class="btn-act btn-act-edit">Edit</button>
-                  <button type="button" onclick="deleteHolding('${item.id}')" class="btn-act btn-act-del">Delete</button>
+                <td class="pf-act px-5 py-4 text-right whitespace-nowrap">
+                  <div class="btn-act-row pf-actions">
+                    <button type="button" onclick="editHolding('${item.id}', '${String(item.symbol).replace(/'/g, "\\'")}', '${item.market || ''}', ${shares}, ${avg}, '${cur}')" class="btn-act btn-act-edit">Edit</button>
+                    <button type="button" onclick="deleteHolding('${item.id}')" class="btn-act btn-act-del">Delete</button>
+                  </div>
                 </td>
               </tr>
             `;
