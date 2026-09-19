@@ -1973,9 +1973,10 @@
         document.getElementById('profileNomineeRelation').value = data?.nominee_relation || '';
         document.getElementById('profileNomineePhone').value = data?.nominee_phone || '';
         document.getElementById('profileLanguage').value = data?.language || 'en';
-        // Only skip onboarding if user already confirmed once (local flag).
-        // Do NOT treat a default/server base_currency as "already chosen".
-        const bc = (data?.base_currency || localStorage.getItem('cc_base_currency') || 'AED').toUpperCase();
+        // Base currency: never skip picker for a new account on this device
+        const serverBc = data?.base_currency ? String(data.base_currency).toUpperCase() : null;
+        const needCurrencyPick = !isCurrencyOnboardingDone();
+        const bc = (serverBc || localStorage.getItem('cc_base_currency') || 'AED').toUpperCase();
         const bcEl = document.getElementById('profileBaseCurrency');
         if (bcEl) {
           if (![...bcEl.options].some(o => o.value === bc)) {
@@ -1985,21 +1986,24 @@
           }
           bcEl.value = bc;
         }
-        const prevBase = baseCurrency;
-        setBaseCurrency(bc);
-        if (prevBase !== bc) {
-          fxCache = null;
-          fxCacheBase = null;
-          try {
-            if (typeof loadPortfolio === 'function') loadPortfolio();
-            if (typeof loadProperties === 'function') loadProperties();
-            if (typeof loadCashAccounts === 'function') loadCashAccounts();
-            if (typeof loadAltAssets === 'function') loadAltAssets();
-          } catch (e) { console.warn('reload after profile base currency', e); }
+        // Apply provisional currency for display, but force picker if not confirmed
+        if (!needCurrencyPick) {
+          const prevBase = baseCurrency;
+          setBaseCurrency(bc);
+          if (prevBase !== bc) {
+            fxCache = null;
+            fxCacheBase = null;
+            try {
+              if (typeof loadPortfolio === 'function') loadPortfolio();
+              if (typeof loadProperties === 'function') loadProperties();
+              if (typeof loadCashAccounts === 'function') loadCashAccounts();
+              if (typeof loadAltAssets === 'function') loadAltAssets();
+            } catch (e) { console.warn('reload after profile base currency', e); }
+          }
         }
-        // First login only: pick base currency once
-        if (!isCurrencyOnboardingDone()) {
-          setTimeout(() => showCurrencyOnboarding(), 400);
+        if (needCurrencyPick) {
+          setTimeout(() => showCurrencyOnboarding(), 300);
+          setTimeout(() => showCurrencyOnboarding(), 1200); // retry if first paint missed
         } else {
           setTimeout(() => maybeShowPwaInstall(), 900);
         }
@@ -2667,7 +2671,7 @@
         baseCurrency = c;
         try {
           localStorage.setItem('cc_base_currency', c);
-          if (opts.markChosen) localStorage.setItem('cc_currency_onboarding_done', '1');
+          if (opts.markChosen) { try { localStorage.setItem(currencyOnboardingKey(), '1'); } catch(_){} }
         } catch (_) {}
         document.querySelectorAll('#overviewBaseCurrencyLabel, #exposureBaseCurrencyLabel, #perfBaseCurrencyLabel').forEach(el => {
           if (el) el.textContent = c;
@@ -2676,15 +2680,24 @@
         if (bcEl && [...bcEl.options].some(o => o.value === c)) bcEl.value = c;
       }
 
+      function currencyOnboardingKey() {
+        const id = currentUser?.id || 'anon';
+        return 'cc_currency_onboarding_done_' + id;
+      }
+
       function isCurrencyOnboardingDone() {
         try {
-          if (localStorage.getItem('cc_currency_onboarding_done') === '1') return true;
+          if (localStorage.getItem(currencyOnboardingKey()) === '1') return true;
+          // legacy global flag only if same browser already completed for this session user
         } catch (_) {}
         return false;
       }
 
       function markCurrencyOnboardingDone() {
-        try { localStorage.setItem('cc_currency_onboarding_done', '1'); } catch (_) {}
+        try {
+          localStorage.setItem(currencyOnboardingKey(), '1');
+          localStorage.removeItem('cc_currency_onboarding_done'); // clear legacy
+        } catch (_) {}
       }
 
       function isPwaInstallDismissed() {
@@ -2712,15 +2725,16 @@
           console.warn('currencyOnboarding modal missing');
           return;
         }
+        if (isCurrencyOnboardingDone()) return;
         const sel = document.getElementById('onboardingBaseCurrency');
         if (sel) {
           const cur = (baseCurrency || 'AED').toUpperCase();
           if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
         }
         modal.classList.remove('hidden');
-        modal.style.display = 'flex';
-        modal.style.zIndex = '100';
+        modal.style.cssText = 'display:flex !important;position:fixed;inset:0;z-index:200;align-items:center;justify-content:center;padding:1rem;background:rgba(24,24,27,0.55);backdrop-filter:blur(6px);';
         document.body.style.overflow = 'hidden';
+        console.log('[CrossCap] currency onboarding shown for', currentUser?.id || 'unknown');
       }
 
       function hideCurrencyOnboarding() {
@@ -5628,7 +5642,7 @@
   </script>
 
   <!-- First-time base currency onboarding (once only) -->
-  <div id="currencyOnboarding" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-900/50 backdrop-blur-sm">
+  <div id="currencyOnboarding" class="hidden fixed inset-0 z-[200] items-center justify-center p-4 bg-zinc-900/50 backdrop-blur-sm">
     <div class="w-full max-w-md rounded-2xl bg-white shadow-card border border-zinc-100 overflow-hidden">
       <div class="px-6 pt-6 pb-2">
         <p class="text-[11px] font-bold uppercase tracking-wider text-brand-600 mb-1">Welcome to CrossCap</p>
