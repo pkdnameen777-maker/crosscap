@@ -71,6 +71,66 @@
       "source": "/uae-wealth-tracker.html",
       "destination": "/uae-wealth-tracker",
       "permanent": true
+    },
+    {
+      "source": "/blog/how-to-calculate-net-worth-uae-expat.html",
+      "destination": "/blog/how-to-calculate-net-worth-uae-expat",
+      "permanent": true
+    },
+    {
+      "source": "/blog/track-investments-uae-india.html",
+      "destination": "/blog/track-investments-uae-india",
+      "permanent": true
+    },
+    {
+      "source": "/blog/track-dubai-offplan-payments.html",
+      "destination": "/blog/track-dubai-offplan-payments",
+      "permanent": true
+    },
+    {
+      "source": "/blog/what-to-include-in-net-worth.html",
+      "destination": "/blog/what-to-include-in-net-worth",
+      "permanent": true
+    },
+    {
+      "source": "/blog/track-gold-stocks-property-one-place.html",
+      "destination": "/blog/track-gold-stocks-property-one-place",
+      "permanent": true
+    },
+    {
+      "source": "/blog/uae-golden-visa-investment-requirements.html",
+      "destination": "/blog/uae-golden-visa-investment-requirements",
+      "permanent": true
+    },
+    {
+      "source": "/blog/track-multiple-property-installments.html",
+      "destination": "/blog/track-multiple-property-installments",
+      "permanent": true
+    },
+    {
+      "source": "/blog.html",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/wealth-tracker.html",
+      "destination": "/wealth-tracker",
+      "permanent": true
+    },
+    {
+      "source": "/dubai-property-tracker.html",
+      "destination": "/dubai-property-tracker",
+      "permanent": true
+    },
+    {
+      "source": "/off-plan-payment-tracker.html",
+      "destination": "/off-plan-payment-tracker",
+      "permanent": true
+    },
+    {
+      "source": "/expat-finance-uae.html",
+      "destination": "/expat-finance-uae",
+      "permanent": true
     }
   ],
   "rewrites": [
@@ -125,6 +185,54 @@
     {
       "source": "/uae-wealth-tracker",
       "destination": "/uae-wealth-tracker.html"
+    },
+    {
+      "source": "/blog/how-to-calculate-net-worth-uae-expat",
+      "destination": "/blog/how-to-calculate-net-worth-uae-expat.html"
+    },
+    {
+      "source": "/blog/track-investments-uae-india",
+      "destination": "/blog/track-investments-uae-india.html"
+    },
+    {
+      "source": "/blog/track-dubai-offplan-payments",
+      "destination": "/blog/track-dubai-offplan-payments.html"
+    },
+    {
+      "source": "/blog/what-to-include-in-net-worth",
+      "destination": "/blog/what-to-include-in-net-worth.html"
+    },
+    {
+      "source": "/blog/track-gold-stocks-property-one-place",
+      "destination": "/blog/track-gold-stocks-property-one-place.html"
+    },
+    {
+      "source": "/blog/uae-golden-visa-investment-requirements",
+      "destination": "/blog/uae-golden-visa-investment-requirements.html"
+    },
+    {
+      "source": "/blog/track-multiple-property-installments",
+      "destination": "/blog/track-multiple-property-installments.html"
+    },
+    {
+      "source": "/blog",
+      "destination": "/blog.html"
+    },
+    {
+      "source": "/wealth-tracker",
+      "destination": "/wealth-tracker.html"
+    },
+    {
+      "source": "/dubai-property-tracker",
+      "destination": "/dubai-property-tracker.html"
+    },
+    {
+      "source": "/off-plan-payment-tracker",
+      "destination": "/off-plan-payment-tracker.html"
+    },
+    {
+      "source": "/expat-finance-uae",
+      "destination": "/expat-finance-uae.html"
     }
   ],
   "headers": [
