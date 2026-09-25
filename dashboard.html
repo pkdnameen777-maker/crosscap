@@ -271,15 +271,15 @@
     }
 
     
-    .pf-sym-plain { display: inline; }
-    .pf-sym-row { display: none; }
+    .pf-sym-plain { display: inline !important; }
+    .pf-sym-row { display: none !important; }
     @media (max-width: 767px) {
       .pf-sym-plain { display: none !important; }
       .pf-sym-row { display: flex !important; }
     }
 
     /* Portfolio mobile cards: Live top-right, P/L under cost, Edit|Delete symmetric */
-    .pf-sym-row { display: contents; }
+    /* pf-sym-row stays display:none on desktop (set above); only flex on mobile */
     .pf-live-badge { display: none; }
     .pf-pnl-mobile { display: none; }
     @media (min-width: 768px) {
