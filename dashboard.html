@@ -1090,29 +1090,41 @@
 
           <!-- Category picker (home / main Add Asset) -->
           <div id="addCategoryPicker" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
-            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-brand-300 hover:shadow-soft transition" data-add-cat="stocks">
-              <p class="text-[15px] font-semibold text-zinc-900">Stocks &amp; ETFs</p>
-              <p class="text-[12px] text-zinc-500 mt-1">Global exchanges · tickers only</p>
+            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-brand-300 hover:shadow-soft transition flex gap-3 items-start" data-add-cat="stocks">
+              <span class="mt-0.5 w-9 h-9 rounded-xl bg-brand-50 text-brand-700 flex items-center justify-center shrink-0">
+                <svg class="w-4.5 h-4.5 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/></svg>
+              </span>
+              <span><p class="text-[15px] font-semibold text-zinc-900">Stocks &amp; ETFs</p><p class="text-[12px] text-zinc-500 mt-0.5">Global exchanges · tickers only</p></span>
             </button>
-            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-amber-300 hover:shadow-soft transition" data-add-cat="gold">
-              <p class="text-[15px] font-semibold text-zinc-900">Gold &amp; Silver</p>
-              <p class="text-[12px] text-zinc-500 mt-1">Physical or digital · pick currency</p>
+            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-amber-300 hover:shadow-soft transition flex gap-3 items-start" data-add-cat="gold">
+              <span class="mt-0.5 w-9 h-9 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-4-8.25h.008v.008H8V9.75zm0 3h.008v.008H8v-.008zm0 3h.008v.008H8v-.008zm4-6h.008v.008H12V9.75zm0 3h.008v.008H12v-.008zm0 3h.008v.008H12v-.008zm4-6h.008v.008H16V9.75zm0 3h.008v.008H16v-.008zm0 3h.008v.008H16v-.008zM4.5 19.5h15a1.5 1.5 0 001.5-1.5V6A1.5 1.5 0 0019.5 4.5h-15A1.5 1.5 0 003 6v12a1.5 1.5 0 001.5 1.5z"/></svg>
+              </span>
+              <span><p class="text-[15px] font-semibold text-zinc-900">Gold &amp; Silver</p><p class="text-[12px] text-zinc-500 mt-0.5">Physical or digital · pick currency</p></span>
             </button>
-            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-violet-300 hover:shadow-soft transition" data-add-cat="crypto">
-              <p class="text-[15px] font-semibold text-zinc-900">Crypto</p>
-              <p class="text-[12px] text-zinc-500 mt-1">BTC, ETH, and other coins</p>
+            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-violet-300 hover:shadow-soft transition flex gap-3 items-start" data-add-cat="crypto">
+              <span class="mt-0.5 w-9 h-9 rounded-xl bg-violet-50 text-violet-700 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v2m0 8v2m-6-6h2m8 0h2M8.5 8.5l1.5 1.5m4 4l1.5 1.5m0-7l-1.5 1.5m-4 4L8.5 15.5M12 21a9 9 0 100-18 9 9 0 000 18z"/></svg>
+              </span>
+              <span><p class="text-[15px] font-semibold text-zinc-900">Crypto</p><p class="text-[12px] text-zinc-500 mt-0.5">BTC, ETH, and other coins</p></span>
             </button>
-            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-brand-300 hover:shadow-soft transition" data-add-cat="property">
-              <p class="text-[15px] font-semibold text-zinc-900">Real Estate</p>
-              <p class="text-[12px] text-zinc-500 mt-1">Ready / off-plan · installments</p>
+            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-brand-300 hover:shadow-soft transition flex gap-3 items-start" data-add-cat="property">
+              <span class="mt-0.5 w-9 h-9 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+              </span>
+              <span><p class="text-[15px] font-semibold text-zinc-900">Real Estate</p><p class="text-[12px] text-zinc-500 mt-0.5">Ready / off-plan · installments</p></span>
             </button>
-            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-emerald-300 hover:shadow-soft transition" data-add-cat="cash">
-              <p class="text-[15px] font-semibold text-zinc-900">Cash &amp; Bank</p>
-              <p class="text-[12px] text-zinc-500 mt-1">Accounts, cards, receivables</p>
+            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-emerald-300 hover:shadow-soft transition flex gap-3 items-start" data-add-cat="cash">
+              <span class="mt-0.5 w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/></svg>
+              </span>
+              <span><p class="text-[15px] font-semibold text-zinc-900">Cash &amp; Bank</p><p class="text-[12px] text-zinc-500 mt-0.5">Accounts, cards, receivables</p></span>
             </button>
-            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-zinc-400 hover:shadow-soft transition" data-add-cat="alt">
-              <p class="text-[15px] font-semibold text-zinc-900">Other assets</p>
-              <p class="text-[12px] text-zinc-500 mt-1">Funds, FDs, bonds, vehicles, business</p>
+            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-zinc-400 hover:shadow-soft transition flex gap-3 items-start" data-add-cat="alt">
+              <span class="mt-0.5 w-9 h-9 rounded-xl bg-zinc-100 text-zinc-700 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/></svg>
+              </span>
+              <span><p class="text-[15px] font-semibold text-zinc-900">Other assets</p><p class="text-[12px] text-zinc-500 mt-0.5">Funds, FDs, bonds, vehicles, business</p></span>
             </button>
           </div>
 
@@ -2620,8 +2632,35 @@
         return 'created';
       }
 
-      function showAddCategory(cat) {
+      function highlightSidebarForAsset(cat) {
+        if (typeof setSidebarActive !== 'function') return;
+        let sel = null;
+        if (cat === 'stocks' || cat === 'gold' || cat === 'crypto') {
+          sel = document.querySelector(`.sidebar-link[data-view="portfolio"][data-asset-filter="${cat}"]`);
+        } else if (cat === 'property') {
+          sel = document.querySelector('.sidebar-link[data-view="real-estate"]');
+        } else if (cat === 'cash') {
+          sel = document.querySelector('.sidebar-link[data-view="cash"]');
+        } else if (cat === 'alt') {
+          sel = document.querySelector('.sidebar-link[data-view="alt-assets"]');
+        } else if (cat === 'all' || cat === 'add-asset') {
+          sel = document.querySelector('.sidebar-link[data-view="add-asset"]');
+        }
+        if (sel) setSidebarActive(sel);
+      }
+
+      function resetAddAssetPicker() {
+        // Always restore category list when opening main Add Asset
         const picker = document.getElementById('addCategoryPicker');
+        if (picker) picker.classList.remove('hidden');
+        document.querySelectorAll('#addFormStocks,#addFormGold,#addFormCrypto').forEach(f => f && f.classList.add('hidden'));
+        const title = document.getElementById('portfolioAddPanelTitle');
+        if (title) title.classList.add('hidden');
+      }
+
+      function showAddCategory(cat, opts) {
+        opts = opts || {};
+        const openForm = opts.openForm !== false; // default open form when landing from picker
         const forms = {
           stocks: document.getElementById('addFormStocks'),
           gold: document.getElementById('addFormGold'),
@@ -2631,50 +2670,76 @@
 
         if (cat === 'property') {
           showView('real-estate');
+          highlightSidebarForAsset('property');
           const f = document.getElementById('form-property');
-          if (f) f.classList.remove('hidden');
-          try { f?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {}
+          if (openForm && f) {
+            f.classList.remove('hidden');
+            try { f.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {}
+          }
           return;
         }
-        if (cat === 'cash') { showView('cash'); return; }
-        if (cat === 'alt') { showView('alt-assets'); return; }
+        if (cat === 'cash') {
+          showView('cash');
+          highlightSidebarForAsset('cash');
+          return;
+        }
+        if (cat === 'alt') {
+          showView('alt-assets');
+          highlightSidebarForAsset('alt');
+          return;
+        }
 
-        // Stocks / gold / crypto → that portfolio sleeve + form + holdings on same page
         if (cat === 'stocks' || cat === 'gold' || cat === 'crypto') {
           portfolioAssetFilter = cat;
           showView('portfolio');
+          highlightSidebarForAsset(cat);
           if (typeof applyPortfolioAssetFilter === 'function') applyPortfolioAssetFilter();
-          if (forms[cat]) forms[cat].classList.remove('hidden');
-          const title = document.getElementById('portfolioAddPanelTitle');
+          if (openForm && forms[cat]) {
+            forms[cat].classList.remove('hidden');
+            const title = document.getElementById('portfolioAddPanelTitle');
+            if (title) {
+              title.classList.remove('hidden');
+              title.textContent = cat === 'stocks' ? 'Add stock / ETF' : (cat === 'gold' ? 'Add gold / silver' : 'Add crypto');
+            }
+            try { forms[cat].scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {}
+          }
+          return;
+        }
+
+        // Category list (main Add Asset)
+        resetAddAssetPicker();
+        showView('add-asset');
+        highlightSidebarForAsset('all');
+      }
+      window.showAddCategory = showAddCategory;
+
+      /** Toggle add form on current portfolio sleeve (same as Real Estate + Add Property) */
+      function togglePortfolioAddForm() {
+        const cat = (typeof portfolioAssetFilter === 'string' && portfolioAssetFilter !== 'all')
+          ? portfolioAssetFilter : null;
+        if (!cat || (cat !== 'stocks' && cat !== 'gold' && cat !== 'crypto')) {
+          showView('add-asset');
+          resetAddAssetPicker();
+          highlightSidebarForAsset('all');
+          return;
+        }
+        const formId = cat === 'stocks' ? 'addFormStocks' : cat === 'gold' ? 'addFormGold' : 'addFormCrypto';
+        const form = document.getElementById(formId);
+        if (!form) return;
+        const willOpen = form.classList.contains('hidden');
+        document.querySelectorAll('#addFormStocks,#addFormGold,#addFormCrypto').forEach(f => f.classList.add('hidden'));
+        const title = document.getElementById('portfolioAddPanelTitle');
+        if (willOpen) {
+          form.classList.remove('hidden');
           if (title) {
             title.classList.remove('hidden');
             title.textContent = cat === 'stocks' ? 'Add stock / ETF' : (cat === 'gold' ? 'Add gold / silver' : 'Add crypto');
           }
-          try { forms[cat]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {}
-          return;
+        } else {
+          if (title) title.classList.add('hidden');
         }
-
-        // all / picker
-        if (picker) picker.classList.remove('hidden');
-        showView('add-asset');
       }
-      window.showAddCategory = showAddCategory;
-
-      function togglePortfolioAddForm() {
-        const cat = (typeof portfolioAssetFilter === 'string' && portfolioAssetFilter !== 'all')
-          ? portfolioAssetFilter : null;
-        if (!cat) {
-          // Show picker on main add-asset view
-          showView('add-asset');
-          showAddCategory('all');
-          return;
-        }
-        const form = document.getElementById(cat === 'stocks' ? 'addFormStocks' : cat === 'gold' ? 'addFormGold' : 'addFormCrypto');
-        if (!form) return;
-        const open = form.classList.contains('hidden');
-        document.querySelectorAll('#addFormStocks,#addFormGold,#addFormCrypto').forEach(f => f.classList.add('hidden'));
-        if (open) form.classList.remove('hidden');
-      }
+      window.togglePortfolioAddForm = togglePortfolioAddForm;
 
 
       document.querySelectorAll('.add-cat-btn').forEach(btn => {
@@ -2715,7 +2780,8 @@
           showView('portfolio');
           await loadPortfolio();
           applyPortfolioAssetFilter();
-          document.getElementById('addFormStocks')?.classList.remove('hidden');
+          document.getElementById('addFormStocks')?.classList.add('hidden');
+          const _tstocks = document.getElementById('portfolioAddPanelTitle'); if (_tstocks) _tstocks.classList.add('hidden');
         } catch (e) { alert('Error: ' + e.message); }
       });
 
@@ -2740,7 +2806,8 @@
           showView('portfolio');
           await loadPortfolio();
           applyPortfolioAssetFilter();
-          document.getElementById('addFormGold')?.classList.remove('hidden');
+          document.getElementById('addFormGold')?.classList.add('hidden');
+          const _tgold = document.getElementById('portfolioAddPanelTitle'); if (_tgold) _tgold.classList.add('hidden');
         } catch (e) { alert('Error: ' + e.message); }
       });
 
@@ -2760,7 +2827,8 @@
           showView('portfolio');
           await loadPortfolio();
           applyPortfolioAssetFilter();
-          document.getElementById('addFormCrypto')?.classList.remove('hidden');
+          document.getElementById('addFormCrypto')?.classList.add('hidden');
+          const _tcrypto = document.getElementById('portfolioAddPanelTitle'); if (_tcrypto) _tcrypto.classList.add('hidden');
         } catch (e) { alert('Error: ' + e.message); }
       });
 
@@ -6225,9 +6293,9 @@
           showView(view);
           setSidebarActive(btn);
           if (view === 'add-asset') {
-            // Main Add Asset → all categories; if coming from a sleeve context use filter
-            const prefer = btn.getAttribute('data-add-cat') || (portfolioAssetFilter && portfolioAssetFilter !== 'all' ? portfolioAssetFilter : 'all');
-            if (typeof showAddCategory === 'function') showAddCategory(prefer === 'all' ? 'all' : prefer);
+            // Always show full category list when opening Add Asset from menu / home
+            if (typeof resetAddAssetPicker === 'function') resetAddAssetPicker();
+            if (typeof showAddCategory === 'function') showAddCategory('all');
           }
           if (view === 'portfolio') {
             applyPortfolioAssetFilter();
@@ -6241,15 +6309,11 @@
       document.getElementById('portfolioAddAssetBtn')?.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const cat = (typeof portfolioAssetFilter === 'string' && portfolioAssetFilter !== 'all')
-          ? portfolioAssetFilter : 'all';
-        if (typeof showAddCategory === 'function') showAddCategory(cat);
+        togglePortfolioAddForm();
       }, true);
       document.getElementById('portfolioHeaderAddBtn')?.addEventListener('click', (e) => {
         e.preventDefault();
-        const cat = (typeof portfolioAssetFilter === 'string' && portfolioAssetFilter !== 'all')
-          ? portfolioAssetFilter : 'all';
-        if (typeof showAddCategory === 'function') showAddCategory(cat);
+        togglePortfolioAddForm();
       });
       document.getElementById('btnTogglePortfolioAdd')?.addEventListener('click', () => togglePortfolioAddForm());
 
