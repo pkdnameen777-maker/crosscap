@@ -804,7 +804,7 @@
               <h2 id="portfolioPageTitle" class="font-display text-xl font-semibold tracking-tight">Portfolio</h2>
               <p id="portfolioPageSub" class="text-[13px] text-zinc-500 mt-0.5">Stocks, gold &amp; silver, and crypto — separated by type</p>
             </div>
-            <button data-view="add-asset" class="inline-flex items-center gap-2 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13.5px] font-semibold px-4 py-2.5">
+            <button type="button" id="portfolioHeaderAddBtn" class="inline-flex items-center gap-2 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13.5px] font-semibold px-4 py-2.5">
               + Add Asset
             </button>
           </div>
@@ -839,87 +839,21 @@
             </div>
           </div>
 
+
           <div id="portfolioFocusBanner" class="hidden mb-4 rounded-2xl border border-brand-100 bg-brand-50/50 px-4 py-3">
             <p id="portfolioFocusText" class="text-[13px] text-brand-900 font-medium"></p>
           </div>
 
-          <div class="overflow-x-auto" id="portfolioTableWrap">
-              <table class="w-full text-left text-[13.5px]">
-              <thead>
-                <tr class="text-[11px] text-zinc-400 uppercase tracking-wider border-b border-zinc-100">
-                  <th class="px-5 py-3.5 font-medium">Asset</th>
-                  <th class="px-5 py-3.5 font-medium">Market</th>
-                  <th class="px-5 py-3.5 font-medium text-right">Quantity</th>
-                  <th class="px-5 py-3.5 font-medium text-right">Cost / Live</th>
-                  <th class="px-5 py-3.5 font-medium text-right">Value (AED)</th>
-                  <th class="px-5 py-3.5 font-medium text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="portfolioTableBody" class="divide-y divide-zinc-50"></tbody>
-            </table>
-          </div>
-
-          <div id="dividendsSection" class="mt-6 cc-panel p-5">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-              <div>
-                <h3 class="text-[15px] font-semibold text-zinc-900">Dividends</h3>
-                <p class="text-[12px] text-zinc-400">Stocks &amp; ETFs only · log when received</p>
-              </div>
-              <div class="flex items-center gap-3">
-                <div class="text-right">
-                  <p class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Total received</p>
-                  <p id="dividendsTotalAed" class="text-[15px] font-semibold tabular-nums text-emerald-700">—</p>
-                </div>
-                <button type="button" id="btnLogDividend" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[12px] font-semibold px-3 py-2">+ Log received</button>
-              </div>
+          <!-- Inline add (same page as holdings — like Real Estate) -->
+          <div id="portfolioAddPanel" class="mb-6 space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <p id="portfolioAddPanelTitle" class="text-[13px] font-semibold text-zinc-700 hidden">Add to this sleeve</p>
+              <button type="button" id="btnTogglePortfolioAdd" class="text-[12px] font-semibold text-brand-700 hover:underline">+ Add holding</button>
             </div>
-            <div id="dividendsList" class="space-y-2 text-[13px]">
-              <p class="text-zinc-400">No dividends logged yet.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- ADD ASSET -->
-        
-        <div id="view-add-asset" class="view">
-          <div class="mb-6">
-            <h2 class="font-display text-xl font-semibold tracking-tight mb-2">Add Asset</h2>
-            <p class="text-[14px] text-zinc-500 mb-2">Choose a category — each form only shows that asset type.</p>
-          </div>
-
-          <!-- Category picker (home / main Add Asset) -->
-          <div id="addCategoryPicker" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
-            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-brand-300 hover:shadow-soft transition" data-add-cat="stocks">
-              <p class="text-[15px] font-semibold text-zinc-900">Stocks &amp; ETFs</p>
-              <p class="text-[12px] text-zinc-500 mt-1">Global exchanges · tickers only</p>
-            </button>
-            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-amber-300 hover:shadow-soft transition" data-add-cat="gold">
-              <p class="text-[15px] font-semibold text-zinc-900">Gold &amp; Silver</p>
-              <p class="text-[12px] text-zinc-500 mt-1">Physical or digital · pick currency</p>
-            </button>
-            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-violet-300 hover:shadow-soft transition" data-add-cat="crypto">
-              <p class="text-[15px] font-semibold text-zinc-900">Crypto</p>
-              <p class="text-[12px] text-zinc-500 mt-1">BTC, ETH, and other coins</p>
-            </button>
-            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-brand-300 hover:shadow-soft transition" data-add-cat="property">
-              <p class="text-[15px] font-semibold text-zinc-900">Real Estate</p>
-              <p class="text-[12px] text-zinc-500 mt-1">Ready / off-plan · installments</p>
-            </button>
-            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-emerald-300 hover:shadow-soft transition" data-add-cat="cash">
-              <p class="text-[15px] font-semibold text-zinc-900">Cash &amp; Bank</p>
-              <p class="text-[12px] text-zinc-500 mt-1">Accounts, cards, receivables</p>
-            </button>
-            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-zinc-400 hover:shadow-soft transition" data-add-cat="alt">
-              <p class="text-[15px] font-semibold text-zinc-900">Other assets</p>
-              <p class="text-[12px] text-zinc-500 mt-1">Funds, FDs, bonds, vehicles, business</p>
-            </button>
-          </div>
-
-          <!-- STOCKS form -->
-          <div id="addFormStocks" class="cc-panel p-6 max-w-xl ring-1 ring-brand-50/80 hidden">
+            <div id="addFormStocks" class="cc-panel p-6 max-w-xl ring-1 ring-brand-50/80 hidden">
             <div class="flex items-center justify-between mb-4">
               <h3 class="font-semibold text-base text-zinc-900">Add stock / ETF</h3>
-              <button type="button" class="add-cat-back text-[12px] font-semibold text-brand-700 hover:underline">← All categories</button>
+              <button type="button" class="add-form-close text-[12px] font-semibold text-zinc-500 hover:underline">Close</button>
             </div>
             <div class="space-y-4">
               <div>
@@ -990,12 +924,10 @@
               <button type="button" id="saveStockBtn" class="w-full rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[14px] font-semibold px-5 py-3">Save stock</button>
             </div>
           </div>
-
-          <!-- GOLD / SILVER form -->
-          <div id="addFormGold" class="cc-panel p-6 max-w-xl ring-1 ring-amber-50/80 hidden">
+            <div id="addFormGold" class="cc-panel p-6 max-w-xl ring-1 ring-amber-50/80 hidden">
             <div class="flex items-center justify-between mb-4">
               <h3 class="font-semibold text-base text-zinc-900">Add gold / silver</h3>
-              <button type="button" class="add-cat-back text-[12px] font-semibold text-brand-700 hover:underline">← All categories</button>
+              <button type="button" class="add-form-close text-[12px] font-semibold text-zinc-500 hover:underline">Close</button>
             </div>
             <div class="space-y-4">
               <div>
@@ -1088,12 +1020,10 @@
               <button type="button" id="saveMetalBtn" class="w-full rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-[14px] font-semibold px-5 py-3">Save gold / silver</button>
             </div>
           </div>
-
-          <!-- CRYPTO form -->
-          <div id="addFormCrypto" class="cc-panel p-6 max-w-xl ring-1 ring-violet-50/80 hidden">
+            <div id="addFormCrypto" class="cc-panel p-6 max-w-xl ring-1 ring-violet-50/80 hidden">
             <div class="flex items-center justify-between mb-4">
               <h3 class="font-semibold text-base text-zinc-900">Add crypto</h3>
-              <button type="button" class="add-cat-back text-[12px] font-semibold text-brand-700 hover:underline">← All categories</button>
+              <button type="button" class="add-form-close text-[12px] font-semibold text-zinc-500 hover:underline">Close</button>
             </div>
             <div class="space-y-4">
               <div>
@@ -1111,12 +1041,91 @@
               <button type="button" id="saveCryptoBtn" class="w-full rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-[14px] font-semibold px-5 py-3">Save crypto</button>
             </div>
           </div>
+          </div>
 
-          <!-- Legacy fields kept hidden for any old JS references -->
-          <div class="hidden" aria-hidden="true">
-            <input id="assetSymbol" /><select id="assetMarket"></select><input id="assetShares" /><input id="assetPrice" /><button id="saveAssetBtn"></button>
+
+          <div class="overflow-x-auto" id="portfolioTableWrap">
+              <table class="w-full text-left text-[13.5px]">
+              <thead>
+                <tr class="text-[11px] text-zinc-400 uppercase tracking-wider border-b border-zinc-100">
+                  <th class="px-5 py-3.5 font-medium">Asset</th>
+                  <th class="px-5 py-3.5 font-medium">Market</th>
+                  <th class="px-5 py-3.5 font-medium text-right">Quantity</th>
+                  <th class="px-5 py-3.5 font-medium text-right">Cost / Live</th>
+                  <th class="px-5 py-3.5 font-medium text-right">Value (AED)</th>
+                  <th class="px-5 py-3.5 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="portfolioTableBody" class="divide-y divide-zinc-50"></tbody>
+            </table>
+          </div>
+
+          <div id="dividendsSection" class="mt-6 cc-panel p-5">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+              <div>
+                <h3 class="text-[15px] font-semibold text-zinc-900">Dividends</h3>
+                <p class="text-[12px] text-zinc-400">Stocks &amp; ETFs only · log when received</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="text-right">
+                  <p class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Total received</p>
+                  <p id="dividendsTotalAed" class="text-[15px] font-semibold tabular-nums text-emerald-700">—</p>
+                </div>
+                <button type="button" id="btnLogDividend" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[12px] font-semibold px-3 py-2">+ Log received</button>
+              </div>
+            </div>
+            <div id="dividendsList" class="space-y-2 text-[13px]">
+              <p class="text-zinc-400">No dividends logged yet.</p>
+            </div>
           </div>
         </div>
+
+        <!-- ADD ASSET -->
+        
+        <div id="view-add-asset" class="view">
+          <div class="mb-6">
+            <h2 class="font-display text-xl font-semibold tracking-tight mb-2">Add Asset</h2>
+            <p class="text-[14px] text-zinc-500 mb-2">Choose a category — each form only shows that asset type.</p>
+          </div>
+
+          <!-- Category picker (home / main Add Asset) -->
+          <div id="addCategoryPicker" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
+            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-brand-300 hover:shadow-soft transition" data-add-cat="stocks">
+              <p class="text-[15px] font-semibold text-zinc-900">Stocks &amp; ETFs</p>
+              <p class="text-[12px] text-zinc-500 mt-1">Global exchanges · tickers only</p>
+            </button>
+            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-amber-300 hover:shadow-soft transition" data-add-cat="gold">
+              <p class="text-[15px] font-semibold text-zinc-900">Gold &amp; Silver</p>
+              <p class="text-[12px] text-zinc-500 mt-1">Physical or digital · pick currency</p>
+            </button>
+            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-violet-300 hover:shadow-soft transition" data-add-cat="crypto">
+              <p class="text-[15px] font-semibold text-zinc-900">Crypto</p>
+              <p class="text-[12px] text-zinc-500 mt-1">BTC, ETH, and other coins</p>
+            </button>
+            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-brand-300 hover:shadow-soft transition" data-add-cat="property">
+              <p class="text-[15px] font-semibold text-zinc-900">Real Estate</p>
+              <p class="text-[12px] text-zinc-500 mt-1">Ready / off-plan · installments</p>
+            </button>
+            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-emerald-300 hover:shadow-soft transition" data-add-cat="cash">
+              <p class="text-[15px] font-semibold text-zinc-900">Cash &amp; Bank</p>
+              <p class="text-[12px] text-zinc-500 mt-1">Accounts, cards, receivables</p>
+            </button>
+            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-zinc-400 hover:shadow-soft transition" data-add-cat="alt">
+              <p class="text-[15px] font-semibold text-zinc-900">Other assets</p>
+              <p class="text-[12px] text-zinc-500 mt-1">Funds, FDs, bonds, vehicles, business</p>
+            </button>
+          </div>
+
+          <!-- STOCKS form -->
+          
+
+          <!-- GOLD / SILVER form -->
+          
+
+          <!-- CRYPTO form -->
+          
+
+          </div>
 
         <div id="view-real-estate" class="view">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
@@ -2619,24 +2628,65 @@
           crypto: document.getElementById('addFormCrypto')
         };
         Object.values(forms).forEach(f => f && f.classList.add('hidden'));
-        if (!cat || cat === 'all') {
-          if (picker) picker.classList.remove('hidden');
+
+        if (cat === 'property') {
+          showView('real-estate');
+          const f = document.getElementById('form-property');
+          if (f) f.classList.remove('hidden');
+          try { f?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {}
           return;
         }
-        if (cat === 'property') { showView('real-estate'); const f = document.getElementById('form-property'); if (f) f.classList.remove('hidden'); return; }
         if (cat === 'cash') { showView('cash'); return; }
         if (cat === 'alt') { showView('alt-assets'); return; }
-        if (picker) picker.classList.add('hidden');
-        if (forms[cat]) forms[cat].classList.remove('hidden');
+
+        // Stocks / gold / crypto → that portfolio sleeve + form + holdings on same page
+        if (cat === 'stocks' || cat === 'gold' || cat === 'crypto') {
+          portfolioAssetFilter = cat;
+          showView('portfolio');
+          if (typeof applyPortfolioAssetFilter === 'function') applyPortfolioAssetFilter();
+          if (forms[cat]) forms[cat].classList.remove('hidden');
+          const title = document.getElementById('portfolioAddPanelTitle');
+          if (title) {
+            title.classList.remove('hidden');
+            title.textContent = cat === 'stocks' ? 'Add stock / ETF' : (cat === 'gold' ? 'Add gold / silver' : 'Add crypto');
+          }
+          try { forms[cat]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {}
+          return;
+        }
+
+        // all / picker
+        if (picker) picker.classList.remove('hidden');
         showView('add-asset');
       }
       window.showAddCategory = showAddCategory;
+
+      function togglePortfolioAddForm() {
+        const cat = (typeof portfolioAssetFilter === 'string' && portfolioAssetFilter !== 'all')
+          ? portfolioAssetFilter : null;
+        if (!cat) {
+          // Show picker on main add-asset view
+          showView('add-asset');
+          showAddCategory('all');
+          return;
+        }
+        const form = document.getElementById(cat === 'stocks' ? 'addFormStocks' : cat === 'gold' ? 'addFormGold' : 'addFormCrypto');
+        if (!form) return;
+        const open = form.classList.contains('hidden');
+        document.querySelectorAll('#addFormStocks,#addFormGold,#addFormCrypto').forEach(f => f.classList.add('hidden'));
+        if (open) form.classList.remove('hidden');
+      }
+
 
       document.querySelectorAll('.add-cat-btn').forEach(btn => {
         btn.addEventListener('click', () => showAddCategory(btn.getAttribute('data-add-cat')));
       });
       document.querySelectorAll('.add-cat-back').forEach(btn => {
         btn.addEventListener('click', () => showAddCategory('all'));
+      });
+      document.querySelectorAll('.add-form-close').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#addFormStocks,#addFormGold,#addFormCrypto').forEach(f => f.classList.add('hidden'));
+        });
       });
 
       document.getElementById('stockMarket')?.addEventListener('change', () => {
@@ -2663,7 +2713,9 @@
           document.getElementById('stockPrice').value = '';
           portfolioAssetFilter = 'stocks';
           showView('portfolio');
-          loadPortfolio();
+          await loadPortfolio();
+          applyPortfolioAssetFilter();
+          document.getElementById('addFormStocks')?.classList.remove('hidden');
         } catch (e) { alert('Error: ' + e.message); }
       });
 
@@ -2686,7 +2738,9 @@
           document.getElementById('metalPrice').value = '';
           portfolioAssetFilter = 'gold';
           showView('portfolio');
-          loadPortfolio();
+          await loadPortfolio();
+          applyPortfolioAssetFilter();
+          document.getElementById('addFormGold')?.classList.remove('hidden');
         } catch (e) { alert('Error: ' + e.message); }
       });
 
@@ -2704,7 +2758,9 @@
           document.getElementById('cryptoPrice').value = '';
           portfolioAssetFilter = 'crypto';
           showView('portfolio');
-          loadPortfolio();
+          await loadPortfolio();
+          applyPortfolioAssetFilter();
+          document.getElementById('addFormCrypto')?.classList.remove('hidden');
         } catch (e) { alert('Error: ' + e.message); }
       });
 
@@ -6187,9 +6243,16 @@
         e.stopPropagation();
         const cat = (typeof portfolioAssetFilter === 'string' && portfolioAssetFilter !== 'all')
           ? portfolioAssetFilter : 'all';
-        showView('add-asset');
         if (typeof showAddCategory === 'function') showAddCategory(cat);
       }, true);
+      document.getElementById('portfolioHeaderAddBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        const cat = (typeof portfolioAssetFilter === 'string' && portfolioAssetFilter !== 'all')
+          ? portfolioAssetFilter : 'all';
+        if (typeof showAddCategory === 'function') showAddCategory(cat);
+      });
+      document.getElementById('btnTogglePortfolioAdd')?.addEventListener('click', () => togglePortfolioAddForm());
+
 
       // Mobile / other + Add Asset links with data-view=add-asset still go to picker unless data-add-cat set
     });
