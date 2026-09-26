@@ -2229,6 +2229,12 @@
                 <p><span class="font-semibold text-zinc-800">CrossCap is a personal wealth organiser.</span> AI CFO and chat are for viewing, organising, and managing your records (portfolio, property schedules, goals). They are <span class="font-semibold">not</span> a licensed financial advisor, broker, or tax professional, and do not provide formal investment advice.</p>
                 <p>Always verify figures against your bank, broker, and developer statements. Decisions remain your responsibility.</p>
                 <p class="pt-1">Support: <a href="mailto:support@crosscap.app" class="font-semibold text-brand-700 hover:underline">support@crosscap.app</a></p>
+                <p class="pt-2 text-[12px] text-zinc-500">
+                  <a href="/security" class="text-brand-700 hover:underline">Security</a> ·
+                  <a href="/privacy" class="text-brand-700 hover:underline">Privacy</a> ·
+                  <a href="/terms" class="text-brand-700 hover:underline">Terms</a> ·
+                  <a href="/support" class="text-brand-700 hover:underline">Support</a>
+                </p>
               </div>
             </div>
 
@@ -2872,10 +2878,19 @@
 
       document.getElementById('togglePropertyForm')?.addEventListener('click', () => {
         const f = document.getElementById('form-property');
+        const opening = f.classList.contains('hidden');
         f.classList.toggle('hidden');
-        if (!f.classList.contains('hidden') && document.getElementById('installmentRows').children.length === 0) {
-          addInstallmentRow('Booking / Down payment', '', '');
-          addInstallmentRow('', '', '');
+        if (opening) {
+          // New property (not edit)
+          editingPropertyId = null;
+          const h = f.querySelector('h3');
+          if (h) h.textContent = 'Add Property';
+          const sb = document.getElementById('savePropertyBtn');
+          if (sb) sb.textContent = 'Save Property';
+          if (document.getElementById('installmentRows').children.length === 0) {
+            addInstallmentRow('Booking / Down payment', '', '');
+            addInstallmentRow('', '', '');
+          }
         }
       });
       document.getElementById('reUseType')?.addEventListener('change', fillPropTypes);
@@ -3070,8 +3085,8 @@
           String(p.name || '').trim().toLowerCase() === name.toLowerCase()
           && Number(p.total_price) === Number(total_price)
         );
-        if (dup) {
-          alert('This property already exists (same name and price). Open it below to edit installments instead of saving again.');
+        if (dup && !editingPropertyId) {
+          alert('This property already exists (same name and price). Use Edit on the card to change ownership or value.');
           return;
         }
 
@@ -3084,7 +3099,7 @@
           .ilike('name', name)
           .eq('total_price', total_price)
           .maybeSingle();
-        if (dupProp) {
+        if (dupProp && !editingPropertyId) {
           alert('This property already exists (same name and price). Open it from the list instead of adding again.');
           return;
         }
@@ -3105,15 +3120,32 @@
           monthly_rent,
           rent_due_day
         };
-        let { data: prop, error } = await supabaseClient.from('properties').insert([propRow]).select().single();
-        if (error && /currency|ownership_pct/i.test(error.message || '')) {
-          // Columns may not exist yet — save core fields and warn
-          const { currency: _c, ownership_pct: _o, ...fallback } = propRow;
-          ({ data: prop, error } = await supabaseClient.from('properties').insert([fallback]).select().single());
-          if (!error) {
-            console.warn('Run properties-currency-ownership.sql so currency & share are stored permanently.');
-            alert('Property saved. Add columns currency & ownership_pct in Supabase for full multi-currency / share support (see SQL note).');
+
+        let prop = null;
+        let error = null;
+
+        if (editingPropertyId) {
+          const { user_id, ...updateRow } = propRow;
+          let res = await supabaseClient.from('properties').update(updateRow).eq('id', editingPropertyId).eq('user_id', currentUser.id).select().single();
+          if (res.error && /currency|ownership_pct/i.test(res.error.message || '')) {
+            const { currency: _c, ownership_pct: _o, ...fallback } = updateRow;
+            res = await supabaseClient.from('properties').update(fallback).eq('id', editingPropertyId).eq('user_id', currentUser.id).select().single();
+            if (!res.error) alert('Saved core fields. Run properties-currency-ownership.sql to persist currency & share %.');
           }
+          prop = res.data;
+          error = res.error;
+        } else {
+          let res = await supabaseClient.from('properties').insert([propRow]).select().single();
+          if (res.error && /currency|ownership_pct/i.test(res.error.message || '')) {
+            const { currency: _c, ownership_pct: _o, ...fallback } = propRow;
+            res = await supabaseClient.from('properties').insert([fallback]).select().single();
+            if (!res.error) {
+              console.warn('Run properties-currency-ownership.sql so currency & share are stored permanently.');
+              alert('Property saved. Add columns currency & ownership_pct in Supabase for full multi-currency / share support.');
+            }
+          }
+          prop = res.data;
+          error = res.error;
         }
 
         if (error) {
@@ -3121,7 +3153,7 @@
           return;
         }
 
-        if (status === 'offplan' && prop) {
+        if (status === 'offplan' && prop && !editingPropertyId) {
           const rows = [...document.querySelectorAll('.installment-row')];
           const installs = rows.map(r => {
             const stage = r.querySelector('.stage-input').value.trim();
@@ -3160,6 +3192,11 @@
         const spaStatus = document.getElementById('spaFileStatus');
         if (spaStatus) { spaStatus.classList.add('hidden'); spaStatus.textContent = ''; }
         document.getElementById('form-property').classList.add('hidden');
+        editingPropertyId = null;
+        const _ph = document.querySelector('#form-property h3');
+        if (_ph) _ph.textContent = 'Add Property';
+        const _sb = document.getElementById('savePropertyBtn');
+        if (_sb) _sb.textContent = 'Save Property';
         loadProperties();
       });
 
@@ -3188,6 +3225,47 @@
         if (error) alert(error.message);
         else loadProperties();
       }
+
+
+      let editingPropertyId = null;
+
+      async function editProperty(id) {
+        if (!currentUser || !id) return;
+        const { data: p, error } = await supabaseClient.from('properties').select('*').eq('id', id).eq('user_id', currentUser.id).maybeSingle();
+        if (error || !p) {
+          alert('Could not load property: ' + (error?.message || 'not found'));
+          return;
+        }
+        editingPropertyId = p.id;
+        const isOff = (p.property_type || '').toUpperCase().includes('OFF');
+        document.getElementById('reStatus').value = isOff ? 'offplan' : 'ready';
+        document.getElementById('reUseType').value = p.use_type || 'residential';
+        if (typeof fillPropTypes === 'function') fillPropTypes();
+        document.getElementById('rePropType').value = p.prop_subtype || p.property_type || '';
+        document.getElementById('reBeds').value = p.bedrooms || '';
+        document.getElementById('reName').value = p.name || '';
+        document.getElementById('reLocation').value = p.location || '';
+        document.getElementById('reDeveloper').value = p.developer || '';
+        document.getElementById('rePrice').value = p.total_price != null ? p.total_price : '';
+        if (document.getElementById('reCurrency')) document.getElementById('reCurrency').value = (p.currency || 'AED').toUpperCase();
+        if (document.getElementById('reOwnershipPct')) document.getElementById('reOwnershipPct').value = p.ownership_pct != null ? p.ownership_pct : 100;
+        if (document.getElementById('reMonthlyRent')) document.getElementById('reMonthlyRent').value = p.monthly_rent != null ? p.monthly_rent : '';
+        if (document.getElementById('reRentDueDay')) document.getElementById('reRentDueDay').value = p.rent_due_day != null ? p.rent_due_day : '';
+        if (typeof syncInstallmentsVisibility === 'function') syncInstallmentsVisibility();
+        // Don't reload installment rows into form on edit — manage schedule on the card
+        const wrap = document.getElementById('installmentRows');
+        if (wrap) wrap.innerHTML = '';
+        const form = document.getElementById('form-property');
+        if (form) {
+          form.classList.remove('hidden');
+          const h = form.querySelector('h3');
+          if (h) h.textContent = 'Edit property';
+          try { form.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {}
+        }
+        const saveBtn = document.getElementById('savePropertyBtn');
+        if (saveBtn) saveBtn.textContent = 'Save changes';
+      }
+      window.editProperty = editProperty;
 
       async function deleteProperty(id) {
         if (!confirm('Delete this property and all its installments?')) return;
@@ -4215,8 +4293,9 @@
                     ${p.developer ? `<p class="text-[12px] text-zinc-400">Developer: ${p.developer}</p>` : ''}
                     ${p.spa_file_path ? `<p class="text-[11px] text-brand-600 mt-0.5">SPA document attached</p>` : ''}
                   </div>
-                  <div class="flex items-center gap-2 shrink-0">
+                  <div class="flex items-center gap-2 shrink-0 flex-wrap justify-end">
                     <span class="text-[11px] ${badgeCls} px-2.5 py-1 rounded-full font-semibold">${isOffplan ? 'Off-Plan' : 'Ready'}</span>
+                    <button type="button" onclick="editProperty('${p.id}')" class="btn-act btn-act-edit">Edit</button>
                     <button type="button" onclick="deleteProperty('${p.id}')" class="btn-act btn-act-del">Delete</button>
                   </div>
                 </div>
@@ -6466,6 +6545,20 @@
   </script>
 
   <!-- Mobile bottom nav (app style) — same icons as desktop sidebar -->
+  
+      <!-- Trust links -->
+      <footer id="appTrustFooter" class="mt-10 mb-24 lg:mb-8 px-1 text-center text-[12px] text-zinc-400 space-x-3">
+        <a href="/security" class="hover:text-brand-700 hover:underline">Security</a>
+        <span class="text-zinc-300">·</span>
+        <a href="/privacy" class="hover:text-brand-700 hover:underline">Privacy</a>
+        <span class="text-zinc-300">·</span>
+        <a href="/terms" class="hover:text-brand-700 hover:underline">Terms</a>
+        <span class="text-zinc-300">·</span>
+        <a href="/support" class="hover:text-brand-700 hover:underline">Support</a>
+        <span class="text-zinc-300">·</span>
+        <a href="mailto:support@crosscap.app" class="hover:text-brand-700 hover:underline">support@crosscap.app</a>
+      </footer>
+
   <nav id="mobileBottomNav" class="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur-md border-t border-zinc-100 lg:hidden">
     <div class="nav-inner">
       <button type="button" class="mob-tab active" data-mob-tab="overview" data-view="overview">
