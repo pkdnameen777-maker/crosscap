@@ -888,7 +888,7 @@
             <div class="space-y-4">
               <div>
                 <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Ticker Symbol / Name</label>
-                <input id="assetSymbol" type="text" placeholder="e.g. EMAAR, AAPL, RELIANCE, BTC" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
+                <input id="assetSymbol" type="text" placeholder="e.g. EMAAR, AAPL, BTC, 0Gold vault, Paytm Gold, physical" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
               </div>
               <div>
                 <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Market</label>
@@ -919,12 +919,26 @@
                   <optgroup label="MENA other">
                     <option value="EG" data-currency="EGP">Egypt (EGP) — EGX</option>
                   </optgroup>
-                  <optgroup label="Alternatives">
+                  <optgroup label="Crypto">
                     <option value="CRYPTO" data-currency="USD">Crypto (USD)</option>
-                    <option value="GOLD_AED" data-currency="AED">Gold (AED)</option>
-                    <option value="GOLD_INR" data-currency="INR">Gold (INR)</option>
-                    <option value="SILVER_AED" data-currency="AED">Silver (AED)</option>
-                    <option value="SILVER_INR" data-currency="INR">Silver (INR)</option>
+                  </optgroup>
+                  <optgroup label="Gold (choose currency of purchase)">
+                    <option value="GOLD_AED" data-currency="AED">Gold — AED</option>
+                    <option value="GOLD_USD" data-currency="USD">Gold — USD</option>
+                    <option value="GOLD_INR" data-currency="INR">Gold — INR</option>
+                    <option value="GOLD_SAR" data-currency="SAR">Gold — SAR</option>
+                    <option value="GOLD_EUR" data-currency="EUR">Gold — EUR</option>
+                    <option value="GOLD_GBP" data-currency="GBP">Gold — GBP</option>
+                    <option value="GOLD_OTHER" data-currency="USD">Gold — other (enter cost in USD equivalent or local)</option>
+                  </optgroup>
+                  <optgroup label="Silver (choose currency of purchase)">
+                    <option value="SILVER_AED" data-currency="AED">Silver — AED</option>
+                    <option value="SILVER_USD" data-currency="USD">Silver — USD</option>
+                    <option value="SILVER_INR" data-currency="INR">Silver — INR</option>
+                    <option value="SILVER_SAR" data-currency="SAR">Silver — SAR</option>
+                    <option value="SILVER_EUR" data-currency="EUR">Silver — EUR</option>
+                    <option value="SILVER_GBP" data-currency="GBP">Silver — GBP</option>
+                    <option value="SILVER_OTHER" data-currency="USD">Silver — other</option>
                   </optgroup>
                 </select>
               </div>
@@ -935,7 +949,8 @@
               <div>
                 <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Average Purchase Price <span id="priceCurrencyLabel" class="text-brand-700">(USD)</span></label>
                 <input id="assetPrice" type="number" step="any" placeholder="Price in market currency" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]" />
-                <p class="text-[11px] text-zinc-400 mt-1.5">Enter cost in the market&apos;s local currency. Dashboard totals convert to AED.</p>
+                <p class="text-[11px] text-zinc-400 mt-1.5">Enter cost in the market&apos;s local currency. Dashboard totals convert to your base currency.</p>
+                <p id="assetGoldHint" class="hidden text-[11px] text-brand-700 mt-1.5 leading-relaxed">Digital gold / silver: use the <strong>platform or vault name</strong> as the symbol (e.g. 0Gold, Paytm Gold, PhonePe Gold, broker vault). Choose the <strong>currency you paid in</strong> under Market — not the app name.</p>
               </div>
               <button id="saveAssetBtn" class="w-full rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[14px] font-semibold px-5 py-3 shadow transition">Save to Portfolio</button>
             </div>
@@ -966,7 +981,7 @@
 
           <!-- Add Property Form -->
           <div id="form-property" class="cc-panel p-6 hidden mb-6 max-w-2xl ring-1 ring-brand-50/80">
-            <h3 class="font-semibold text-base mb-4">Add UAE Property</h3>
+            <h3 class="font-semibold text-base mb-4">Add Property</h3>
             <div class="space-y-4">
               <div class="grid sm:grid-cols-2 gap-3">
                 <div>
@@ -1022,9 +1037,45 @@
                 </div>
               </div>
 
-              <div>
-                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Total contract / value (AED)</label>
-                <input id="rePrice" type="number" step="any" placeholder="1480000" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]" />
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Total contract / full property value</label>
+                  <input id="rePrice" type="number" step="any" placeholder="1480000" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]" />
+                </div>
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Value currency</label>
+                  <select id="reCurrency" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]">
+                    <option value="AED" selected>AED — UAE Dirham</option>
+                    <option value="SAR">SAR — Saudi Riyal</option>
+                    <option value="QAR">QAR — Qatari Riyal</option>
+                    <option value="KWD">KWD — Kuwaiti Dinar</option>
+                    <option value="BHD">BHD — Bahraini Dinar</option>
+                    <option value="OMR">OMR — Omani Rial</option>
+                    <option value="USD">USD — US Dollar</option>
+                    <option value="INR">INR — Indian Rupee</option>
+                    <option value="EUR">EUR — Euro</option>
+                    <option value="GBP">GBP — British Pound</option>
+                    <option value="PKR">PKR — Pakistani Rupee</option>
+                    <option value="EGP">EGP — Egyptian Pound</option>
+                    <option value="SGD">SGD — Singapore Dollar</option>
+                    <option value="HKD">HKD — Hong Kong Dollar</option>
+                    <option value="CNY">CNY — Chinese Yuan</option>
+                    <option value="JPY">JPY — Japanese Yen</option>
+                    <option value="AUD">AUD — Australian Dollar</option>
+                    <option value="CAD">CAD — Canadian Dollar</option>
+                    <option value="CHF">CHF — Swiss Franc</option>
+                  </select>
+                </div>
+              </div>
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Your ownership share (%)</label>
+                  <input id="reOwnershipPct" type="number" min="0.01" max="100" step="any" value="100" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]" />
+                  <p class="text-[11px] text-zinc-400 mt-1">Default 100%. Use 50 if you own half with a partner — net worth &amp; installments use your share only.</p>
+                </div>
+                <div class="flex items-end">
+                  <p class="text-[11px] text-zinc-500 leading-relaxed pb-2">Golden Visa progress counts <strong>only AED-denominated</strong> property value × your ownership share. Non-AED properties are tracked in wealth but not in the AED 2M visa bar.</p>
+                </div>
               </div>
 
               <div id="rentIncomeFields" class="grid sm:grid-cols-2 gap-3 hidden">
@@ -1490,7 +1541,7 @@
             <div class="flex items-start justify-between gap-3 mb-4">
               <div>
                 <p class="text-[11px] font-semibold uppercase tracking-wider text-brand-600 mb-1">UAE Golden Visa</p>
-                <h3 class="font-display text-lg font-semibold text-zinc-900">AED 2,000,000 property target</h3>
+                <h3 class="font-display text-lg font-semibold text-zinc-900">AED 2,000,000 property target (AED holdings only)</h3>
                 <p class="text-[13px] text-zinc-500 mt-1">Only UAE real estate counts — stocks and overseas assets are excluded.</p>
               </div>
               <span id="gvBadge" class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-600 shrink-0">In progress</span>
@@ -2477,9 +2528,13 @@
         const bedrooms = document.getElementById('reBeds').value || null;
         const location = document.getElementById('reLocation').value.trim() || null;
         const developer = document.getElementById('reDeveloper').value.trim() || null;
+        const currency = (document.getElementById('reCurrency')?.value || 'AED').toUpperCase();
+        let ownership_pct = parseFloat(document.getElementById('reOwnershipPct')?.value);
+        if (!Number.isFinite(ownership_pct) || ownership_pct <= 0) ownership_pct = 100;
+        if (ownership_pct > 100) ownership_pct = 100;
 
         if (!name || isNaN(total_price)) {
-          alert('Please enter property name and total value (AED).');
+          alert('Please enter property name and total value.');
           return;
         }
 
@@ -2518,7 +2573,7 @@
           return;
         }
 
-        const { data: prop, error } = await supabaseClient.from('properties').insert([{
+        const propRow = {
           user_id: currentUser.id,
           name,
           property_type: status === 'offplan' ? 'OFF_PLAN' : 'READY',
@@ -2528,10 +2583,22 @@
           location,
           developer,
           total_price,
+          currency,
+          ownership_pct,
           spa_file_path,
           monthly_rent,
           rent_due_day
-        }]).select().single();
+        };
+        let { data: prop, error } = await supabaseClient.from('properties').insert([propRow]).select().single();
+        if (error && /currency|ownership_pct/i.test(error.message || '')) {
+          // Columns may not exist yet — save core fields and warn
+          const { currency: _c, ownership_pct: _o, ...fallback } = propRow;
+          ({ data: prop, error } = await supabaseClient.from('properties').insert([fallback]).select().single());
+          if (!error) {
+            console.warn('Run properties-currency-ownership.sql so currency & share are stored permanently.');
+            alert('Property saved. Add columns currency & ownership_pct in Supabase for full multi-currency / share support (see SQL note).');
+          }
+        }
 
         if (error) {
           alert('Error saving property: ' + error.message);
@@ -2564,6 +2631,8 @@
         // reset form
         document.getElementById('reName').value = '';
         document.getElementById('rePrice').value = '';
+        if (document.getElementById('reCurrency')) document.getElementById('reCurrency').value = 'AED';
+        if (document.getElementById('reOwnershipPct')) document.getElementById('reOwnershipPct').value = '100';
         document.getElementById('reLocation').value = '';
         document.getElementById('reDeveloper').value = '';
         if (document.getElementById('reMonthlyRent')) document.getElementById('reMonthlyRent').value = '';
@@ -2908,7 +2977,18 @@
         };
         document.getElementById('pwaInstallDismiss')?.addEventListener('click', dismiss);
         document.getElementById('pwaInstallClose')?.addEventListener('click', dismiss);
-        document.getElementById('onboardingCurrencySave')?.addEventListener('click', (e) => { e.preventDefault(); completeCurrencyOnboarding(); });
+        
+      function syncAssetGoldHint() {
+        const m = document.getElementById('assetMarket');
+        const h = document.getElementById('assetGoldHint');
+        if (!m || !h) return;
+        const v = (m.value || '').toUpperCase();
+        h.classList.toggle('hidden', !(v.includes('GOLD') || v.includes('SILVER')));
+      }
+      document.getElementById('assetMarket')?.addEventListener('change', syncAssetGoldHint);
+      syncAssetGoldHint();
+
+      document.getElementById('onboardingCurrencySave')?.addEventListener('click', (e) => { e.preventDefault(); completeCurrencyOnboarding(); });
         window.completeCurrencyOnboarding = completeCurrencyOnboarding;
       }
       // setupPwaInstallHandlers() deferred until modals exist in DOM
@@ -2988,7 +3068,7 @@
         HK: '🇭🇰 Hong Kong', SG: '🇸🇬 Singapore', CN: '🇨🇳 China',
         EG: '🇪🇬 Egypt',
         CRYPTO: 'Crypto',
-        GOLD_AED: 'Gold (AED)', GOLD_INR: 'Gold (INR)', SILVER_AED: 'Silver (AED)', SILVER_INR: 'Silver (INR)',
+        GOLD_AED: 'Gold · AED', GOLD_USD: 'Gold · USD', GOLD_INR: 'Gold · INR', GOLD_SAR: 'Gold · SAR', GOLD_EUR: 'Gold · EUR', GOLD_GBP: 'Gold · GBP', GOLD_OTHER: 'Gold · Other', SILVER_AED: 'Silver · AED', SILVER_USD: 'Silver · USD', SILVER_INR: 'Silver · INR', SILVER_SAR: 'Silver · SAR', SILVER_EUR: 'Silver · EUR', SILVER_GBP: 'Silver · GBP', SILVER_OTHER: 'Silver · Other',
         OTHER_USD: 'Other (USD)', OTHER_AED: 'Other (AED)', OTHER_EUR: 'Other (EUR)', OTHER_GBP: 'Other (GBP)',
         DFM: '🇦🇪 UAE', NSE: '🇮🇳 India', GOLD: 'Gold',
         REAL_ESTATE: '🏠 Real Estate'
@@ -3505,12 +3585,28 @@
         const reRates = await getRatesToAed();
         const aedToBase = reRates.AED != null ? reRates.AED : (baseCurrency === 'AED' ? 1 : 0);
 
-        let totalReAed = 0;
+        let totalReAed = 0; // AED property share only — Golden Visa
         if (properties && properties.length > 0) {
           for (const p of properties) {
-            const priceAed = parseFloat(p.total_price || 0);
-            totalReAed += priceAed;
-            totalReVal += priceAed * aedToBase;
+            const fullPrice = parseFloat(p.total_price || 0);
+            const ownPct = Math.min(100, Math.max(0, parseFloat(p.ownership_pct != null ? p.ownership_pct : 100) || 100));
+            const shareFrac = ownPct / 100;
+            const myFull = fullPrice * shareFrac;
+            const propCur = String(p.currency || 'AED').toUpperCase();
+            // Convert property value from its currency → base for net worth
+            const rateToAed = (reRates[propCur] != null ? reRates[propCur] : (propCur === 'AED' ? 1 : null));
+            // getRatesToAed returns: 1 unit of currency → baseCurrency amount (historically named *ToAed)
+            const myInBase = rateToAed != null ? myFull * rateToAed : myFull;
+            totalReVal += myInBase;
+            // Golden Visa: only AED-denominated properties, user's ownership share
+            if (propCur === 'AED') {
+              totalReAed += myFull;
+            }
+            const priceAed = propCur === 'AED' ? myFull : (rateToAed != null && baseCurrency === 'AED' ? myInBase : 0);
+            p.__myShareFrac = shareFrac;
+            p.__myValueBase = myInBase;
+            p.__ownPct = ownPct;
+            p.__propCur = propCur;
             const isOffplan = (p.property_type || '').toUpperCase().includes('OFF');
             let instHtml = '';
 
@@ -3547,11 +3643,12 @@
                   else if (days < 0) { badge = 'bg-rose-50 text-rose-700'; label = 'Overdue'; }
                   else if (days <= 30) { badge = 'bg-amber-50 text-amber-800'; label = days + 'd left'; }
 
+                  const myInstAmt = Number(i.amount || 0) * (p.__myShareFrac != null ? p.__myShareFrac : 1);
                   if (st !== 'paid' && days <= 30) {
-                    radarItems.push({ name: p.name, stage: i.stage, due: i.due_date, amount: i.amount, days });
+                    radarItems.push({ name: p.name, stage: i.stage, due: i.due_date, amount: myInstAmt, days });
                   }
 
-                  const amtStr = Number(i.amount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+                  const amtStr = myInstAmt.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
                   instHtml += `
                     <div class="inst-card text-[13px] bg-zinc-50 rounded-xl px-3 py-3 space-y-2.5">
                       <div class="flex items-start justify-between gap-2">
@@ -3561,7 +3658,7 @@
                       <input type="date" value="${i.due_date}" class="w-full rounded-lg border border-zinc-200 bg-white px-2.5 py-2 text-[13px] text-zinc-700"
                         onchange="updateInstallmentDate('${i.id}', this.value)" />
                       <div class="flex items-center justify-between gap-3 pt-0.5">
-                        <span class="tabular-nums font-semibold text-zinc-900 text-[15px]">${formatMoney(Number(i.amount) * aedToBase, { maximumFractionDigits: 2 })}</span>
+                        <span class="tabular-nums font-semibold text-zinc-900 text-[15px]">${formatMoney(myInstAmt * (p.__propCur === 'AED' ? aedToBase : (reRates[p.__propCur] != null ? reRates[p.__propCur] : aedToBase)), { maximumFractionDigits: 2 })} <span class="text-[11px] font-normal text-zinc-400">your share</span></span>
                       </div>
                       <div class="flex items-center gap-2 pt-1 border-t border-zinc-200/80">
                         ${st !== 'paid'
@@ -3607,7 +3704,9 @@
                     <button type="button" onclick="deleteProperty('${p.id}')" class="btn-act btn-act-del">Delete</button>
                   </div>
                 </div>
-                <p class="text-[17px] font-semibold text-zinc-900 mt-3 tabular-nums">${formatMoney(parseFloat(p.total_price || 0) * aedToBase, { maximumFractionDigits: 0, minimumFractionDigits: 0 })}</p>
+                <p class="text-[17px] font-semibold text-zinc-900 mt-3 tabular-nums">${formatMoney(p.__myValueBase != null ? p.__myValueBase : (parseFloat(p.total_price || 0) * aedToBase), { maximumFractionDigits: 0, minimumFractionDigits: 0 })}
+                  <span class="text-[12px] font-normal text-zinc-400">your share</span></p>
+                <p class="text-[12px] text-zinc-500 mt-0.5">${(p.__ownPct != null ? p.__ownPct : 100)}% of ${Number(p.total_price||0).toLocaleString()} ${p.__propCur || 'AED'}${p.__propCur === 'AED' ? ' · counts toward Golden Visa' : ' · not in Golden Visa (non-AED)'}</p>
                 ${!isOffplan && p.monthly_rent ? `
                 <div class="mt-3 border-t border-zinc-100 pt-3">
                   <div class="flex items-center justify-between mb-2">
