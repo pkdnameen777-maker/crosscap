@@ -602,7 +602,7 @@
               <h2 class="font-display text-xl font-semibold tracking-tight text-zinc-900">Portfolio overview</h2>
               <p class="text-[13px] text-zinc-500 mt-0.5">Real-time consolidated net worth in <span id="overviewBaseCurrencyLabel">AED</span></p>
             </div>
-            <button data-view="add-asset" class="hidden sm:inline-flex items-center gap-2 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13.5px] font-semibold px-4 py-2.5 shadow-soft transition">
+            <button type="button" id="portfolioAddAssetBtn" class="hidden sm:inline-flex items-center gap-2 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13.5px] font-semibold px-4 py-2.5 shadow-soft transition">
               + Add Asset
             </button>
           </div>
@@ -880,130 +880,244 @@
         </div>
 
         <!-- ADD ASSET -->
+        
         <div id="view-add-asset" class="view">
-          <h2 class="font-display text-xl font-semibold tracking-tight mb-2">Add Asset</h2>
-          <p class="text-[14px] text-zinc-500 mb-6">Log your stocks, gold, or crypto assets</p>
+          <div class="mb-6">
+            <h2 class="font-display text-xl font-semibold tracking-tight mb-2">Add Asset</h2>
+            <p class="text-[14px] text-zinc-500 mb-2">Choose a category — each form only shows that asset type.</p>
+          </div>
 
-          <div class="cc-panel p-6 max-w-xl ring-1 ring-brand-50/80">
+          <!-- Category picker (home / main Add Asset) -->
+          <div id="addCategoryPicker" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
+            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-brand-300 hover:shadow-soft transition" data-add-cat="stocks">
+              <p class="text-[15px] font-semibold text-zinc-900">Stocks &amp; ETFs</p>
+              <p class="text-[12px] text-zinc-500 mt-1">Global exchanges · tickers only</p>
+            </button>
+            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-amber-300 hover:shadow-soft transition" data-add-cat="gold">
+              <p class="text-[15px] font-semibold text-zinc-900">Gold &amp; Silver</p>
+              <p class="text-[12px] text-zinc-500 mt-1">Physical or digital · pick currency</p>
+            </button>
+            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-violet-300 hover:shadow-soft transition" data-add-cat="crypto">
+              <p class="text-[15px] font-semibold text-zinc-900">Crypto</p>
+              <p class="text-[12px] text-zinc-500 mt-1">BTC, ETH, and other coins</p>
+            </button>
+            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-brand-300 hover:shadow-soft transition" data-add-cat="property">
+              <p class="text-[15px] font-semibold text-zinc-900">Real Estate</p>
+              <p class="text-[12px] text-zinc-500 mt-1">Ready / off-plan · installments</p>
+            </button>
+            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-emerald-300 hover:shadow-soft transition" data-add-cat="cash">
+              <p class="text-[15px] font-semibold text-zinc-900">Cash &amp; Bank</p>
+              <p class="text-[12px] text-zinc-500 mt-1">Accounts, cards, receivables</p>
+            </button>
+            <button type="button" class="add-cat-btn text-left rounded-2xl border border-zinc-200 bg-white p-4 hover:border-zinc-400 hover:shadow-soft transition" data-add-cat="alt">
+              <p class="text-[15px] font-semibold text-zinc-900">Other assets</p>
+              <p class="text-[12px] text-zinc-500 mt-1">Funds, FDs, bonds, vehicles, business</p>
+            </button>
+          </div>
+
+          <!-- STOCKS form -->
+          <div id="addFormStocks" class="cc-panel p-6 max-w-xl ring-1 ring-brand-50/80 hidden">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-semibold text-base text-zinc-900">Add stock / ETF</h3>
+              <button type="button" class="add-cat-back text-[12px] font-semibold text-brand-700 hover:underline">← All categories</button>
+            </div>
             <div class="space-y-4">
               <div>
-                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Ticker Symbol / Name</label>
-                <input id="assetSymbol" type="text" placeholder="e.g. EMAAR, AAPL, BTC, 0Gold vault, Paytm Gold, physical" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Ticker symbol</label>
+                <input id="stockSymbol" type="text" placeholder="e.g. EMAAR, AAPL, RELIANCE, SPY" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]" />
               </div>
               <div>
-                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Market</label>
-                <select id="assetMarket" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]">
-                  <optgroup label="GCC">
-                    <option value="UAE" data-currency="AED" selected>United Arab Emirates (AED) — DFM / ADX</option>
-                    <option value="SA" data-currency="SAR">Saudi Arabia (SAR) — Tadawul</option>
-                    <option value="QA" data-currency="QAR">Qatar (QAR) — QSE</option>
-                    <option value="KW" data-currency="KWD">Kuwait (KWD) — Boursa</option>
-                    <option value="BH" data-currency="BHD">Bahrain (BHD) — BHB</option>
-                  </optgroup>
-                  <optgroup label="South Asia">
-                    <option value="IN" data-currency="INR">India (INR) — NSE / BSE</option>
-                    <option value="PK" data-currency="PKR">Pakistan (PKR) — PSX</option>
-                  </optgroup>
-                  <optgroup label="Developed markets">
-                    <option value="US" data-currency="USD">United States (USD) — NYSE / NASDAQ</option>
-                    <option value="UK" data-currency="GBP">United Kingdom (GBP) — LSE</option>
-                    <option value="EU" data-currency="EUR">Europe (EUR) — Euronext / major EU</option>
-                    <option value="JP" data-currency="JPY">Japan (JPY) — TSE</option>
-                    <option value="AU" data-currency="AUD">Australia (AUD) — ASX</option>
-                  </optgroup>
-                  <optgroup label="Asia">
-                    <option value="HK" data-currency="HKD">Hong Kong (HKD) — HKEX</option>
-                    <option value="SG" data-currency="SGD">Singapore (SGD) — SGX</option>
-                    <option value="CN" data-currency="CNY">China (CNY) — SSE / SZSE</option>
-                  </optgroup>
-                  <optgroup label="MENA other">
-                    <option value="EG" data-currency="EGP">Egypt (EGP) — EGX</option>
-                  </optgroup>
-                  <optgroup label="Crypto">
-                    <option value="CRYPTO" data-currency="USD">Crypto (USD)</option>
-                  </optgroup>
-                  <optgroup label="Gold (currency you paid in)">
-                    <option value="GOLD_AED" data-currency="AED">Gold — AED</option>
-                    <option value="GOLD_SAR" data-currency="SAR">Gold — SAR</option>
-                    <option value="GOLD_QAR" data-currency="QAR">Gold — QAR</option>
-                    <option value="GOLD_KWD" data-currency="KWD">Gold — KWD</option>
-                    <option value="GOLD_BHD" data-currency="BHD">Gold — BHD</option>
-                    <option value="GOLD_OMR" data-currency="OMR">Gold — OMR</option>
-                    <option value="GOLD_USD" data-currency="USD">Gold — USD</option>
-                    <option value="GOLD_EUR" data-currency="EUR">Gold — EUR</option>
-                    <option value="GOLD_GBP" data-currency="GBP">Gold — GBP</option>
-                    <option value="GOLD_CHF" data-currency="CHF">Gold — CHF</option>
-                    <option value="GOLD_INR" data-currency="INR">Gold — INR</option>
-                    <option value="GOLD_PKR" data-currency="PKR">Gold — PKR</option>
-                    <option value="GOLD_BDT" data-currency="BDT">Gold — BDT</option>
-                    <option value="GOLD_EGP" data-currency="EGP">Gold — EGP</option>
-                    <option value="GOLD_TRY" data-currency="TRY">Gold — TRY</option>
-                    <option value="GOLD_JPY" data-currency="JPY">Gold — JPY</option>
-                    <option value="GOLD_CNY" data-currency="CNY">Gold — CNY</option>
-                    <option value="GOLD_HKD" data-currency="HKD">Gold — HKD</option>
-                    <option value="GOLD_SGD" data-currency="SGD">Gold — SGD</option>
-                    <option value="GOLD_AUD" data-currency="AUD">Gold — AUD</option>
-                    <option value="GOLD_CAD" data-currency="CAD">Gold — CAD</option>
-                    <option value="GOLD_NZD" data-currency="NZD">Gold — NZD</option>
-                    <option value="GOLD_MYR" data-currency="MYR">Gold — MYR</option>
-                    <option value="GOLD_IDR" data-currency="IDR">Gold — IDR</option>
-                    <option value="GOLD_THB" data-currency="THB">Gold — THB</option>
-                    <option value="GOLD_PHP" data-currency="PHP">Gold — PHP</option>
-                    <option value="GOLD_KRW" data-currency="KRW">Gold — KRW</option>
-                    <option value="GOLD_ZAR" data-currency="ZAR">Gold — ZAR</option>
-                    <option value="GOLD_BRL" data-currency="BRL">Gold — BRL</option>
-                    <option value="GOLD_MXN" data-currency="MXN">Gold — MXN</option>
-                  </optgroup>
-                  <optgroup label="Silver (currency you paid in)">
-                    <option value="SILVER_AED" data-currency="AED">Silver — AED</option>
-                    <option value="SILVER_SAR" data-currency="SAR">Silver — SAR</option>
-                    <option value="SILVER_QAR" data-currency="QAR">Silver — QAR</option>
-                    <option value="SILVER_KWD" data-currency="KWD">Silver — KWD</option>
-                    <option value="SILVER_BHD" data-currency="BHD">Silver — BHD</option>
-                    <option value="SILVER_OMR" data-currency="OMR">Silver — OMR</option>
-                    <option value="SILVER_USD" data-currency="USD">Silver — USD</option>
-                    <option value="SILVER_EUR" data-currency="EUR">Silver — EUR</option>
-                    <option value="SILVER_GBP" data-currency="GBP">Silver — GBP</option>
-                    <option value="SILVER_CHF" data-currency="CHF">Silver — CHF</option>
-                    <option value="SILVER_INR" data-currency="INR">Silver — INR</option>
-                    <option value="SILVER_PKR" data-currency="PKR">Silver — PKR</option>
-                    <option value="SILVER_BDT" data-currency="BDT">Silver — BDT</option>
-                    <option value="SILVER_EGP" data-currency="EGP">Silver — EGP</option>
-                    <option value="SILVER_TRY" data-currency="TRY">Silver — TRY</option>
-                    <option value="SILVER_JPY" data-currency="JPY">Silver — JPY</option>
-                    <option value="SILVER_CNY" data-currency="CNY">Silver — CNY</option>
-                    <option value="SILVER_HKD" data-currency="HKD">Silver — HKD</option>
-                    <option value="SILVER_SGD" data-currency="SGD">Silver — SGD</option>
-                    <option value="SILVER_AUD" data-currency="AUD">Silver — AUD</option>
-                    <option value="SILVER_CAD" data-currency="CAD">Silver — CAD</option>
-                    <option value="SILVER_NZD" data-currency="NZD">Silver — NZD</option>
-                    <option value="SILVER_MYR" data-currency="MYR">Silver — MYR</option>
-                    <option value="SILVER_IDR" data-currency="IDR">Silver — IDR</option>
-                    <option value="SILVER_THB" data-currency="THB">Silver — THB</option>
-                    <option value="SILVER_PHP" data-currency="PHP">Silver — PHP</option>
-                    <option value="SILVER_KRW" data-currency="KRW">Silver — KRW</option>
-                    <option value="SILVER_ZAR" data-currency="ZAR">Silver — ZAR</option>
-                    <option value="SILVER_BRL" data-currency="BRL">Silver — BRL</option>
-                    <option value="SILVER_MXN" data-currency="MXN">Silver — MXN</option>
-                  </optgroup>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Exchange / market</label>
+                <select id="stockMarket" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]">
+
+                    <optgroup label="GCC">
+                      <option value="UAE" data-currency="AED" selected>United Arab Emirates (AED) — DFM / ADX</option>
+                      <option value="SA" data-currency="SAR">Saudi Arabia (SAR) — Tadawul</option>
+                      <option value="QA" data-currency="QAR">Qatar (QAR) — QSE</option>
+                      <option value="KW" data-currency="KWD">Kuwait (KWD) — Boursa</option>
+                      <option value="BH" data-currency="BHD">Bahrain (BHD) — BHB</option>
+                      <option value="OM" data-currency="OMR">Oman (OMR) — MSX</option>
+                    </optgroup>
+                    <optgroup label="South Asia">
+                      <option value="IN" data-currency="INR">India (INR) — NSE / BSE</option>
+                      <option value="PK" data-currency="PKR">Pakistan (PKR) — PSX</option>
+                      <option value="BD" data-currency="BDT">Bangladesh (BDT) — DSE</option>
+                      <option value="LK" data-currency="LKR">Sri Lanka (LKR) — CSE</option>
+                    </optgroup>
+                    <optgroup label="Americas">
+                      <option value="US" data-currency="USD">United States (USD) — NYSE / NASDAQ</option>
+                      <option value="CA" data-currency="CAD">Canada (CAD) — TSX</option>
+                      <option value="BR" data-currency="BRL">Brazil (BRL) — B3</option>
+                      <option value="MX" data-currency="MXN">Mexico (MXN) — BMV</option>
+                    </optgroup>
+                    <optgroup label="Europe">
+                      <option value="UK" data-currency="GBP">United Kingdom (GBP) — LSE</option>
+                      <option value="EU" data-currency="EUR">Europe (EUR) — Euronext / major EU</option>
+                      <option value="DE" data-currency="EUR">Germany (EUR) — Xetra / Frankfurt</option>
+                      <option value="CH" data-currency="CHF">Switzerland (CHF) — SIX</option>
+                      <option value="SE" data-currency="SEK">Sweden (SEK) — Nasdaq Stockholm</option>
+                    </optgroup>
+                    <optgroup label="Asia-Pacific">
+                      <option value="JP" data-currency="JPY">Japan (JPY) — TSE</option>
+                      <option value="HK" data-currency="HKD">Hong Kong (HKD) — HKEX</option>
+                      <option value="CN" data-currency="CNY">China (CNY) — SSE / SZSE</option>
+                      <option value="SG" data-currency="SGD">Singapore (SGD) — SGX</option>
+                      <option value="AU" data-currency="AUD">Australia (AUD) — ASX</option>
+                      <option value="KR" data-currency="KRW">South Korea (KRW) — KRX</option>
+                      <option value="TW" data-currency="TWD">Taiwan (TWD) — TWSE</option>
+                      <option value="MY" data-currency="MYR">Malaysia (MYR) — Bursa</option>
+                      <option value="ID" data-currency="IDR">Indonesia (IDR) — IDX</option>
+                      <option value="TH" data-currency="THB">Thailand (THB) — SET</option>
+                      <option value="PH" data-currency="PHP">Philippines (PHP) — PSE</option>
+                      <option value="NZ" data-currency="NZD">New Zealand (NZD) — NZX</option>
+                    </optgroup>
+                    <optgroup label="MENA other">
+                      <option value="EG" data-currency="EGP">Egypt (EGP) — EGX</option>
+                      <option value="TR" data-currency="TRY">Turkey (TRY) — BIST</option>
+                      <option value="ZA" data-currency="ZAR">South Africa (ZAR) — JSE</option>
+                    </optgroup>
+
                 </select>
               </div>
               <div>
-                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Quantity / Shares</label>
-                <input id="assetShares" type="number" step="any" placeholder="10" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]" />
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Quantity / shares</label>
+                <input id="stockShares" type="number" step="any" placeholder="10" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]" />
               </div>
               <div>
-                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Average Purchase Price <span id="priceCurrencyLabel" class="text-brand-700">(USD)</span></label>
-                <input id="assetPrice" type="number" step="any" placeholder="Price in market currency" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]" />
-                <p class="text-[11px] text-zinc-400 mt-1.5">Enter cost in the market&apos;s local currency. Dashboard totals convert to your base currency.</p>
-                <p id="assetGoldHint" class="hidden text-[11px] text-brand-700 mt-1.5 leading-relaxed">Digital gold / silver: use the <strong>platform or vault name</strong> as the symbol (e.g. 0Gold, Paytm Gold, PhonePe Gold, broker vault). Choose the <strong>currency you paid in</strong> under Market — not the app name.</p>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Avg cost <span id="stockCurLabel" class="text-zinc-400">(AED)</span></label>
+                <input id="stockPrice" type="number" step="any" placeholder="Price in market currency" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]" />
               </div>
-              <button id="saveAssetBtn" class="w-full rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[14px] font-semibold px-5 py-3 shadow transition">Save to Portfolio</button>
+              <button type="button" id="saveStockBtn" class="w-full rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[14px] font-semibold px-5 py-3">Save stock</button>
             </div>
+          </div>
+
+          <!-- GOLD / SILVER form -->
+          <div id="addFormGold" class="cc-panel p-6 max-w-xl ring-1 ring-amber-50/80 hidden">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-semibold text-base text-zinc-900">Add gold / silver</h3>
+              <button type="button" class="add-cat-back text-[12px] font-semibold text-brand-700 hover:underline">← All categories</button>
+            </div>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Metal</label>
+                <select id="metalType" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]">
+                  <option value="GOLD" selected>Gold</option>
+                  <option value="SILVER">Silver</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Form</label>
+                <select id="metalForm" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]">
+                  <option value="physical" selected>Physical (bars, coins, jewellery)</option>
+                  <option value="digital">Digital (app vault / platform)</option>
+                </select>
+                <p class="text-[11px] text-zinc-400 mt-1.5">Digital examples: 0Gold, Paytm Gold, PhonePe Gold, broker vault — enter the platform name below.</p>
+              </div>
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Name / platform / vault</label>
+                <input id="metalName" type="text" placeholder="e.g. Physical bar, 0Gold, Paytm Gold" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]" />
+              </div>
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Currency you paid in</label>
+                <select id="metalCurrency" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]">
+
+                    <optgroup label="GCC">
+                      <option value="AED" selected>AED — UAE Dirham</option>
+                      <option value="SAR">SAR — Saudi Riyal</option>
+                      <option value="QAR">QAR — Qatari Riyal</option>
+                      <option value="KWD">KWD — Kuwaiti Dinar</option>
+                      <option value="BHD">BHD — Bahraini Dinar</option>
+                      <option value="OMR">OMR — Omani Rial</option>
+                    </optgroup>
+                    <optgroup label="South Asia">
+                      <option value="INR">INR — Indian Rupee</option>
+                      <option value="PKR">PKR — Pakistani Rupee</option>
+                      <option value="BDT">BDT — Bangladeshi Taka</option>
+                      <option value="LKR">LKR — Sri Lankan Rupee</option>
+                      <option value="NPR">NPR — Nepalese Rupee</option>
+                    </optgroup>
+                    <optgroup label="Major global">
+                      <option value="USD">USD — US Dollar</option>
+                      <option value="EUR">EUR — Euro</option>
+                      <option value="GBP">GBP — British Pound</option>
+                      <option value="CHF">CHF — Swiss Franc</option>
+                      <option value="JPY">JPY — Japanese Yen</option>
+                      <option value="CNY">CNY — Chinese Yuan</option>
+                      <option value="HKD">HKD — Hong Kong Dollar</option>
+                      <option value="SGD">SGD — Singapore Dollar</option>
+                      <option value="AUD">AUD — Australian Dollar</option>
+                      <option value="CAD">CAD — Canadian Dollar</option>
+                      <option value="NZD">NZD — New Zealand Dollar</option>
+                    </optgroup>
+                    <optgroup label="MENA &amp; Africa">
+                      <option value="EGP">EGP — Egyptian Pound</option>
+                      <option value="JOD">JOD — Jordanian Dinar</option>
+                      <option value="TRY">TRY — Turkish Lira</option>
+                      <option value="ZAR">ZAR — South African Rand</option>
+                      <option value="NGN">NGN — Nigerian Naira</option>
+                      <option value="KES">KES — Kenyan Shilling</option>
+                    </optgroup>
+                    <optgroup label="Asia-Pacific">
+                      <option value="KRW">KRW — South Korean Won</option>
+                      <option value="THB">THB — Thai Baht</option>
+                      <option value="MYR">MYR — Malaysian Ringgit</option>
+                      <option value="IDR">IDR — Indonesian Rupiah</option>
+                      <option value="PHP">PHP — Philippine Peso</option>
+                      <option value="VND">VND — Vietnamese Dong</option>
+                    </optgroup>
+                    <optgroup label="Other">
+                      <option value="SEK">SEK — Swedish Krona</option>
+                      <option value="NOK">NOK — Norwegian Krone</option>
+                      <option value="DKK">DKK — Danish Krone</option>
+                      <option value="PLN">PLN — Polish Zloty</option>
+                      <option value="BRL">BRL — Brazilian Real</option>
+                      <option value="MXN">MXN — Mexican Peso</option>
+                      <option value="RUB">RUB — Russian Ruble</option>
+                    </optgroup>
+
+                </select>
+              </div>
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Quantity (grams)</label>
+                <input id="metalQty" type="number" step="any" placeholder="e.g. 10" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]" />
+              </div>
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Cost per gram (in selected currency)</label>
+                <input id="metalPrice" type="number" step="any" placeholder="Cost / gram" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]" />
+              </div>
+              <button type="button" id="saveMetalBtn" class="w-full rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-[14px] font-semibold px-5 py-3">Save gold / silver</button>
+            </div>
+          </div>
+
+          <!-- CRYPTO form -->
+          <div id="addFormCrypto" class="cc-panel p-6 max-w-xl ring-1 ring-violet-50/80 hidden">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-semibold text-base text-zinc-900">Add crypto</h3>
+              <button type="button" class="add-cat-back text-[12px] font-semibold text-brand-700 hover:underline">← All categories</button>
+            </div>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Coin / token</label>
+                <input id="cryptoSymbol" type="text" placeholder="e.g. BTC, ETH, SOL" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]" />
+              </div>
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Quantity</label>
+                <input id="cryptoQty" type="number" step="any" placeholder="0.5" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]" />
+              </div>
+              <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Avg cost (USD)</label>
+                <input id="cryptoPrice" type="number" step="any" placeholder="Price in USD" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]" />
+              </div>
+              <button type="button" id="saveCryptoBtn" class="w-full rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-[14px] font-semibold px-5 py-3">Save crypto</button>
+            </div>
+          </div>
+
+          <!-- Legacy fields kept hidden for any old JS references -->
+          <div class="hidden" aria-hidden="true">
+            <input id="assetSymbol" /><select id="assetMarket"></select><input id="assetShares" /><input id="assetPrice" /><button id="saveAssetBtn"></button>
           </div>
         </div>
 
-        <!-- REAL ESTATE -->
         <div id="view-real-estate" class="view">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
@@ -2465,30 +2579,12 @@
         syncCurrencyLabel();
       }
 
-      document.getElementById('saveAssetBtn').addEventListener('click', async () => {
-        if (!currentUser) return;
-
-        const symbol = document.getElementById('assetSymbol').value.trim().toUpperCase();
-        const market = document.getElementById('assetMarket').value;
-        const shares = parseFloat(document.getElementById('assetShares').value);
-        const avg_buy_price = parseFloat(document.getElementById('assetPrice').value);
-
-        if (!symbol || isNaN(shares) || isNaN(avg_buy_price)) {
-          alert('Please enter valid asset details.');
-          return;
-        }
-
-        const marketSelect = document.getElementById('assetMarket');
-        const currency = marketSelect.options[marketSelect.selectedIndex].getAttribute('data-currency') || 'USD';
-
-        // Same symbol + market → update (weighted avg) instead of second row
+      async function upsertHolding({ symbol, market, currency, shares, avg_buy_price, asset_type }) {
         const { data: existingH } = await supabaseClient.from('holdings').select('*')
           .eq('user_id', currentUser.id)
           .ilike('symbol', symbol)
           .eq('market', market)
           .maybeSingle();
-
-        let error = null;
         if (existingH) {
           const oldSh = Number(existingH.shares) || 0;
           const oldAvg = Number(existingH.avg_buy_price) || 0;
@@ -2499,31 +2595,123 @@
             avg_buy_price: newAvg,
             currency
           }).eq('id', existingH.id);
-          error = res.error;
-          if (!error) alert('Updated existing holding (merged quantity).');
-        } else {
-          const res = await supabaseClient.from('holdings').insert([{
-            user_id: currentUser.id,
-            symbol,
-            market,
-            asset_type: 'stocks',
-            shares,
-            avg_buy_price,
-            currency
-          }]);
-          error = res.error;
+          if (res.error) throw new Error(res.error.message);
+          return 'merged';
         }
+        const res = await supabaseClient.from('holdings').insert([{
+          user_id: currentUser.id,
+          symbol,
+          market,
+          asset_type: asset_type || 'stocks',
+          shares,
+          avg_buy_price,
+          currency
+        }]);
+        if (res.error) throw new Error(res.error.message);
+        return 'created';
+      }
 
-        if (error) {
-          alert('Error saving asset: ' + error.message);
-        } else {
-          document.getElementById('assetSymbol').value = '';
-          document.getElementById('assetShares').value = '';
-          document.getElementById('assetPrice').value = '';
+      function showAddCategory(cat) {
+        const picker = document.getElementById('addCategoryPicker');
+        const forms = {
+          stocks: document.getElementById('addFormStocks'),
+          gold: document.getElementById('addFormGold'),
+          crypto: document.getElementById('addFormCrypto')
+        };
+        Object.values(forms).forEach(f => f && f.classList.add('hidden'));
+        if (!cat || cat === 'all') {
+          if (picker) picker.classList.remove('hidden');
+          return;
+        }
+        if (cat === 'property') { showView('real-estate'); const f = document.getElementById('form-property'); if (f) f.classList.remove('hidden'); return; }
+        if (cat === 'cash') { showView('cash'); return; }
+        if (cat === 'alt') { showView('alt-assets'); return; }
+        if (picker) picker.classList.add('hidden');
+        if (forms[cat]) forms[cat].classList.remove('hidden');
+        showView('add-asset');
+      }
+      window.showAddCategory = showAddCategory;
+
+      document.querySelectorAll('.add-cat-btn').forEach(btn => {
+        btn.addEventListener('click', () => showAddCategory(btn.getAttribute('data-add-cat')));
+      });
+      document.querySelectorAll('.add-cat-back').forEach(btn => {
+        btn.addEventListener('click', () => showAddCategory('all'));
+      });
+
+      document.getElementById('stockMarket')?.addEventListener('change', () => {
+        const el = document.getElementById('stockMarket');
+        const cur = el?.options[el.selectedIndex]?.getAttribute('data-currency') || '';
+        const lab = document.getElementById('stockCurLabel');
+        if (lab) lab.textContent = cur ? '(' + cur + ')' : '';
+      });
+
+      document.getElementById('saveStockBtn')?.addEventListener('click', async () => {
+        if (!currentUser) return;
+        const symbol = document.getElementById('stockSymbol').value.trim().toUpperCase();
+        const marketEl = document.getElementById('stockMarket');
+        const market = marketEl.value;
+        const currency = marketEl.options[marketEl.selectedIndex].getAttribute('data-currency') || 'USD';
+        const shares = parseFloat(document.getElementById('stockShares').value);
+        const avg_buy_price = parseFloat(document.getElementById('stockPrice').value);
+        if (!symbol || isNaN(shares) || isNaN(avg_buy_price)) { alert('Enter ticker, quantity, and cost.'); return; }
+        try {
+          const r = await upsertHolding({ symbol, market, currency, shares, avg_buy_price, asset_type: 'stocks' });
+          if (r === 'merged') alert('Updated existing stock holding (merged quantity).');
+          document.getElementById('stockSymbol').value = '';
+          document.getElementById('stockShares').value = '';
+          document.getElementById('stockPrice').value = '';
+          portfolioAssetFilter = 'stocks';
           showView('portfolio');
           loadPortfolio();
-        }
+        } catch (e) { alert('Error: ' + e.message); }
       });
+
+      document.getElementById('saveMetalBtn')?.addEventListener('click', async () => {
+        if (!currentUser) return;
+        const metal = (document.getElementById('metalType').value || 'GOLD').toUpperCase();
+        const form = document.getElementById('metalForm').value || 'physical';
+        const name = document.getElementById('metalName').value.trim() || (form === 'digital' ? 'Digital ' + metal : 'Physical ' + metal);
+        const currency = (document.getElementById('metalCurrency').value || 'AED').toUpperCase();
+        const shares = parseFloat(document.getElementById('metalQty').value);
+        const avg_buy_price = parseFloat(document.getElementById('metalPrice').value);
+        if (!name || isNaN(shares) || isNaN(avg_buy_price)) { alert('Enter name, grams, and cost per gram.'); return; }
+        const market = metal + '_' + currency; // GOLD_AED, SILVER_USD, etc.
+        const symbol = name.toUpperCase();
+        try {
+          const r = await upsertHolding({ symbol, market, currency, shares, avg_buy_price, asset_type: metal.toLowerCase() });
+          if (r === 'merged') alert('Updated existing metal holding (merged quantity).');
+          document.getElementById('metalName').value = '';
+          document.getElementById('metalQty').value = '';
+          document.getElementById('metalPrice').value = '';
+          portfolioAssetFilter = 'gold';
+          showView('portfolio');
+          loadPortfolio();
+        } catch (e) { alert('Error: ' + e.message); }
+      });
+
+      document.getElementById('saveCryptoBtn')?.addEventListener('click', async () => {
+        if (!currentUser) return;
+        const symbol = document.getElementById('cryptoSymbol').value.trim().toUpperCase();
+        const shares = parseFloat(document.getElementById('cryptoQty').value);
+        const avg_buy_price = parseFloat(document.getElementById('cryptoPrice').value);
+        if (!symbol || isNaN(shares) || isNaN(avg_buy_price)) { alert('Enter coin, quantity, and USD cost.'); return; }
+        try {
+          const r = await upsertHolding({ symbol, market: 'CRYPTO', currency: 'USD', shares, avg_buy_price, asset_type: 'crypto' });
+          if (r === 'merged') alert('Updated existing crypto holding (merged quantity).');
+          document.getElementById('cryptoSymbol').value = '';
+          document.getElementById('cryptoQty').value = '';
+          document.getElementById('cryptoPrice').value = '';
+          portfolioAssetFilter = 'crypto';
+          showView('portfolio');
+          loadPortfolio();
+        } catch (e) { alert('Error: ' + e.message); }
+      });
+
+      // When opening Add Asset from nav: show category picker; from portfolio filter: that form only
+      const _origShowView = showView;
+      // patched after showView defined — see below hook
+
 
       // ---- Real Estate helpers ----
       const RESIDENTIAL_TYPES = ['Apartment', 'Villa', 'Townhouse', 'Penthouse', 'Land'];
@@ -5979,8 +6167,12 @@
             portfolioAssetFilter = filter || 'all';
           }
           showView(view);
-          // Highlight the exact nav item clicked (not all portfolio links)
           setSidebarActive(btn);
+          if (view === 'add-asset') {
+            // Main Add Asset → all categories; if coming from a sleeve context use filter
+            const prefer = btn.getAttribute('data-add-cat') || (portfolioAssetFilter && portfolioAssetFilter !== 'all' ? portfolioAssetFilter : 'all');
+            if (typeof showAddCategory === 'function') showAddCategory(prefer === 'all' ? 'all' : prefer);
+          }
           if (view === 'portfolio') {
             applyPortfolioAssetFilter();
             if (portfolioAssetFilter === 'stocks') loadDividends();
@@ -5988,6 +6180,18 @@
           if (window.innerWidth < 1024) closeSidebar();
         });
       });
+
+      // Portfolio "+ Add Asset" opens the form for the current sleeve only
+      document.getElementById('portfolioAddAssetBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const cat = (typeof portfolioAssetFilter === 'string' && portfolioAssetFilter !== 'all')
+          ? portfolioAssetFilter : 'all';
+        showView('add-asset');
+        if (typeof showAddCategory === 'function') showAddCategory(cat);
+      }, true);
+
+      // Mobile / other + Add Asset links with data-view=add-asset still go to picker unless data-add-cat set
     });
   </script>
 
