@@ -5839,102 +5839,118 @@
         };
       }
 
+      
       /** Instant answers from your data — no remote AI (avoids HTTP 546 / long waits) */
       function answerChatLocally(question, snap) {
-        const q = (question || '').toLowerCase();
+        const q = (question || '').toLowerCase().trim();
         const bc = snap.base_currency || 'AED';
         const fmt = (n) => bc + ' ' + Math.round(Number(n) || 0).toLocaleString();
+        const pays = snap.upcoming_payments || [];
 
-        const wantsDebt = /owe|owing|debt|liabilit|instal+ment|payment|due|payable|what.*(pay|owe)|next (\d+|six|6) month|6 month|six month|30 day|radar/.test(q);
-        const wantsNw = /net worth|how much.*(worth|have)|total wealth|portfolio value|what do i (own|have)/.test(q);
-        const wantsGv = /golden visa|2\s*m|2,000,000|visa progress/.test(q);
-        const wantsSplit = /split|allocation|breakdown|where is my money|concentrat/.test(q);
+        const debtLike = /owe|owing|debt|liabilit|instal|payment|due|payable|pay\b|radar|schedule|upcoming|next\s*\d|6\s*month|six\s*month|30\s*day|what.*owe|everything i owe|i owe|must pay|have to pay|bills?/.test(q);
+        const nwLike = /net\s*worth|how much.*(worth|have|own)|total\s*wealth|portfolio\s*value|what do i (own|have)|my\s*money|balance\s*sheet|assets?/.test(q);
+        const gvLike = /golden\s*visa|2\s*m|2,000,000|visa\s*progress|eligibility/.test(q);
+        const splitLike = /split|allocation|breakdown|where is my money|concentrat|diversif/.test(q);
+        const goldLike = /gold|silver|metal/.test(q) && !debtLike;
+        const stockLike = /stock|etf|equity|share\b/.test(q) && !debtLike;
+        const cryptoLike = /crypto|bitcoin|btc|eth/.test(q);
 
-        if (wantsDebt) {
+        if (debtLike) {
           const lines = [];
           lines.push('What you owe / pay soon (from your CrossCap records):');
           lines.push('');
-          const pays = snap.upcoming_payments || [];
-          const horizon = /6 month|six month|180/.test(q) ? 180 : (/30|month/.test(q) ? 30 : 180);
+          let horizon = 180;
+          if (/\b30\b|one month|1 month/.test(q) && !/6|six|180/.test(q)) horizon = 30;
+          if (/year|12\s*month/.test(q)) horizon = 365;
           const filtered = pays.filter(p => p.days <= horizon);
           if (filtered.length) {
-            lines.push('Property installments (your share) in the next ' + (horizon <= 30 ? '30 days' : '6 months') + ':');
+            lines.push('Property installments (your share) — next ' + (horizon <= 30 ? '30 days' : horizon <= 180 ? '6 months' : '12 months') + ':');
             filtered.forEach(p => {
               const when = p.days < 0 ? ('OVERDUE ' + Math.abs(p.days) + 'd') : ('in ' + p.days + 'd');
               lines.push('• ' + p.name + ' — ' + (p.stage || 'Installment') + ': ' + fmt(p.amount) + ' · due ' + p.due_date + ' (' + when + ')');
             });
-            const sum = filtered.reduce((s, p) => s + (p.days < 0 ? 0 : p.amount), 0);
-            const ov = filtered.filter(p => p.days < 0).reduce((s, p) => s + p.amount, 0);
+            const sum = filtered.reduce((s, p) => s + (p.days < 0 ? 0 : (p.amount || 0)), 0);
+            const ov = filtered.filter(p => p.days < 0).reduce((s, p) => s + (p.amount || 0), 0);
             lines.push('');
             lines.push('Upcoming installments total: ' + fmt(sum));
             if (ov) lines.push('Already overdue: ' + fmt(ov));
           } else {
-            lines.push('No unpaid property installments in the next ' + (horizon <= 30 ? '30 days' : '6 months') + '.');
+            lines.push('No unpaid property installments in that window.');
           }
           lines.push('');
           lines.push('Standing balances (cards / loans):');
           lines.push('• Credit cards: ' + fmt(snap.cash?.credit_card || 0));
           lines.push('• Other loans / debt: ' + fmt(snap.cash?.debt || 0));
-          if ((snap.debt_lines || []).length) {
-            snap.debt_lines.forEach(d => {
-              lines.push('  – ' + d.name + ' (' + d.type.replace(/_/g, ' ') + '): ' + fmt(d.balance));
-            });
-          }
+          (snap.debt_lines || []).forEach(d => {
+            lines.push('  – ' + d.name + ' (' + String(d.type || '').replace(/_/g, ' ') + '): ' + fmt(d.balance));
+          });
           lines.push('');
           lines.push('Total liabilities on record: ' + fmt(snap.liabilities_total || 0));
+          lines.push('Installments next 30d: ' + fmt(snap.installments?.due_30d || 0) + ' · next 6m: ' + fmt(snap.installments?.due_6m || 0));
           lines.push('');
-          lines.push('Instant from your data · not advice. Open Real Estate or Cash & Bank to edit.');
+          lines.push('Instant from your data · not financial advice.');
           return lines.join('\n');
         }
 
-        if (wantsNw) {
-          return [
-            'Net worth snapshot (' + bc + '):',
-            '• Net worth: ' + fmt(snap.net_worth),
-            '• Gross assets: ' + fmt(snap.gross_assets),
-            '• Liquid (stocks/gold/crypto): ' + fmt(snap.liquid_portfolio),
-            '• Real estate (your share): ' + fmt(snap.real_estate),
-            '• Other assets: ' + fmt(snap.other_assets),
-            '• Bank / cash: ' + fmt(snap.cash?.bank || 0),
-            '• Liabilities: ' + fmt(snap.liabilities_total || 0),
-            '',
-            'Instant from your dashboard · not advice.'
-          ].join('\n');
-        }
-
-        if (wantsGv) {
+        if (gvLike) {
           const aed = snap.golden_visa?.property_aed || 0;
           const tgt = snap.golden_visa?.target_aed || 2000000;
           const pct = Math.min(100, (aed / tgt) * 100);
           return [
-            'Golden Visa property progress (AED holdings only × your ownership share):',
-            '• Counted property (AED): AED ' + Math.round(aed).toLocaleString(),
+            'Golden Visa property progress (AED property × your ownership share only):',
+            '• Counted: AED ' + Math.round(aed).toLocaleString(),
             '• Target: AED ' + tgt.toLocaleString(),
             '• Progress: ' + pct.toFixed(1) + '%',
-            snap.golden_visa?.holder ? '• Marked as Golden Visa holder in CrossCap.' : '• Remaining: AED ' + Math.max(0, tgt - aed).toLocaleString(),
+            snap.golden_visa?.holder ? '• Marked Golden Visa holder in CrossCap.' : '• Remaining: AED ' + Math.max(0, Math.round(tgt - aed)).toLocaleString(),
             '',
-            'Verify eligibility on official ICP channels. CrossCap does not approve visas.'
+            'Confirm on official ICP services. CrossCap does not approve visas.'
           ].join('\n');
         }
 
-        if (wantsSplit) {
+        if (splitLike || goldLike || stockLike || cryptoLike) {
           const s = snap.sleeves || {};
-          return [
-            'Allocation (approx, ' + bc + '):',
-            '• Stocks: ' + fmt(s.stocks || 0),
+          const lines = [
+            'Your holdings snapshot (' + bc + '):',
+            '• Stocks / ETFs: ' + fmt(s.stocks || 0),
             '• Gold & silver: ' + fmt(s.gold_silver || 0),
             '• Crypto: ' + fmt(s.crypto || 0),
-            '• Real estate: ' + fmt(snap.real_estate || 0),
-            '• Cash: ' + fmt(snap.cash?.bank || 0),
-            '• Other: ' + fmt(snap.other_assets || 0),
+            '• Real estate (your share): ' + fmt(snap.real_estate || 0),
+            '• Bank / cash: ' + fmt(snap.cash?.bank || 0),
+            '• Other assets: ' + fmt(snap.other_assets || 0),
+            '• Net worth: ' + fmt(snap.net_worth),
             '',
+            'Instant from your dashboard · not advice.'
+          ];
+          return lines.join('\n');
+        }
+
+        if (nwLike || q.length < 8) {
+          return [
+            'Net worth snapshot (' + bc + '):',
+            '• Net worth: ' + fmt(snap.net_worth),
+            '• Gross assets: ' + fmt(snap.gross_assets),
+            '• Liquid portfolio: ' + fmt(snap.liquid_portfolio),
+            '• Real estate: ' + fmt(snap.real_estate),
+            '• Liabilities: ' + fmt(snap.liabilities_total || 0),
+            '• Installments due 30d: ' + fmt(snap.installments?.due_30d || 0),
+            '',
+            'Try: "What do I owe in 6 months?" or "Golden Visa progress".',
             'Instant from your data · not advice.'
           ].join('\n');
         }
 
-        return null; // fall through to remote AI
+        // Default: always answer locally (skip broken/slow remote AI)
+        return [
+          'Quick briefing from your CrossCap data (' + bc + '):',
+          '• Net worth: ' + fmt(snap.net_worth),
+          '• Assets: ' + fmt(snap.gross_assets) + ' · Liabilities: ' + fmt(snap.liabilities_total || 0),
+          '• Installments (30d): ' + fmt(snap.installments?.due_30d || 0) + ' · (6m): ' + fmt(snap.installments?.due_6m || 0),
+          '• Overdue installments: ' + fmt(snap.installments?.overdue || 0),
+          '',
+          'For a full payment list, ask: "Show everything I owe in the next 6 months."',
+          'Instant from your data · not a licensed financial advisor.'
+        ].join('\n');
       }
-
 
       function appendChatBubble(role, message) {
         const box = document.getElementById('aiChatMessages');
@@ -5966,39 +5982,15 @@
         const thinking = box?.lastElementChild;
         try {
           const snapshot = await buildChatSnapshot();
-          // Fast path: structured questions answered from live data (<1s)
-          const local = typeof answerChatLocally === 'function' ? answerChatLocally(q, snapshot) : null;
-          if (local) {
-            if (thinking) thinking.textContent = local;
-            return;
+          // Always answer from live data first (instant). Remote AI optional.
+          let text = typeof answerChatLocally === 'function' ? answerChatLocally(q, snapshot) : null;
+          if (!text) {
+            text = 'Net worth ' + (snapshot.base_currency || 'AED') + ' ' + Math.round(snapshot.net_worth || 0).toLocaleString()
+              + '. Ask: "What do I owe in 6 months?" for payment list.';
           }
-          const { data: sessionData } = await supabaseClient.auth.getSession();
-          const token = sessionData?.session?.access_token;
-          const ctrl = new AbortController();
-          const timer = setTimeout(() => ctrl.abort(), 10000);
-          let res;
-          try {
-            res = await fetch(`${SUPABASE_URL}/functions/v1/ai-cfo-narrative`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token || SUPABASE_ANON_KEY}`,
-                'apikey': SUPABASE_ANON_KEY
-              },
-              body: JSON.stringify({ snapshot, question: q }),
-              signal: ctrl.signal
-            });
-          } finally {
-            clearTimeout(timer);
-          }
-          const json = await res.json().catch(() => ({}));
-          if (!res.ok) throw new Error(json.error || ('HTTP ' + res.status));
-          if (thinking) thinking.textContent = json.narrative || 'No reply.';
+          if (thinking) thinking.textContent = text;
         } catch (err) {
-          const msg = (err && err.name === 'AbortError')
-            ? 'Timed out. Try a shorter question, or ask about net worth / installments / Golden Visa for an instant answer from your data.'
-            : ('Could not reach AI CFO (' + (err.message || err) + '). Try: "What do I owe in the next 6 months?" for an instant data answer.');
-          if (thinking) thinking.textContent = msg;
+          if (thinking) thinking.textContent = 'Could not load your data: ' + (err.message || err);
         }
       });
 
