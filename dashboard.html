@@ -6283,6 +6283,38 @@
         set('cardCryptoValue', 'cardCryptoMeta', k.crypto);
       }
 
+      
+      /** When switching Stocks / Gold / Crypto, never leave the wrong add form open */
+      function syncPortfolioAddFormToFilter() {
+        const cat = (typeof portfolioAssetFilter === 'string') ? portfolioAssetFilter : 'all';
+        const forms = {
+          stocks: document.getElementById('addFormStocks'),
+          gold: document.getElementById('addFormGold'),
+          crypto: document.getElementById('addFormCrypto')
+        };
+        const anyOpen = Object.values(forms).some(f => f && !f.classList.contains('hidden'));
+        Object.values(forms).forEach(f => { if (f) f.classList.add('hidden'); });
+        const title = document.getElementById('portfolioAddPanelTitle');
+        const btnToggle = document.getElementById('btnTogglePortfolioAdd');
+        if (cat === 'stocks' || cat === 'gold' || cat === 'crypto') {
+          if (anyOpen && forms[cat]) {
+            forms[cat].classList.remove('hidden');
+            if (title) {
+              title.classList.remove('hidden');
+              title.textContent = cat === 'stocks' ? 'Add stock / ETF' : (cat === 'gold' ? 'Add gold / silver' : 'Add crypto');
+            }
+          } else if (title) {
+            title.classList.add('hidden');
+          }
+          if (btnToggle) {
+            btnToggle.textContent = cat === 'stocks' ? '+ Add stock' : (cat === 'gold' ? '+ Add gold / silver' : '+ Add crypto');
+          }
+        } else {
+          if (title) title.classList.add('hidden');
+          if (btnToggle) btnToggle.textContent = '+ Add holding';
+        }
+      }
+
       function applyPortfolioAssetFilter() {
         const tbody = document.getElementById('portfolioTableBody');
         if (!tbody) return;
@@ -6348,6 +6380,7 @@
             tr.style.display = (kind === portfolioAssetFilter) ? '' : 'none';
           });
         }
+        if (typeof syncPortfolioAddFormToFilter === 'function') syncPortfolioAddFormToFilter();
       }
 
       function setSidebarActive(btn) {
