@@ -5840,47 +5840,101 @@
       }
 
       
-      /** Instant answers from your data — no remote AI (avoids HTTP 546 / long waits) */
+      
+      
+      /** Instant answers — covers full CrossCap CFO question bank from live data. */
       function answerChatLocally(question, snap) {
-        const q = (question || '').toLowerCase().trim();
+        const q = (question || '').toLowerCase().trim().replace(/[“”‘’]/g, '"');
         const bc = snap.base_currency || 'AED';
         const fmt = (n) => bc + ' ' + Math.round(Number(n) || 0).toLocaleString();
         const pays = snap.upcoming_payments || [];
+        const s = snap.sleeves || {};
+        const cash = snap.cash || {};
+        const gross = Math.max(0, Number(snap.gross_assets) || 0);
+        const net = Number(snap.net_worth) || 0;
+        const baseForPct = gross > 0 ? gross : (Math.abs(net) > 0 ? Math.abs(net) : 0);
+        const pctOf = (part) => {
+          const v = Math.max(0, Number(part) || 0);
+          if (baseForPct <= 0) return 0;
+          return (v / baseForPct) * 100;
+        };
+        const disclaimer = 'Instant from your CrossCap data · not licensed financial advice.';
+        const stocksV = Number(s.stocks) || 0;
+        const goldV = Number(s.gold_silver) || 0;
+        const cryptoV = Number(s.crypto) || 0;
+        const reV = Number(snap.real_estate) || 0;
+        const bankV = Number(cash.bank) || 0;
+        const altV = Number(snap.other_assets) || 0;
+        const liqV = Number(snap.liquid_portfolio) || (stocksV + goldV + cryptoV);
 
-        const debtLike = /owe|owing|debt|liabilit|instal|payment|due|payable|pay\b|radar|schedule|upcoming|next\s*\d|6\s*month|six\s*month|30\s*day|what.*owe|everything i owe|i owe|must pay|have to pay|bills?/.test(q);
-        const nwLike = /net\s*worth|how much.*(worth|have|own)|total\s*wealth|portfolio\s*value|what do i (own|have)|my\s*money|balance\s*sheet|assets?/.test(q);
-        const gvLike = /golden\s*visa|2\s*m|2,000,000|visa\s*progress|eligibility/.test(q);
-        const splitLike = /split|allocation|breakdown|where is my money|concentrat|diversif/.test(q);
-        const goldLike = /gold|silver|metal/.test(q) && !debtLike;
-        const stockLike = /stock|etf|equity|share\b/.test(q) && !debtLike;
-        const cryptoLike = /crypto|bitcoin|btc|eth/.test(q);
+        const debtLike = /owe|owing|debt|liabilit|instal|payment|due|payable|\bpay\b|radar|schedule|upcoming|next\s*\d|6\s*month|six\s*month|30\s*day|everything i owe|i owe|must pay|have to pay|bills?|loan|credit\s*card|standing balance|total debt|what do i owe/.test(q);
+        const nwLike = /net\s*worth|how much.*(worth|have|own)|total\s*wealth|portfolio\s*value|what do i (own|have)|my\s*money|balance\s*sheet|financial position|how am i doing|briefing|summarize|summary|overall|gross assets/.test(q);
+        const gvLike = /golden\s*visa|2\s*m|2,000,000|visa\s*progress|eligibility|eligible|how close.*visa|how much more.*visa|percentage complete/.test(q);
+        const splitLike = /split|allocation|breakdown|where is my money|concentrat|diversif|percentage|percent|%|how much.*(in|of)|share of|portion|wealth split|asset allocation|too concentrated/.test(q);
+        const goldLike = /gold|silver|metal|precious/.test(q);
+        const stockLike = /stock|etf|equity|equities|shareholding/.test(q);
+        const cryptoLike = /crypto|bitcoin|btc|eth\b|digital\s*asset/.test(q);
+        const reLike = /real\s*estate|propert(y|ies)|off-?plan|villa|apartment/.test(q);
+        const cashLike = /cash|bank\s*balance|liquid cash|in the bank|bank total|bank balances/.test(q);
+        const altLike = /other assets?|mutual fund|fixed deposit|\bfd\b|bond|sukuk|vehicle|business ownership/.test(q);
+        const liquidLike = /liquid|liquidity/.test(q);
+        const compareGoldStock = /more in gold|gold or stock|stocks or gold|gold vs|vs gold/.test(q);
+        const performing = /performing|performance|profit|p\/l|gain|loss on stock/.test(q);
 
-        if (debtLike) {
+        function allocationBlock() {
+          return [
+            '• Stocks / ETFs: ' + fmt(stocksV) + ' — ' + pctOf(stocksV).toFixed(1) + '%',
+            '• Gold & silver: ' + fmt(goldV) + ' — ' + pctOf(goldV).toFixed(1) + '%',
+            '• Crypto: ' + fmt(cryptoV) + ' — ' + pctOf(cryptoV).toFixed(1) + '%',
+            '• Real estate (your share): ' + fmt(reV) + ' — ' + pctOf(reV).toFixed(1) + '%',
+            '• Bank / cash: ' + fmt(bankV) + ' — ' + pctOf(bankV).toFixed(1) + '%',
+            '• Other assets: ' + fmt(altV) + ' — ' + pctOf(altV).toFixed(1) + '%',
+            '• Receivables: ' + fmt(cash.receivable || 0),
+            '• Liabilities (cards + loans): ' + fmt(snap.liabilities_total || 0),
+            '• Net worth: ' + fmt(net)
+          ];
+        }
+
+        function concentrationNote() {
+          const parts = [
+            { n: 'Stocks', p: pctOf(stocksV) },
+            { n: 'Gold & silver', p: pctOf(goldV) },
+            { n: 'Crypto', p: pctOf(cryptoV) },
+            { n: 'Real estate', p: pctOf(reV) },
+            { n: 'Cash', p: pctOf(bankV) },
+            { n: 'Other', p: pctOf(altV) }
+          ].sort((a, b) => b.p - a.p);
+          const top = parts[0];
+          if (top.p >= 60) return 'Concentration: ' + top.n + ' is ' + top.p.toFixed(1) + '% of assets — relatively high single-sleeve weight.';
+          if (top.p >= 40) return 'Largest sleeve: ' + top.n + ' at ' + top.p.toFixed(1) + '% of assets.';
+          return 'No single sleeve above 60% — allocation is relatively spread.';
+        }
+
+        function debtAnswer(horizon) {
           const lines = [];
-          lines.push('What you owe / pay soon (from your CrossCap records):');
+          lines.push('What you owe / pay soon (from your records):');
           lines.push('');
-          let horizon = 180;
-          if (/\b30\b|one month|1 month/.test(q) && !/6|six|180/.test(q)) horizon = 30;
-          if (/year|12\s*month/.test(q)) horizon = 365;
           const filtered = pays.filter(p => p.days <= horizon);
+          const label = horizon <= 30 ? '30 days' : horizon <= 180 ? '6 months' : '12 months';
           if (filtered.length) {
-            lines.push('Property installments (your share) — next ' + (horizon <= 30 ? '30 days' : horizon <= 180 ? '6 months' : '12 months') + ':');
+            lines.push('Property installments (your share) — next ' + label + ':');
             filtered.forEach(p => {
               const when = p.days < 0 ? ('OVERDUE ' + Math.abs(p.days) + 'd') : ('in ' + p.days + 'd');
               lines.push('• ' + p.name + ' — ' + (p.stage || 'Installment') + ': ' + fmt(p.amount) + ' · due ' + p.due_date + ' (' + when + ')');
             });
-            const sum = filtered.reduce((s, p) => s + (p.days < 0 ? 0 : (p.amount || 0)), 0);
-            const ov = filtered.filter(p => p.days < 0).reduce((s, p) => s + (p.amount || 0), 0);
+            const sum = filtered.reduce((acc, p) => acc + (p.days < 0 ? 0 : (p.amount || 0)), 0);
+            const ov = filtered.filter(p => p.days < 0).reduce((acc, p) => acc + (p.amount || 0), 0);
             lines.push('');
             lines.push('Upcoming installments total: ' + fmt(sum));
             if (ov) lines.push('Already overdue: ' + fmt(ov));
           } else {
-            lines.push('No unpaid property installments in that window.');
+            lines.push('No unpaid property installments in the next ' + label + '.');
+            if ((snap.installments?.overdue || 0) > 0) lines.push('Overdue on record: ' + fmt(snap.installments.overdue));
           }
           lines.push('');
-          lines.push('Standing balances (cards / loans):');
-          lines.push('• Credit cards: ' + fmt(snap.cash?.credit_card || 0));
-          lines.push('• Other loans / debt: ' + fmt(snap.cash?.debt || 0));
+          lines.push('Standing balances:');
+          lines.push('• Credit cards: ' + fmt(cash.credit_card || 0));
+          lines.push('• Other loans / debt: ' + fmt(cash.debt || 0));
           (snap.debt_lines || []).forEach(d => {
             lines.push('  – ' + d.name + ' (' + String(d.type || '').replace(/_/g, ' ') + '): ' + fmt(d.balance));
           });
@@ -5888,67 +5942,202 @@
           lines.push('Total liabilities on record: ' + fmt(snap.liabilities_total || 0));
           lines.push('Installments next 30d: ' + fmt(snap.installments?.due_30d || 0) + ' · next 6m: ' + fmt(snap.installments?.due_6m || 0));
           lines.push('');
-          lines.push('Instant from your data · not financial advice.');
+          lines.push(disclaimer);
           return lines.join('\n');
         }
 
+        // Debt / installments / cards / loans
+        if (debtLike) {
+          let horizon = 180;
+          if (/\b30\b|one month|1 month|this month/.test(q) && !/6|six|180|year|12/.test(q)) horizon = 30;
+          if (/year|12\s*month/.test(q)) horizon = 365;
+          if (/6\s*month|six\s*month|180/.test(q)) horizon = 180;
+          if (/overdue only|any overdue/.test(q)) horizon = 0; // still show overdue via filter days<=0... use 0 and include negative
+          if (/overdue/.test(q) && !/next|month|day/.test(q)) {
+            const ov = pays.filter(p => p.days < 0);
+            if (!ov.length) return 'No overdue property installments on record.\nCredit cards: ' + fmt(cash.credit_card || 0) + '\nLoans/debt: ' + fmt(cash.debt || 0) + '\n' + disclaimer;
+            return 'Overdue installments:\n' + ov.map(p => '• ' + p.name + ' — ' + (p.stage || '') + ': ' + fmt(p.amount) + ' · was due ' + p.due_date + ' (' + Math.abs(p.days) + 'd late)').join('\n') + '\n\n' + disclaimer;
+          }
+          return debtAnswer(horizon);
+        }
+
+        // Golden Visa
         if (gvLike) {
-          const aed = snap.golden_visa?.property_aed || 0;
-          const tgt = snap.golden_visa?.target_aed || 2000000;
+          const aed = Number(snap.golden_visa?.property_aed) || 0;
+          const tgt = Number(snap.golden_visa?.target_aed) || 2000000;
           const pct = Math.min(100, (aed / tgt) * 100);
+          const remain = Math.max(0, tgt - aed);
+          const eligibleHint = aed >= tgt
+            ? 'Based on CrossCap AED property × your share, you meet the AED 2M property threshold in-app. Official eligibility is only via ICP.'
+            : 'Not yet at AED 2M in counted AED property (your share). Remaining: AED ' + Math.round(remain).toLocaleString() + '.';
           return [
             'Golden Visa property progress (AED property × your ownership share only):',
-            '• Counted: AED ' + Math.round(aed).toLocaleString(),
+            '• Counted property (AED): AED ' + Math.round(aed).toLocaleString(),
             '• Target: AED ' + tgt.toLocaleString(),
             '• Progress: ' + pct.toFixed(1) + '%',
-            snap.golden_visa?.holder ? '• Marked Golden Visa holder in CrossCap.' : '• Remaining: AED ' + Math.max(0, Math.round(tgt - aed)).toLocaleString(),
+            snap.golden_visa?.holder ? '• Marked Golden Visa holder in CrossCap.' : '• ' + eligibleHint,
             '',
-            'Confirm on official ICP services. CrossCap does not approve visas.'
+            'Non-AED properties count in net worth but not in this visa bar.',
+            'Confirm on official ICP smart services. CrossCap does not approve visas.',
+            disclaimer
           ].join('\n');
         }
 
-        if (splitLike || goldLike || stockLike || cryptoLike) {
-          const s = snap.sleeves || {};
-          const lines = [
-            'Your holdings snapshot (' + bc + '):',
-            '• Stocks / ETFs: ' + fmt(s.stocks || 0),
-            '• Gold & silver: ' + fmt(s.gold_silver || 0),
-            '• Crypto: ' + fmt(s.crypto || 0),
-            '• Real estate (your share): ' + fmt(snap.real_estate || 0),
-            '• Bank / cash: ' + fmt(snap.cash?.bank || 0),
-            '• Other assets: ' + fmt(snap.other_assets || 0),
-            '• Net worth: ' + fmt(snap.net_worth),
-            '',
-            'Instant from your dashboard · not advice.'
-          ];
-          return lines.join('\n');
-        }
-
-        if (nwLike || q.length < 8) {
+        // Gold vs stocks
+        if (compareGoldStock) {
+          const who = goldV > stocksV ? 'Gold & silver' : stocksV > goldV ? 'Stocks' : 'Equal';
           return [
-            'Net worth snapshot (' + bc + '):',
-            '• Net worth: ' + fmt(snap.net_worth),
-            '• Gross assets: ' + fmt(snap.gross_assets),
-            '• Liquid portfolio: ' + fmt(snap.liquid_portfolio),
-            '• Real estate: ' + fmt(snap.real_estate),
-            '• Liabilities: ' + fmt(snap.liabilities_total || 0),
-            '• Installments due 30d: ' + fmt(snap.installments?.due_30d || 0),
-            '',
-            'Try: "What do I owe in 6 months?" or "Golden Visa progress".',
-            'Instant from your data · not advice.'
+            'Gold & silver: ' + fmt(goldV) + ' (' + pctOf(goldV).toFixed(1) + '%)',
+            'Stocks & ETFs: ' + fmt(stocksV) + ' (' + pctOf(stocksV).toFixed(1) + '%)',
+            'Higher sleeve: ' + who + (goldV === stocksV ? '' : ' by ' + fmt(Math.abs(goldV - stocksV))),
+            disclaimer
           ].join('\n');
         }
 
-        // Default: always answer locally (skip broken/slow remote AI)
+        // Stocks performance
+        if (performing && stockLike) {
+          const live = (window.__lastLiveAed != null) ? Number(window.__lastLiveAed) : null;
+          const inv = (window.__lastInvestedAed != null) ? Number(window.__lastInvestedAed) : null;
+          if (live != null && inv != null) {
+            const pnl = live - inv;
+            return [
+              'Portfolio performance (liquid, from last dashboard calc):',
+              '• Invested: ' + fmt(inv),
+              '• Live value: ' + fmt(live),
+              '• P/L: ' + (pnl >= 0 ? '+' : '') + fmt(pnl),
+              '• Stocks sleeve (approx): ' + fmt(stocksV),
+              disclaimer
+            ].join('\n');
+          }
+          return [
+            'Stocks & ETFs value on record: ' + fmt(stocksV) + ' (' + pctOf(stocksV).toFixed(1) + '% of assets).',
+            'Open Portfolio for live price P/L per holding. Full performance needs live prices loaded on Overview/Portfolio.',
+            disclaimer
+          ].join('\n');
+        }
+
+        // Real estate
+        if (reLike) {
+          return [
+            'Real estate (your ownership share):',
+            '• Value: ' + fmt(reV),
+            '• Share of assets: ' + pctOf(reV).toFixed(1) + '%',
+            '• Gross assets: ' + fmt(gross || net),
+            '• Net worth: ' + fmt(net),
+            '',
+            'Full split:',
+            ...allocationBlock(),
+            '',
+            concentrationNote(),
+            disclaimer
+          ].join('\n');
+        }
+
+        // Stocks
+        if (stockLike && !debtLike) {
+          return [
+            'Stocks & ETFs:',
+            '• Value: ' + fmt(stocksV),
+            '• Share of wealth/assets: ' + pctOf(stocksV).toFixed(1) + '%',
+            '• Net worth: ' + fmt(net),
+            disclaimer
+          ].join('\n');
+        }
+
+        // Gold
+        if (goldLike && !debtLike) {
+          return [
+            'Gold & silver (precious metals):',
+            '• Value: ' + fmt(goldV),
+            '• Share of assets: ' + pctOf(goldV).toFixed(1) + '%',
+            '• Net worth: ' + fmt(net),
+            disclaimer
+          ].join('\n');
+        }
+
+        // Crypto
+        if (cryptoLike) {
+          return [
+            'Crypto:',
+            '• Value: ' + fmt(cryptoV),
+            '• Share of assets: ' + pctOf(cryptoV).toFixed(1) + '%',
+            '• Total in ' + bc + ': ' + fmt(cryptoV),
+            disclaimer
+          ].join('\n');
+        }
+
+        // Cash
+        if (cashLike) {
+          return [
+            'Cash & bank:',
+            '• Bank balances: ' + fmt(bankV),
+            '• Receivables: ' + fmt(cash.receivable || 0),
+            '• Credit cards (liability): ' + fmt(cash.credit_card || 0),
+            '• Loans / debt: ' + fmt(cash.debt || 0),
+            '• Bank share of assets: ' + pctOf(bankV).toFixed(1) + '%',
+            disclaimer
+          ].join('\n');
+        }
+
+        // Other assets
+        if (altLike) {
+          return [
+            'Other assets (funds, FDs, bonds, vehicles, business, etc.):',
+            '• Value: ' + fmt(altV),
+            '• Share of assets: ' + pctOf(altV).toFixed(1) + '%',
+            disclaimer
+          ].join('\n');
+        }
+
+        // Liquid
+        if (liquidLike) {
+          return [
+            'Liquid position:',
+            '• Liquid portfolio (stocks + gold + crypto): ' + fmt(liqV) + ' (' + pctOf(liqV).toFixed(1) + '%)',
+            '• Bank cash: ' + fmt(bankV),
+            '• Combined liquid-ish: ' + fmt(liqV + bankV),
+            disclaimer
+          ].join('\n');
+        }
+
+        // Full split / concentration
+        if (splitLike) {
+          return [
+            'Your wealth split (' + bc + '):',
+            ...allocationBlock(),
+            '',
+            concentrationNote(),
+            'Percentages use gross assets when available.',
+            disclaimer
+          ].join('\n');
+        }
+
+        // Net worth / briefing
+        if (nwLike || q.length < 12 || /help|what can you|hi\b|hello/.test(q)) {
+          return [
+            'Wealth briefing (' + bc + '):',
+            '• Net worth: ' + fmt(net),
+            '• Gross assets: ' + fmt(gross || net),
+            '• Own (assets): ' + fmt(gross || net) + ' · Owe (liabilities): ' + fmt(snap.liabilities_total || 0),
+            '• Liquid portfolio: ' + fmt(liqV),
+            '• Real estate: ' + fmt(reV) + ' (' + pctOf(reV).toFixed(1) + '%)',
+            '• Installments 30d / 6m: ' + fmt(snap.installments?.due_30d || 0) + ' / ' + fmt(snap.installments?.due_6m || 0),
+            '',
+            concentrationNote(),
+            '',
+            'Try chips: net worth · % real estate · wealth split · owe in 6 months · Golden Visa',
+            disclaimer
+          ].join('\n');
+        }
+
         return [
-          'Quick briefing from your CrossCap data (' + bc + '):',
-          '• Net worth: ' + fmt(snap.net_worth),
-          '• Assets: ' + fmt(snap.gross_assets) + ' · Liabilities: ' + fmt(snap.liabilities_total || 0),
-          '• Installments (30d): ' + fmt(snap.installments?.due_30d || 0) + ' · (6m): ' + fmt(snap.installments?.due_6m || 0),
-          '• Overdue installments: ' + fmt(snap.installments?.overdue || 0),
+          'Quick briefing (' + bc + '):',
+          '• Net worth: ' + fmt(net),
+          '• Assets: ' + fmt(gross || net) + ' · Liabilities: ' + fmt(snap.liabilities_total || 0),
+          '• Real estate: ' + fmt(reV) + ' (' + pctOf(reV).toFixed(1) + '%)',
           '',
-          'For a full payment list, ask: "Show everything I owe in the next 6 months."',
-          'Instant from your data · not a licensed financial advisor.'
+          'Covered topics: net worth, allocation %, stocks, gold, crypto, real estate, installments, debt, cash, Golden Visa, other assets.',
+          disclaimer
         ].join('\n');
       }
 
@@ -5970,6 +6159,24 @@
       document.getElementById('aiChatClose')?.addEventListener('click', () => {
         document.getElementById('aiChatPanel')?.classList.add('hidden');
       });
+      
+      document.querySelectorAll('.ai-suggest').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const input = document.getElementById('aiChatInput');
+          const form = document.getElementById('aiChatForm');
+          if (!input || !form) return;
+          const map = {
+            'What is my net worth?': 'What is my net worth?',
+            'What % is real estate?': 'What percentage of my wealth is in real estate?',
+            'Wealth split': 'How is my wealth split?',
+            'What I owe in 6 months': 'Show everything I owe in the next 6 months',
+            'Golden Visa progress': 'Golden Visa progress'
+          };
+          input.value = map[btn.textContent.trim()] || btn.textContent.trim();
+          form.requestSubmit();
+        });
+      });
+
       document.getElementById('aiChatForm')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const input = document.getElementById('aiChatInput');
@@ -6696,11 +6903,18 @@
     </div>
     <div id="aiChatMessages" class="flex-1 overflow-y-auto p-3 space-y-2 text-[13px] bg-zinc-50/80">
       <div class="bg-white border border-zinc-100 rounded-xl px-3 py-2 text-zinc-600 shadow-sm">
-        Ask about your full net worth: stocks, gold, crypto, cash, debts, other assets, real estate, installments, or Golden Visa. Record guidance only — not formal financial advice.
+        Ask about net worth, allocation %, real estate, installments, debt, cash, or Golden Visa. Answers use your live CrossCap data — not formal financial advice.
+      </div>
+      <div id="aiChatSuggestions" class="flex flex-wrap gap-1.5 pt-1">
+        <button type="button" class="ai-suggest text-[11px] font-medium px-2.5 py-1.5 rounded-full bg-white border border-zinc-200 text-zinc-700 hover:border-brand-300 hover:text-brand-800">What is my net worth?</button>
+        <button type="button" class="ai-suggest text-[11px] font-medium px-2.5 py-1.5 rounded-full bg-white border border-zinc-200 text-zinc-700 hover:border-brand-300 hover:text-brand-800">What % is real estate?</button>
+        <button type="button" class="ai-suggest text-[11px] font-medium px-2.5 py-1.5 rounded-full bg-white border border-zinc-200 text-zinc-700 hover:border-brand-300 hover:text-brand-800">Wealth split</button>
+        <button type="button" class="ai-suggest text-[11px] font-medium px-2.5 py-1.5 rounded-full bg-white border border-zinc-200 text-zinc-700 hover:border-brand-300 hover:text-brand-800">What I owe in 6 months</button>
+        <button type="button" class="ai-suggest text-[11px] font-medium px-2.5 py-1.5 rounded-full bg-white border border-zinc-200 text-zinc-700 hover:border-brand-300 hover:text-brand-800">Golden Visa progress</button>
       </div>
     </div>
     <form id="aiChatForm" class="p-3 border-t border-zinc-100 bg-white flex gap-2">
-      <input id="aiChatInput" type="text" maxlength="400" placeholder="e.g. How is my full net worth split?" class="flex-1 rounded-xl border border-zinc-200 px-3 py-2 text-[13px]" />
+      <input id="aiChatInput" type="text" maxlength="400" placeholder="e.g. What % of my wealth is in real estate?" class="flex-1 rounded-xl border border-zinc-200 px-3 py-2 text-[13px]" />
       <button type="submit" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[12px] font-semibold px-3 py-2 shrink-0">Send</button>
     </form>
   </div>
