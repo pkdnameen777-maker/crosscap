@@ -584,7 +584,63 @@
             <p id="userEmailDisplay" class="hidden sm:block text-[11px] text-zinc-400 truncate max-w-[220px]"></p>
           </div>
         </div>
-        <div class="flex items-center gap-2 shrink-0">
+        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <label class="sr-only" for="headerBaseCurrency">Base currency</label>
+          <select id="headerBaseCurrency" title="Base currency — updates dashboard instantly" class="max-w-[4.75rem] sm:max-w-[5.5rem] rounded-lg border border-zinc-200 bg-white text-[11px] sm:text-[12px] font-semibold text-zinc-800 px-1.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-400 cursor-pointer">
+            <option value="AED">AED</option>
+            <option value="SAR">SAR</option>
+            <option value="QAR">QAR</option>
+            <option value="KWD">KWD</option>
+            <option value="BHD">BHD</option>
+            <option value="OMR">OMR</option>
+            <option value="INR">INR</option>
+            <option value="PKR">PKR</option>
+            <option value="BDT">BDT</option>
+            <option value="LKR">LKR</option>
+            <option value="USD">USD</option>
+            <option value="EUR">EUR</option>
+            <option value="GBP">GBP</option>
+            <option value="CHF">CHF</option>
+            <option value="JPY">JPY</option>
+            <option value="CNY">CNY</option>
+            <option value="HKD">HKD</option>
+            <option value="SGD">SGD</option>
+            <option value="AUD">AUD</option>
+            <option value="CAD">CAD</option>
+            <option value="EGP">EGP</option>
+            <option value="TRY">TRY</option>
+            <option value="ZAR">ZAR</option>
+            <option value="PHP">PHP</option>
+            <option value="MYR">MYR</option>
+            <option value="IDR">IDR</option>
+            <option value="KRW">KRW</option>
+            <option value="NZD">NZD</option>
+            <option value="SEK">SEK</option>
+            <option value="NOK">NOK</option>
+            <option value="DKK">DKK</option>
+            <option value="PLN">PLN</option>
+            <option value="BRL">BRL</option>
+            <option value="MXN">MXN</option>
+            <option value="NGN">NGN</option>
+            <option value="KES">KES</option>
+            <option value="MAD">MAD</option>
+            <option value="JOD">JOD</option>
+          </select>
+          <div class="relative">
+            <button type="button" id="headerNotifBtn" class="relative p-2 rounded-xl hover:bg-zinc-100 text-zinc-600" aria-label="Notifications" title="Notifications">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+              <span id="notifBadge" class="hidden absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center">0</span>
+            </button>
+            <div id="notifPanel" class="hidden absolute right-0 top-full mt-2 w-[min(100vw-1.5rem,320px)] max-h-[70vh] overflow-y-auto rounded-2xl border border-zinc-200 bg-white shadow-card z-50">
+              <div class="px-4 py-3 border-b border-zinc-100 flex items-center justify-between">
+                <p class="text-[13px] font-semibold text-zinc-900">Notifications</p>
+                <button type="button" id="notifMarkRead" class="text-[11px] font-semibold text-brand-700 hover:underline">Mark read</button>
+              </div>
+              <div id="notifList" class="p-2 text-[13px] text-zinc-600">
+                <p class="px-2 py-3 text-zinc-400">No alerts yet.</p>
+              </div>
+            </div>
+          </div>
           <button type="button" id="headerAvatarBtn" class="group relative w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-700 ring-2 ring-white overflow-hidden shrink-0 transition-transform duration-300 hover:scale-110 hover:ring-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-400" aria-label="Open profile settings" title="Profile & settings">
             <div id="headerAvatar" class="w-full h-full">
               <img id="headerAvatarImg" src="" alt="" class="w-full h-full object-cover hidden" />
@@ -1808,7 +1864,7 @@
             <p class="text-sm text-zinc-400">Analyzing full net worth…</p>
           </div>
 
-          <div class="cc-panel p-5 max-w-2xl">
+          <div class="cc-panel p-5 max-w-2xl mb-6">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
               <div>
                 <h3 class="text-[15px] font-semibold text-zinc-900">News for your holdings</h3>
@@ -1820,6 +1876,32 @@
               <p class="text-zinc-400">Loading personalised updates…</p>
             </div>
             <p id="holdingNewsMetaCfo" class="text-[11px] text-zinc-400 mt-3"></p>
+          </div>
+
+          <!-- Member network / discussion -->
+          <div class="cc-panel p-5 max-w-2xl ring-1 ring-brand-50/80">
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4">
+              <div>
+                <p class="text-[11px] font-bold uppercase tracking-wider text-brand-600 mb-0.5">CrossCap Network</p>
+                <h3 class="text-[15px] font-semibold text-zinc-900">Takeaways &amp; predictions</h3>
+                <p class="text-[12px] text-zinc-500 mt-0.5">Share ideas with other members. Not advice — peer discussion only.</p>
+              </div>
+              <button type="button" id="btnRefreshNetwork" class="text-[12px] font-semibold text-brand-700 hover:underline shrink-0">Refresh</button>
+            </div>
+            <div class="rounded-xl border border-zinc-100 bg-zinc-50/50 p-3 mb-4 space-y-2">
+              <div class="flex gap-2">
+                <select id="networkPostKind" class="rounded-lg border border-zinc-200 bg-white text-[12px] font-semibold px-2 py-2 text-zinc-700">
+                  <option value="takeaway">Takeaway</option>
+                  <option value="prediction">Prediction</option>
+                </select>
+                <input id="networkPostBody" type="text" maxlength="500" placeholder="Your takeaway or market prediction…" class="flex-1 rounded-lg border border-zinc-200 px-3 py-2 text-[13px]" />
+                <button type="button" id="btnPostNetwork" class="rounded-lg bg-brand-700 hover:bg-brand-800 text-white text-[12px] font-semibold px-3 py-2 shrink-0">Post</button>
+              </div>
+              <p class="text-[10px] text-zinc-400">Be respectful. No spam. Posts are visible to signed-in members.</p>
+            </div>
+            <div id="networkFeed" class="space-y-3 text-[13px]">
+              <p class="text-zinc-400">Loading member posts…</p>
+            </div>
           </div>
         </div>
 
@@ -2261,31 +2343,38 @@
       let __loadTimer = null;
       function runInitialDataLoad() {
         if (!currentUser) return;
-        // Debounce: auth can fire INITIAL_SESSION + SIGNED_IN
         clearTimeout(__loadTimer);
         __loadTimer = setTimeout(async () => {
           if (__dataLoadedForUser === currentUser.id) return;
           __dataLoadedForUser = currentUser.id;
-          await dedupePropertiesSilent();
-          await dedupeHoldingsSilent();
-          loadPortfolio();
-          loadProperties();
+          // Prefetch FX in parallel with data (numbers appear faster)
+          const fxP = typeof getRatesToAed === 'function' ? getRatesToAed() : Promise.resolve();
+          // Non-blocking dedupe
+          Promise.all([
+            typeof dedupePropertiesSilent === 'function' ? dedupePropertiesSilent() : null,
+            typeof dedupeHoldingsSilent === 'function' ? dedupeHoldingsSilent() : null
+          ]).catch(() => {});
           loadProfile();
-
-          // Ensure currency picker shows for first-time users
+          // Parallel asset loads
+          await fxP;
+          await Promise.allSettled([
+            Promise.resolve(typeof loadPortfolio === 'function' ? loadPortfolio() : null),
+            Promise.resolve(typeof loadProperties === 'function' ? loadProperties() : null),
+            Promise.resolve(typeof loadCashAccounts === 'function' ? loadCashAccounts() : null),
+            Promise.resolve(typeof loadAltAssets === 'function' ? loadAltAssets() : null),
+            Promise.resolve(typeof loadGoals === 'function' ? loadGoals() : null)
+          ]);
+          if (typeof refreshNotifications === 'function') refreshNotifications();
           setTimeout(() => {
             try {
               if (typeof isCurrencyOnboardingDone === 'function' && !isCurrencyOnboardingDone() && typeof showCurrencyOnboarding === 'function') {
                 showCurrencyOnboarding();
               }
             } catch (e) { console.warn('currency onboarding', e); }
-          }, 800);
-          loadGoals();
-          loadCashAccounts();
-          loadAltAssets();
-          setTimeout(() => generateAiCfoInsights(), 800);
-          setTimeout(() => loadHoldingNews(), 1200);
-        }, 150);
+          }, 600);
+          setTimeout(() => generateAiCfoInsights(), 1500);
+          setTimeout(() => loadHoldingNews(), 1800);
+        }, 50);
       }
 
       supabaseClient.auth.onAuthStateChange((event, session) => {
@@ -3337,10 +3426,13 @@
       let baseCurrency = (localStorage.getItem('cc_base_currency') || 'AED').toUpperCase();
       let fxCache = null;
       let fxCacheBase = null;
+      let fxCacheAt = 0;
+      const FX_TTL_MS = 60 * 60 * 1000; // 1 hour — faster repeat loads
 
       function setBaseCurrency(code, opts) {
         opts = opts || {};
         const c = String(code || 'AED').toUpperCase();
+        const changed = c !== baseCurrency;
         baseCurrency = c;
         try {
           localStorage.setItem('cc_base_currency', c);
@@ -3351,6 +3443,61 @@
         });
         const bcEl = document.getElementById('profileBaseCurrency');
         if (bcEl && [...bcEl.options].some(o => o.value === c)) bcEl.value = c;
+        const hBc = document.getElementById('headerBaseCurrency');
+        if (hBc && [...hBc.options].some(o => o.value === c)) hBc.value = c;
+        if (changed) {
+          // Keep USD-based rates; only rebase — avoid network if possible
+          if (fxCache && fxCache._usdRates) {
+            rebaseFxCacheFromUsd(fxCache._usdRates, c);
+          } else {
+            fxCache = null;
+            fxCacheBase = null;
+          }
+        }
+        return changed;
+      }
+
+      function rebaseFxCacheFromUsd(rates, base) {
+        const usdToAed = rates.AED || 3.6725;
+        const toAed = { AED: 1, USD: usdToAed };
+        Object.keys(rates).forEach(k => {
+          if (k === 'AED') return;
+          if (rates[k]) toAed[k] = usdToAed / rates[k];
+        });
+        const toBase = {};
+        if (base === 'AED') {
+          Object.keys(toAed).forEach(k => { toBase[k] = toAed[k]; });
+        } else if (rates[base]) {
+          Object.keys(toAed).forEach(k => {
+            if (k === base) toBase[k] = 1;
+            else if (k === 'USD') toBase[k] = rates[base];
+            else if (rates[k]) toBase[k] = rates[base] / rates[k];
+            else toBase[k] = toAed[k] / (toAed[base] || 1);
+          });
+          toBase.AED = rates[base] / (rates.AED || usdToAed);
+        } else {
+          const basePerAed = 1 / (toAed[base] || 1);
+          Object.keys(toAed).forEach(k => { toBase[k] = toAed[k] * basePerAed; });
+          toBase[base] = 1;
+        }
+        toBase[base] = 1;
+        toBase._usdRates = rates;
+        fxCache = toBase;
+        fxCacheBase = base;
+        fxCacheAt = Date.now();
+        try { sessionStorage.setItem('cc_fx_cache_v2', JSON.stringify({ at: fxCacheAt, base, rates })); } catch (_) {}
+      }
+
+      async function refreshDashboardNumbers() {
+        // Parallel refresh — do not await sequentially
+        const jobs = [];
+        if (typeof loadPortfolio === 'function') jobs.push(Promise.resolve(loadPortfolio()));
+        if (typeof loadProperties === 'function') jobs.push(Promise.resolve(loadProperties()));
+        if (typeof loadCashAccounts === 'function') jobs.push(Promise.resolve(loadCashAccounts()));
+        if (typeof loadAltAssets === 'function') jobs.push(Promise.resolve(loadAltAssets()));
+        if (typeof loadGoals === 'function') jobs.push(Promise.resolve(loadGoals()));
+        await Promise.allSettled(jobs);
+        if (typeof refreshNotifications === 'function') refreshNotifications();
       }
 
       function currencyOnboardingKey() {
@@ -3601,6 +3748,21 @@
 
       // FX rates → base currency (cached briefly; names kept for compatibility)
       async function getRatesToAed() {
+        // Fast path: memory or session cache (1h)
+        if (fxCache && fxCacheBase === baseCurrency && (Date.now() - fxCacheAt) < FX_TTL_MS) {
+          return fxCache;
+        }
+        try {
+          const raw = sessionStorage.getItem('cc_fx_cache_v2');
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && parsed.rates && (Date.now() - (parsed.at || 0)) < FX_TTL_MS) {
+              rebaseFxCacheFromUsd(parsed.rates, baseCurrency);
+              return fxCache;
+            }
+          }
+        } catch (_) {}
+
         if (fxCache && fxCacheBase === baseCurrency) return fxCache;
         try {
           const res = await fetch('https://open.er-api.com/v6/latest/USD');
@@ -3628,8 +3790,11 @@
             });
             toBase.AED = rates[baseCurrency] / (rates.AED || usdToAed);
           }
+          toBase._usdRates = rates;
           fxCache = toBase;
           fxCacheBase = baseCurrency;
+          fxCacheAt = Date.now();
+          try { sessionStorage.setItem('cc_fx_cache_v2', JSON.stringify({ at: fxCacheAt, base: baseCurrency, rates })); } catch (_) {}
           return toBase;
         } catch (e) {
           console.warn('FX fetch failed, using fallbacks', e);
@@ -5718,7 +5883,153 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
       });
 
-      // ---- Floating AI CFO chat ----
+
+      // ---- Network posts + notifications ----
+      async function loadNetworkFeed() {
+        const el = document.getElementById('networkFeed');
+        if (!el || !currentUser) return;
+        try {
+          const { data, error } = await supabaseClient
+            .from('network_posts')
+            .select('id,user_id,author_name,kind,body,created_at')
+            .order('created_at', { ascending: false })
+            .limit(40);
+          if (error) {
+            el.innerHTML = '<p class="text-amber-700 text-[12.5px] leading-relaxed">Network feed needs the <code class="text-[11px]">network_posts</code> table. Run the SQL in the project notes once in Supabase, then refresh.</p><p class="text-[11px] text-zinc-400 mt-2">' + (error.message || '') + '</p>';
+            return;
+          }
+          if (!data || !data.length) {
+            el.innerHTML = '<p class="text-zinc-400">No posts yet — be the first to share a takeaway or prediction.</p>';
+            return;
+          }
+          el.innerHTML = data.map(p => {
+            const kind = (p.kind || 'takeaway') === 'prediction' ? 'Prediction' : 'Takeaway';
+            const kindCls = (p.kind || '') === 'prediction' ? 'bg-violet-50 text-violet-800' : 'bg-brand-50 text-brand-800';
+            const when = p.created_at ? new Date(p.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '';
+            const name = (p.author_name || 'Member').replace(/</g, '');
+            const body = (p.body || '').replace(/</g, '');
+            const mine = p.user_id === currentUser.id;
+            return '<div class="rounded-xl border border-zinc-100 bg-white p-3.5 shadow-soft">' +
+              '<div class="flex items-center justify-between gap-2 mb-1.5">' +
+              '<div class="flex items-center gap-2 min-w-0">' +
+              '<span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ' + kindCls + '">' + kind + '</span>' +
+              '<span class="text-[12px] font-semibold text-zinc-800 truncate">' + name + '</span>' +
+              '</div>' +
+              '<span class="text-[10px] text-zinc-400 shrink-0">' + when + '</span></div>' +
+              '<p class="text-[13px] text-zinc-700 leading-relaxed whitespace-pre-wrap">' + body + '</p>' +
+              (mine ? '<button type="button" data-del-post="' + p.id + '" class="mt-2 text-[11px] font-semibold text-rose-600 hover:underline">Delete</button>' : '') +
+              '</div>';
+          }).join('');
+          el.querySelectorAll('[data-del-post]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+              if (!confirm('Delete this post?')) return;
+              await supabaseClient.from('network_posts').delete().eq('id', btn.getAttribute('data-del-post')).eq('user_id', currentUser.id);
+              loadNetworkFeed();
+            });
+          });
+        } catch (e) {
+          el.innerHTML = '<p class="text-rose-600">Could not load feed: ' + (e.message || e) + '</p>';
+        }
+      }
+
+      async function submitNetworkPost() {
+        if (!currentUser) return;
+        const body = (document.getElementById('networkPostBody')?.value || '').trim();
+        const kind = document.getElementById('networkPostKind')?.value || 'takeaway';
+        if (!body) { alert('Write a short takeaway or prediction.'); return; }
+        const author = currentUser.user_metadata?.full_name || (currentUser.email || '').split('@')[0] || 'Member';
+        const { error } = await supabaseClient.from('network_posts').insert([{
+          user_id: currentUser.id,
+          author_name: author,
+          kind,
+          body: body.slice(0, 500)
+        }]);
+        if (error) {
+          alert('Could not post: ' + error.message + '\\n\\nCreate the network_posts table in Supabase (see SQL note).');
+          return;
+        }
+        document.getElementById('networkPostBody').value = '';
+        loadNetworkFeed();
+      }
+
+      function refreshNotifications() {
+        const list = document.getElementById('notifList');
+        const badge = document.getElementById('notifBadge');
+        if (!list) return;
+        const items = [];
+        try {
+          const pays = (typeof window.__lastUpcomingPayments === 'object' && window.__lastUpcomingPayments) ? window.__lastUpcomingPayments : [];
+          // Build from installment radar if available on page
+          const radar = document.getElementById('radarList');
+          if (radar && radar.children.length) {
+            [...radar.querySelectorAll('[data-notif-line], .text-\\[13px\\], p')].slice(0, 5);
+          }
+        } catch (_) {}
+        // From known globals / installment summary text
+        try {
+          const due30 = window.__lastDue30;
+          const overdue = window.__lastOverdue;
+          if (overdue && overdue > 0) items.push({ t: 'Overdue installments need attention', s: 'Open Real Estate · Payment radar', urgent: true });
+          if (due30 && due30 > 0) items.push({ t: 'Installments due within 30 days', s: 'Review Payment radar in Real Estate', urgent: false });
+        } catch (_) {}
+        // Local network tip
+        items.push({ t: 'CrossCap Network is live', s: 'Share a takeaway in Insights → Network', urgent: false });
+        if (!items.length) {
+          list.innerHTML = '<p class="px-2 py-3 text-zinc-400">No alerts yet.</p>';
+          if (badge) badge.classList.add('hidden');
+          return;
+        }
+        list.innerHTML = items.map(i =>
+          '<div class="rounded-xl px-3 py-2.5 hover:bg-zinc-50 ' + (i.urgent ? 'bg-rose-50/50' : '') + '">' +
+          '<p class="text-[13px] font-medium text-zinc-900">' + i.t + '</p>' +
+          '<p class="text-[11px] text-zinc-500 mt-0.5">' + i.s + '</p></div>'
+        ).join('');
+        const unread = items.filter(i => i.urgent).length || items.length;
+        if (badge) {
+          badge.textContent = String(Math.min(9, unread));
+          badge.classList.toggle('hidden', localStorage.getItem('cc_notif_read') === '1' && !items.some(x => x.urgent));
+        }
+      }
+
+      document.getElementById('headerNotifBtn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const panel = document.getElementById('notifPanel');
+        panel?.classList.toggle('hidden');
+        if (panel && !panel.classList.contains('hidden')) refreshNotifications();
+      });
+      document.getElementById('notifMarkRead')?.addEventListener('click', () => {
+        try { localStorage.setItem('cc_notif_read', '1'); } catch (_) {}
+        document.getElementById('notifBadge')?.classList.add('hidden');
+      });
+      document.addEventListener('click', (e) => {
+        const panel = document.getElementById('notifPanel');
+        const btn = document.getElementById('headerNotifBtn');
+        if (!panel || panel.classList.contains('hidden')) return;
+        if (panel.contains(e.target) || btn?.contains(e.target)) return;
+        panel.classList.add('hidden');
+      });
+
+      document.getElementById('headerBaseCurrency')?.addEventListener('change', async (e) => {
+        const code = e.target.value;
+        const changed = setBaseCurrency(code);
+        // Persist to profile without blocking UI
+        if (currentUser) {
+          supabaseClient.from('profiles').upsert({
+            id: currentUser.id,
+            base_currency: code,
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'id' }).then(() => {}).catch(() => {});
+        }
+        if (changed) await refreshDashboardNumbers();
+      });
+
+      document.getElementById('btnPostNetwork')?.addEventListener('click', () => submitNetworkPost());
+      document.getElementById('btnRefreshNetwork')?.addEventListener('click', () => loadNetworkFeed());
+      document.getElementById('networkPostBody')?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); submitNetworkPost(); }
+      });
+
+            // ---- Floating AI CFO chat ----
       async function buildChatSnapshot() {
         const rates = await getRatesToAed();
         const uid = currentUser?.id;
@@ -6227,7 +6538,7 @@
           }
         }
       
-        if (name === 'ai-insights') { generateAiCfoInsights(); loadHoldingNews(); }
+        if (name === 'ai-insights') { generateAiCfoInsights(); loadHoldingNews(); if (typeof loadNetworkFeed === 'function') loadNetworkFeed(); }
         if (name === 'overview') loadHoldingNews();
         if (name === 'cash') loadCashAccounts();
         if (name === 'alt-assets') { loadAltAssets(); updateAltFormFields(); }
