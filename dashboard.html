@@ -716,6 +716,116 @@
       letter-spacing: 0.06em;
     }
 
+
+    /* Header action cluster */
+    .hdr-cluster {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 3px;
+      border-radius: 9999px;
+      background: #f4f4f5;
+      border: 1px solid #e4e4e7;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+    .hdr-cluster .hdr-btn {
+      width: 2.15rem;
+      height: 2.15rem;
+      border-radius: 9999px;
+      border: none;
+      background: transparent;
+      color: #52525b;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .hdr-cluster .hdr-btn:hover {
+      background: #fff;
+      color: #6d28d9;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .hdr-cluster .hdr-btn:active { transform: scale(0.94); }
+    .hdr-cluster .hdr-btn:focus { outline: none; }
+    .hdr-cluster .hdr-btn:focus-visible {
+      outline: 2px solid #a78bfa;
+      outline-offset: 1px;
+    }
+    .hdr-cluster .hdr-btn svg { width: 1.1rem; height: 1.1rem; }
+    .hdr-cluster .hdr-btn.is-active {
+      background: #fff;
+      color: #6d28d9;
+      box-shadow: 0 1px 3px rgba(109,40,217,0.12);
+    }
+    .hdr-currency {
+      appearance: none;
+      -webkit-appearance: none;
+      border: none;
+      background: #fff;
+      color: #18181b;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      padding: 0.4rem 1.35rem 0.4rem 0.7rem;
+      border-radius: 9999px;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2371717a'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.2' d='M19.5 8.25l-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.4rem center;
+      background-size: 0.7rem;
+      max-width: 4.6rem;
+      outline: none;
+    }
+    .hdr-currency:hover { color: #6d28d9; }
+    .hdr-currency:focus-visible {
+      outline: 2px solid #a78bfa;
+      outline-offset: 1px;
+    }
+    .hdr-avatar {
+      width: 2.15rem;
+      height: 2.15rem;
+      border-radius: 9999px;
+      padding: 2px;
+      background: linear-gradient(135deg, #a78bfa, #6d28d9);
+      border: none;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .hdr-avatar:hover {
+      transform: scale(1.06);
+      box-shadow: 0 4px 12px rgba(109,40,217,0.28);
+    }
+    .hdr-avatar:focus { outline: none; }
+    .hdr-avatar:focus-visible {
+      outline: 2px solid #a78bfa;
+      outline-offset: 2px;
+    }
+    .hdr-avatar-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 9999px;
+      overflow: hidden;
+      background: linear-gradient(145deg, #c4b5fd, #7c3aed);
+    }
+    .hdr-avatar-inner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    #notifBadge {
+      top: 2px !important;
+      right: 2px !important;
+      min-width: 14px !important;
+      height: 14px !important;
+      font-size: 8px !important;
+      border: 1.5px solid #f4f4f5;
+    }
+
   </style>
 </head>
 <body class="bg-zinc-50/80 text-zinc-900 min-h-screen">
@@ -826,9 +936,9 @@
             <p id="userEmailDisplay" class="hidden sm:block text-[11px] text-zinc-400 truncate max-w-[220px]"></p>
           </div>
         </div>
-        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                <div class="flex items-center gap-2 sm:gap-2.5 shrink-0">
           <label class="sr-only" for="headerBaseCurrency">Base currency</label>
-          <select id="headerBaseCurrency" title="Base currency — updates dashboard instantly" class="max-w-[4.75rem] sm:max-w-[5.5rem] rounded-lg border border-zinc-200 bg-white text-[11px] sm:text-[12px] font-semibold text-zinc-800 px-1.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-400 cursor-pointer">
+          <select id="headerBaseCurrency" title="Base currency" class="hdr-currency">
             <option value="AED">AED</option>
             <option value="SAR">SAR</option>
             <option value="QAR">QAR</option>
@@ -868,35 +978,37 @@
             <option value="MAD">MAD</option>
             <option value="JOD">JOD</option>
           </select>
-          <button type="button" id="headerPrivacyBtn" class="p-2 rounded-xl hover:bg-zinc-100 text-zinc-600" aria-label="Hide amounts" title="Hide amounts">
-            <svg id="privacyIconOpen" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            <svg id="privacyIconClosed" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>
-          </button>
-          <button type="button" id="headerSharePowBtn" class="p-2 rounded-xl hover:bg-zinc-100 text-zinc-600" aria-label="Share proof of wealth" title="Proof of wealth">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
-          </button>
-          <div class="relative">
-            <button type="button" id="headerNotifBtn" class="relative p-2 rounded-xl hover:bg-zinc-100 text-zinc-600" aria-label="Notifications" title="Notifications">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
-              <span id="notifBadge" class="hidden absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center">0</span>
+          <div class="hdr-cluster">
+            <button type="button" id="headerPrivacyBtn" class="hdr-btn" aria-label="Hide amounts" title="Hide amounts">
+              <svg id="privacyIconOpen" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <svg id="privacyIconClosed" class="hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>
             </button>
-            <div id="notifPanel" class="hidden absolute right-0 top-full mt-2 w-[min(100vw-1.5rem,320px)] max-h-[70vh] overflow-y-auto rounded-2xl border border-zinc-200 bg-white shadow-card z-50">
-              <div class="px-4 py-3 border-b border-zinc-100 flex items-center justify-between">
-                <p class="text-[13px] font-semibold text-zinc-900">Notifications</p>
-                <button type="button" id="notifMarkRead" class="text-[11px] font-semibold text-brand-700 hover:underline">Mark read</button>
-              </div>
-              <div id="notifList" class="p-2 text-[13px] text-zinc-600">
-                <p class="px-2 py-3 text-zinc-400">No alerts yet.</p>
+            <button type="button" id="headerSharePowBtn" class="hdr-btn" aria-label="Proof of wealth" title="Proof of wealth">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 8.25H7.5a2.25 2.25 0 00-2.25 2.25v9a2.25 2.25 0 002.25 2.25h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25H15m0-3l-3-3m0 0l-3 3m3-3V15"/></svg>
+            </button>
+            <div class="relative">
+              <button type="button" id="headerNotifBtn" class="hdr-btn" aria-label="Notifications" title="Notifications">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+                <span id="notifBadge" class="hidden absolute min-w-[14px] h-3.5 px-0.5 rounded-full bg-rose-500 text-white text-[8px] font-bold flex items-center justify-center">0</span>
+              </button>
+              <div id="notifPanel" class="hidden absolute right-0 top-full mt-2 w-[min(100vw-1.5rem,320px)] max-h-[70vh] overflow-y-auto rounded-2xl border border-zinc-200 bg-white shadow-card z-50">
+                <div class="px-4 py-3 border-b border-zinc-100 flex items-center justify-between">
+                  <p class="text-[13px] font-semibold text-zinc-900">Notifications</p>
+                  <button type="button" id="notifMarkRead" class="text-[11px] font-semibold text-brand-700 hover:underline">Mark read</button>
+                </div>
+                <div id="notifList" class="p-2 text-[13px] text-zinc-600">
+                  <p class="px-2 py-3 text-zinc-400">No alerts yet.</p>
+                </div>
               </div>
             </div>
           </div>
-          <button type="button" id="headerAvatarBtn" class="group relative w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-700 ring-2 ring-white overflow-hidden shrink-0 transition-transform duration-300 hover:scale-110 hover:ring-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-400" aria-label="Open profile settings" title="Profile & settings">
-            <div id="headerAvatar" class="w-full h-full">
-              <img id="headerAvatarImg" src="" alt="" class="w-full h-full object-cover hidden" />
+          <button type="button" id="headerAvatarBtn" class="hdr-avatar" aria-label="Open profile settings" title="Profile & settings">
+            <div id="headerAvatar" class="hdr-avatar-inner">
+              <img id="headerAvatarImg" src="" alt="" class="hidden" />
             </div>
           </button>
         </div>
-      </header>
+</header>
 
       <main class="p-4 sm:p-6 lg:p-8 max-w-[1400px]">
 
@@ -4028,6 +4140,7 @@
         if (btn) {
           btn.title = privacyMode ? 'Show amounts' : 'Hide amounts';
           btn.setAttribute('aria-label', privacyMode ? 'Show amounts' : 'Hide amounts');
+          btn.classList.toggle('is-active', privacyMode);
         }
       }
 
