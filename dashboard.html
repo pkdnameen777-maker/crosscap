@@ -709,6 +709,13 @@
     }
 
 
+
+    /* Privacy mode — mask amounts */
+    body.privacy-mode .tabular-nums,
+    body.privacy-mode [data-privacy="amount"] {
+      letter-spacing: 0.06em;
+    }
+
   </style>
 </head>
 <body class="bg-zinc-50/80 text-zinc-900 min-h-screen">
@@ -861,6 +868,13 @@
             <option value="MAD">MAD</option>
             <option value="JOD">JOD</option>
           </select>
+          <button type="button" id="headerPrivacyBtn" class="p-2 rounded-xl hover:bg-zinc-100 text-zinc-600" aria-label="Hide amounts" title="Hide amounts">
+            <svg id="privacyIconOpen" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <svg id="privacyIconClosed" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>
+          </button>
+          <button type="button" id="headerSharePowBtn" class="p-2 rounded-xl hover:bg-zinc-100 text-zinc-600" aria-label="Share proof of wealth" title="Proof of wealth">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+          </button>
           <div class="relative">
             <button type="button" id="headerNotifBtn" class="relative p-2 rounded-xl hover:bg-zinc-100 text-zinc-600" aria-label="Notifications" title="Notifications">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
@@ -2142,7 +2156,7 @@
                 <option value="takeaway">Takeaway</option>
                 <option value="prediction">Prediction</option>
               </select>
-              <textarea id="networkPostBody" rows="1" maxlength="1500" placeholder="Type a message — new line with Enter / Shift+Enter" autocomplete="off"></textarea>
+              <textarea id="networkPostBody" rows="1" maxlength="1500" placeholder="Type here" autocomplete="off"></textarea>
               <button type="button" id="btnPostNetwork" class="net-send" aria-label="Send">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M3.4 20.4l17.45-7.48a1 1 0 000-1.84L3.4 3.6a.993.993 0 00-1.39.91L2 9.12c0 .5.37.93.87.99L17 12 2.87 13.88c-.5.07-.87.5-.87 1l.01 4.61c0 .71.73 1.2 1.39.91z"/></svg>
               </button>
@@ -2245,6 +2259,15 @@
           <p class="text-[14px] text-zinc-500 mb-6">Download statements, allocation summaries, and full backup / restore.</p>
 
           <div class="grid gap-4 max-w-2xl">
+            <!-- Proof of Wealth -->
+            <div class="cc-panel p-5 border border-brand-100 bg-gradient-to-br from-brand-50/40 via-white to-white">
+              <h3 class="text-[15px] font-semibold text-zinc-900 mb-1">Proof of Wealth</h3>
+              <p class="text-[12px] text-zinc-500 mb-4">Self-attested statement in your base currency. Professional CrossCap layout with stamp — for personal records only, not bank verification.</p>
+              <button type="button" id="btnProofOfWealth" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13px] font-semibold px-4 py-2.5 inline-flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                Generate statement
+              </button>
+            </div>
             <!-- Statements -->
             <div class="cc-panel p-5">
               <h3 class="text-[15px] font-semibold text-zinc-900 mb-1">Statements & summaries</h3>
@@ -3980,14 +4003,218 @@
       }
       // setupPwaInstallHandlers() deferred until modals exist in DOM
 
+      let privacyMode = false;
+      try { privacyMode = localStorage.getItem('cc_privacy_mode') === '1'; } catch (_) {}
+
       function formatMoney(n, opts) {
         opts = opts || {};
+        if (privacyMode && !opts.forceShow) {
+          return baseCurrency + ' ••••••';
+        }
         const max = opts.maximumFractionDigits != null ? opts.maximumFractionDigits : 2;
         const min = opts.minimumFractionDigits != null ? opts.minimumFractionDigits : (max === 0 ? 0 : 2);
         const num = Number(n);
         const safe = Number.isFinite(num) ? num : 0;
         return baseCurrency + ' ' + safe.toLocaleString(undefined, { minimumFractionDigits: min, maximumFractionDigits: max });
       }
+
+      function applyPrivacyUI() {
+        document.body.classList.toggle('privacy-mode', privacyMode);
+        const open = document.getElementById('privacyIconOpen');
+        const closed = document.getElementById('privacyIconClosed');
+        if (open) open.classList.toggle('hidden', privacyMode);
+        if (closed) closed.classList.toggle('hidden', !privacyMode);
+        const btn = document.getElementById('headerPrivacyBtn');
+        if (btn) {
+          btn.title = privacyMode ? 'Show amounts' : 'Hide amounts';
+          btn.setAttribute('aria-label', privacyMode ? 'Show amounts' : 'Hide amounts');
+        }
+      }
+
+      function setPrivacyMode(on) {
+        privacyMode = !!on;
+        try { localStorage.setItem('cc_privacy_mode', privacyMode ? '1' : '0'); } catch (_) {}
+        applyPrivacyUI();
+        if (typeof refreshDashboardNumbers === 'function') refreshDashboardNumbers();
+        else if (typeof refreshTotalNetWorth === 'function') refreshTotalNetWorth();
+      }
+
+      function uuidLike() {
+        try {
+          if (crypto.randomUUID) return crypto.randomUUID().toUpperCase();
+        } catch (_) {}
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+          const r = Math.random() * 16 | 0;
+          const v = c === 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        }).toUpperCase();
+      }
+
+      function fmtPowMoney(n) {
+        const num = Number(n);
+        const safe = Number.isFinite(num) ? num : 0;
+        return baseCurrency + ' ' + safe.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+
+      async function generateProofOfWealth() {
+        if (!currentUser) return;
+        const name = (document.getElementById('profileName')?.value
+          || currentUser.user_metadata?.full_name
+          || (currentUser.email || '').split('@')[0]
+          || 'Member').trim();
+        const liquid = Number(window.__lastLiveAed) || 0;
+        const re = Number(window.__lastReVal) || 0;
+        const alt = Number(window.__lastAltAed) || 0;
+        const cash = window.__lastCashSums || { bank: 0, credit_card: 0, receivable: 0, debt: 0 };
+        const bank = Number(cash.bank) || 0;
+        const recv = Number(cash.receivable) || 0;
+        const cards = Number(cash.credit_card) || 0;
+        const debt = Number(cash.debt) || 0;
+        const assets = liquid + re + alt + bank + recv;
+        const liabilities = cards + debt;
+        const net = assets - liabilities;
+        const id = 'CCAP-' + uuidLike();
+        const now = new Date();
+        const genStr = now.toLocaleString(undefined, { dateStyle: 'long', timeStyle: 'short' });
+        const exp = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+        const expStr = exp.toLocaleDateString(undefined, { dateStyle: 'long' });
+        const userId = currentUser.id || '';
+
+        // Holdings annexure
+        let annexRows = '';
+        try {
+          const { data: holdings } = await supabaseClient.from('holdings').select('symbol,market,shares,avg_cost,currency').eq('user_id', currentUser.id);
+          const byKind = window.__holdingsByKind || {};
+          const lines = [];
+          if (byKind.stocks) lines.push(['Stocks & ETFs (sleeve)', byKind.stocks.v]);
+          if (byKind.gold) lines.push(['Gold & silver (sleeve)', byKind.gold.v]);
+          if (byKind.crypto) lines.push(['Crypto (sleeve)', byKind.crypto.v]);
+          lines.push(['Real estate (your share)', re]);
+          lines.push(['Other assets', alt]);
+          lines.push(['Bank / cash', bank]);
+          lines.push(['Receivables', recv]);
+          annexRows = lines.map(([lab, v]) =>
+            '<tr><td style="padding:10px 0;border-bottom:1px solid #f4f4f5;color:#3f3f46">' + lab +
+            '</td><td style="padding:10px 0;border-bottom:1px solid #f4f4f5;text-align:right;font-variant-numeric:tabular-nums;font-weight:600;color:#18181b">' +
+            fmtPowMoney(v) + '</td></tr>'
+          ).join('');
+          if (holdings && holdings.length) {
+            annexRows += '<tr><td colspan="2" style="padding:16px 0 8px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#6d28d9">Holdings detail</td></tr>';
+            holdings.slice(0, 40).forEach(h => {
+              const sym = (h.symbol || '').replace(/</g, '');
+              const mkt = (h.market || '').replace(/</g, '');
+              annexRows += '<tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5;color:#52525b;font-size:13px">' +
+                sym + (mkt ? ' · ' + mkt : '') +
+                '</td><td style="padding:8px 0;border-bottom:1px solid #f4f4f5;text-align:right;font-size:12px;color:#71717a">qty ' +
+                (h.shares != null ? h.shares : '—') + '</td></tr>';
+            });
+          }
+        } catch (e) {
+          annexRows = '<tr><td colspan="2" style="color:#a1a1aa">Annexure unavailable</td></tr>';
+        }
+
+        const html = `<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<title>Proof of Wealth — ${name.replace(/</g,'')}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap');
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'DM Sans', system-ui, sans-serif; color: #18181b; background: #fafafa; }
+  .page { max-width: 720px; margin: 0 auto; padding: 48px 40px 64px; background: #fff; min-height: 100vh; }
+  @media print { body { background: #fff; } .page { padding: 24px; } .no-print { display: none !important; } }
+  h1 { font-family: 'Instrument Serif', Georgia, serif; font-size: 32px; font-weight: 400; margin: 0 0 6px; color: #18181b; }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #6d28d9; margin-bottom: 4px; }
+  .meta { font-size: 12px; color: #71717a; line-height: 1.6; margin-bottom: 36px; }
+  .nw-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #71717a; }
+  .nw-value { font-family: 'Instrument Serif', Georgia, serif; font-size: 42px; font-weight: 400; color: #5b21b6; margin: 8px 0 20px; letter-spacing: -0.02em; }
+  .rule { height: 3px; background: linear-gradient(90deg, #6d28d9, #a78bfa 40%, #e9e5ff); border: 0; margin: 0 0 28px; }
+  .split { display: flex; gap: 48px; margin-bottom: 36px; }
+  .split h3 { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #a1a1aa; margin: 0 0 8px; }
+  .split .fig { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .attest { font-size: 13.5px; line-height: 1.65; color: #3f3f46; margin: 32px 0; max-width: 560px; }
+  .foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-top: 48px; padding-top: 24px; border-top: 1px solid #e4e4e7; }
+  .sig-name { font-family: 'Instrument Serif', Georgia, serif; font-size: 22px; font-style: italic; color: #18181b; }
+  .sig-id { font-size: 11px; color: #a1a1aa; margin-top: 4px; word-break: break-all; }
+  .sig-meta { font-size: 11px; color: #71717a; margin-top: 10px; line-height: 1.5; }
+  .stamp {
+    width: 108px; height: 108px; border-radius: 50%;
+    border: 2.5px solid #6d28d9; color: #6d28d9;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; font-size: 9px; font-weight: 700; letter-spacing: 0.06em; line-height: 1.25;
+    transform: rotate(-8deg); flex-shrink: 0;
+    background: radial-gradient(circle at 30% 30%, #f5f3ff, #fff);
+  }
+  .stamp span { font-size: 13px; letter-spacing: 0.14em; margin: 4px 0; }
+  .annex h2 { font-size: 18px; margin: 0 0 4px; }
+  .annex p.sub { font-size: 12px; color: #a1a1aa; margin: 0 0 20px; }
+  table { width: 100%; border-collapse: collapse; }
+  .toolbar { position: sticky; top: 0; background: #fff; border-bottom: 1px solid #e4e4e7; padding: 12px 16px; display: flex; gap: 8px; justify-content: flex-end; z-index: 10; }
+  .toolbar button { font-family: inherit; font-size: 13px; font-weight: 600; border-radius: 10px; padding: 8px 14px; cursor: pointer; border: 1px solid #e4e4e7; background: #fff; }
+  .toolbar button.primary { background: #6d28d9; color: #fff; border-color: #6d28d9; }
+  .brand { font-size: 12px; font-weight: 700; color: #6d28d9; letter-spacing: 0.04em; margin-bottom: 28px; }
+</style></head><body>
+<div class="toolbar no-print">
+  <button type="button" onclick="window.print()">Print / Save PDF</button>
+  <button type="button" class="primary" onclick="window.print()">Download</button>
+</div>
+<div class="page">
+  <div class="brand">CROSSCAP</div>
+  <h1>${name.replace(/</g,'').replace(/"/g,'')}</h1>
+  <div class="eyebrow">Self attested proof of wealth</div>
+  <div class="meta">
+    ID: ${id}<br/>
+    Generated: ${genStr}<br/>
+    Expires: ${expStr}<br/>
+    Base currency: ${baseCurrency}
+  </div>
+  <div class="nw-label">Net worth</div>
+  <div class="nw-value">${fmtPowMoney(net)}</div>
+  <hr class="rule"/>
+  <div class="split">
+    <div><h3>Assets</h3><div class="fig">${fmtPowMoney(assets)}</div></div>
+    <div><h3>Liabilities</h3><div class="fig">${fmtPowMoney(liabilities)}</div></div>
+  </div>
+  <div class="attest">
+    I, <strong>${name.replace(/</g,'')}</strong>, certify that the assets and debts included in this statement are owned by me (or reflect my ownership share).
+    Data is <strong>self-reported</strong> in CrossCap and has <strong>not</strong> been independently verified by CrossCap.
+    Values are expressed in <strong>${baseCurrency}</strong> using rates available at generation and are frozen at the time of this statement.
+  </div>
+  <div class="foot">
+    <div>
+      <div class="sig-name">${name.replace(/</g,'')}</div>
+      <div class="sig-id">${userId}</div>
+      <div class="sig-meta">Signed by ${name.replace(/</g,'')}<br/>via CrossCap on ${genStr}<br/>Page 1 of 2</div>
+    </div>
+    <div class="stamp">SELF ATTESTED<br/><span>CROSSCAP</span>GENERATED<br/>crosscap.app</div>
+  </div>
+</div>
+<div class="page annex">
+  <div class="brand">CROSSCAP</div>
+  <h2>Annexure — Reported by ${name.replace(/</g,'')}</h2>
+  <p class="sub">Self-reported values in ${baseCurrency}. Not independently verified by CrossCap.</p>
+  <table>${annexRows}
+    <tr><td style="padding-top:16px;font-weight:700">Total assets</td><td style="padding-top:16px;text-align:right;font-weight:700">${fmtPowMoney(assets)}</td></tr>
+    <tr><td style="font-weight:700">Total liabilities</td><td style="text-align:right;font-weight:700">${fmtPowMoney(liabilities)}</td></tr>
+    <tr><td style="font-weight:700;color:#6d28d9">Net worth</td><td style="text-align:right;font-weight:700;color:#6d28d9">${fmtPowMoney(net)}</td></tr>
+  </table>
+  <div class="foot">
+    <div class="sig-meta">Proof ID ${id}<br/>Values frozen at signing. CrossCap does not verify accuracy or completeness.<br/>The signatory is solely responsible for representations herein.</div>
+    <div class="stamp">SELF ATTESTED<br/><span>CROSSCAP</span>GENERATED<br/>crosscap.app</div>
+  </div>
+</div>
+</body></html>`;
+
+        const w = window.open('', '_blank');
+        if (!w) {
+          alert('Allow pop-ups to view the Proof of Wealth document.');
+          return;
+        }
+        w.document.open();
+        w.document.write(html);
+        w.document.close();
+      }
+
 
       // Sync labels from stored preference on boot
       try { setBaseCurrency(baseCurrency); } catch (_) {}
@@ -6286,7 +6513,16 @@
         }
       }
 
-      document.getElementById('headerNotifBtn')?.addEventListener('click', (e) => {
+      
+      document.getElementById('headerPrivacyBtn')?.addEventListener('click', () => {
+        setPrivacyMode(!privacyMode);
+      });
+      document.getElementById('headerSharePowBtn')?.addEventListener('click', () => generateProofOfWealth());
+      document.getElementById('btnProofOfWealth')?.addEventListener('click', () => generateProofOfWealth());
+      // restore privacy UI on load
+      try { applyPrivacyUI(); } catch (_) {}
+
+document.getElementById('headerNotifBtn')?.addEventListener('click', (e) => {
         e.stopPropagation();
         const panel = document.getElementById('notifPanel');
         panel?.classList.toggle('hidden');
