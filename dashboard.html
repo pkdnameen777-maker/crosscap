@@ -632,41 +632,57 @@
       position: sticky;
       bottom: 0;
       z-index: 5;
-      background: #f0f2f5;
-      padding: 0.45rem 0.55rem;
-      padding-bottom: calc(0.45rem + env(safe-area-inset-bottom, 0px));
+      background: #ffffff;
+      /* Match home mobile bottom nav spacing */
+      padding: 0.4rem 0.5rem calc(0.75rem + env(safe-area-inset-bottom, 14px));
+      min-height: calc(3.75rem + env(safe-area-inset-bottom, 14px));
       display: flex;
-      align-items: flex-end;
-      gap: 0.4rem;
-      border-top: 1px solid #e4e4e7;
-      /* keyboard: visualViewport JS adjusts --kb-offset */
+      align-items: center;
+      gap: 0.45rem;
+      border-top: 1px solid #f4f4f5;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
       margin-bottom: var(--kb-offset, 0px);
       transition: margin-bottom 0.12s ease-out;
     }
+    @media (min-width: 1024px) {
+      .net-chat-composer {
+        min-height: 4rem;
+        padding: 0.65rem 1rem calc(0.65rem + env(safe-area-inset-bottom, 0px));
+      }
+    }
     .net-chat-composer select {
-      border-radius: 1rem;
-      border: none;
-      background: white;
+      border-radius: 9999px;
+      border: 1px solid #e4e4e7;
+      background: #fafafa;
       font-size: 11px;
       font-weight: 600;
-      padding: 0.55rem 0.45rem;
+      padding: 0.65rem 0.55rem;
+      height: 2.75rem;
       color: #3f3f46;
-      max-width: 6.2rem;
-      box-shadow: 0 1px 1px rgba(0,0,0,0.04);
+      max-width: 6.5rem;
     }
-    .net-chat-composer input {
+    .net-chat-composer textarea {
       flex: 1;
       border-radius: 1.25rem;
-      border: none;
-      background: white;
-      padding: 0.65rem 0.9rem;
-      font-size: 16px; /* prevents iOS zoom */
+      border: 1px solid #e4e4e7;
+      background: #fafafa;
+      padding: 0.7rem 1rem;
+      min-height: 2.75rem;
+      max-height: 8.5rem;
+      font-size: 16px;
+      line-height: 1.4;
       outline: none;
-      box-shadow: 0 1px 1px rgba(0,0,0,0.04);
+      resize: none;
+      overflow-y: auto;
+      font-family: inherit;
+    }
+    .net-chat-composer textarea:focus {
+      border-color: #c4b5fd;
+      background: #fff;
     }
     .net-chat-composer button.net-send {
-      width: 2.6rem;
-      height: 2.6rem;
+      width: 2.75rem;
+      height: 2.75rem;
       border-radius: 9999px;
       background: #6d28d9;
       color: white;
@@ -675,7 +691,7 @@
       justify-content: center;
       flex-shrink: 0;
       border: none;
-      box-shadow: 0 2px 6px rgba(109,40,217,0.35);
+      box-shadow: 0 4px 12px rgba(109,40,217,0.35);
     }
     .net-chat-composer button.net-send:hover { background: #5b21b6; }
     .net-day-sep {
@@ -2124,7 +2140,7 @@
                 <option value="takeaway">Takeaway</option>
                 <option value="prediction">Prediction</option>
               </select>
-              <input id="networkPostBody" type="text" maxlength="500" placeholder="Type a message" autocomplete="off" />
+              <textarea id="networkPostBody" rows="1" maxlength="1500" placeholder="Type a message — Enter for new line" autocomplete="off"></textarea>
               <button type="button" id="btnPostNetwork" class="net-send" aria-label="Send">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M3.4 20.4l17.45-7.48a1 1 0 000-1.84L3.4 3.6a.993.993 0 00-1.39.91L2 9.12c0 .5.37.93.87.99L17 12 2.87 13.88c-.5.07-.87.5-.87 1l.01 4.61c0 .71.73 1.2 1.39.91z"/></svg>
               </button>
@@ -6218,13 +6234,14 @@
           user_id: currentUser.id,
           author_name: author,
           kind,
-          body: body.slice(0, 500)
+          body: body.slice(0, 1500)
         }]);
         if (error) {
           alert('Could not post: ' + error.message + '\\n\\nCreate the network_posts table in Supabase (see SQL note).');
           return;
         }
-        document.getElementById('networkPostBody').value = '';
+        const ta = document.getElementById('networkPostBody');
+        if (ta) { ta.value = ''; ta.style.height = 'auto'; }
         loadNetworkFeed();
       }
 
@@ -6300,6 +6317,20 @@
       });
 
       document.getElementById('btnPostNetwork')?.addEventListener('click', () => submitNetworkPost());
+      function autosizeNetworkInput() {
+        const ta = document.getElementById('networkPostBody');
+        if (!ta) return;
+        ta.style.height = 'auto';
+        ta.style.height = Math.min(ta.scrollHeight, 136) + 'px';
+      }
+      document.getElementById('networkPostBody')?.addEventListener('input', autosizeNetworkInput);
+      document.getElementById('networkPostBody')?.addEventListener('keydown', (e) => {
+        // Enter = new paragraph; Ctrl/Cmd+Enter = send
+        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+          e.preventDefault();
+          submitNetworkPost();
+        }
+      });
       document.getElementById('btnRefreshNetwork')?.addEventListener('click', () => loadNetworkFeed());
       document.getElementById('networkPostBody')?.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') { e.preventDefault(); submitNetworkPost(); }
