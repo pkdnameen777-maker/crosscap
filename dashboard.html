@@ -588,7 +588,8 @@
     }
     .net-bubble.mine {
       align-self: flex-end;
-      background: #dcf8c6;
+      background: linear-gradient(145deg, #f5f3ff 0%, #ede9fe 55%, #e9e5ff 100%);
+      border: 1px solid #ddd6fe;
       border-top-right-radius: 0.15rem;
     }
     .net-bubble.theirs {
@@ -602,7 +603,7 @@
       color: #6d28d9;
       margin-bottom: 2px;
     }
-    .net-bubble.mine .net-author { color: #166534; }
+    .net-bubble.mine .net-author { color: #6d28d9; }
     .net-bubble .net-kind {
       font-size: 9px;
       font-weight: 700;
@@ -613,9 +614,10 @@
     }
     .net-bubble .net-body {
       font-size: 14px;
-      line-height: 1.4;
-      color: #111;
+      line-height: 1.45;
+      color: #18181b;
       white-space: pre-wrap;
+      word-break: break-word;
     }
     .net-bubble .net-meta {
       font-size: 10px;
@@ -2140,7 +2142,7 @@
                 <option value="takeaway">Takeaway</option>
                 <option value="prediction">Prediction</option>
               </select>
-              <textarea id="networkPostBody" rows="1" maxlength="1500" placeholder="Type a message — Enter for new line" autocomplete="off"></textarea>
+              <textarea id="networkPostBody" rows="1" maxlength="1500" placeholder="Type a message — new line with Enter / Shift+Enter" autocomplete="off"></textarea>
               <button type="button" id="btnPostNetwork" class="net-send" aria-label="Send">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M3.4 20.4l17.45-7.48a1 1 0 000-1.84L3.4 3.6a.993.993 0 00-1.39.91L2 9.12c0 .5.37.93.87.99L17 12 2.87 13.88c-.5.07-.87.5-.87 1l.01 4.61c0 .71.73 1.2 1.39.91z"/></svg>
               </button>
@@ -6198,7 +6200,7 @@
             }
             const mine = p.user_id === currentUser.id;
             const name = (p.author_name || 'Member').replace(/</g, '');
-            const body = (p.body || '').replace(/</g, '');
+            const body = (p.body || '').replace(/</g, '').replace(/\r\n/g, '\n');
             const kind = (p.kind || 'takeaway') === 'prediction' ? 'Prediction' : 'Takeaway';
             const time = d ? d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '';
             html += '<div class="net-bubble ' + (mine ? 'mine' : 'theirs') + '" data-id="' + p.id + '">' +
@@ -6226,7 +6228,7 @@
 
       async function submitNetworkPost() {
         if (!currentUser) return;
-        const body = (document.getElementById('networkPostBody')?.value || '').trim();
+        const body = (document.getElementById('networkPostBody')?.value || '').replace(/^\s+|\s+$/g, '');
         const kind = document.getElementById('networkPostKind')?.value || 'takeaway';
         if (!body) { alert('Write a short takeaway or prediction.'); return; }
         const author = currentUser.user_metadata?.full_name || (currentUser.email || '').split('@')[0] || 'Member';
@@ -6324,17 +6326,14 @@
         ta.style.height = Math.min(ta.scrollHeight, 136) + 'px';
       }
       document.getElementById('networkPostBody')?.addEventListener('input', autosizeNetworkInput);
+      // Enter / Shift+Enter = new line only (phone + laptop). Send only via send button.
       document.getElementById('networkPostBody')?.addEventListener('keydown', (e) => {
-        // Enter = new paragraph; Ctrl/Cmd+Enter = send
-        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-          e.preventDefault();
-          submitNetworkPost();
+        if (e.key === 'Enter') {
+          // allow default newline — never auto-send
+          e.stopPropagation();
         }
       });
       document.getElementById('btnRefreshNetwork')?.addEventListener('click', () => loadNetworkFeed());
-      document.getElementById('networkPostBody')?.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); submitNetworkPost(); }
-      });
 
             // ---- Floating AI CFO chat ----
       async function buildChatSnapshot() {
