@@ -1520,7 +1520,7 @@
                   <th class="px-5 py-3.5 font-medium">Market</th>
                   <th class="px-5 py-3.5 font-medium text-right">Quantity</th>
                   <th class="px-5 py-3.5 font-medium text-right">Cost / Live</th>
-                  <th class="px-5 py-3.5 font-medium text-right">Value (AED)</th>
+                  <th class="px-5 py-3.5 font-medium text-right">Value (<span id="portfolioValueCurrencyLabel">AED</span>)</th>
                   <th class="px-5 py-3.5 font-medium text-right">Actions</th>
                 </tr>
               </thead>
@@ -1614,6 +1614,18 @@
               <p class="text-[13px] text-zinc-500 mt-0.5">Off-Plan installments &amp; Ready properties · GCC / UAE</p>
             </div>
             <button id="togglePropertyForm" class="rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13px] font-semibold px-4 py-2.5">+ Add Property</button>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-3 mb-6">
+            <div class="rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50/80 to-white p-4 shadow-soft">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-violet-700/80">Residential</p>
+              <p id="reResidentialTotal" class="font-display text-[20px] font-semibold tracking-tight text-zinc-900 mt-1 tabular-nums">—</p>
+              <p class="text-[11px] text-zinc-400 mt-0.5">Your share · base currency</p>
+            </div>
+            <div class="rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50/80 to-white p-4 shadow-soft">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-sky-700/80">Commercial</p>
+              <p id="reCommercialTotal" class="font-display text-[20px] font-semibold tracking-tight text-zinc-900 mt-1 tabular-nums">—</p>
+              <p class="text-[11px] text-zinc-400 mt-0.5">Your share · base currency</p>
+            </div>
           </div>
 
           <!-- 30-day Installment Radar -->
@@ -2394,12 +2406,29 @@
                 <input id="goalTitle" type="text" placeholder="e.g. New car, Emergency fund, Wedding" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" />
               </div>
               <div>
-                <label class="block text-[12px] font-medium text-zinc-600 mb-1">Target amount (AED)</label>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1">Target amount</label>
                 <input id="goalTarget" type="number" step="any" placeholder="20000" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" />
               </div>
               <div>
+                <label class="block text-[12px] font-medium text-zinc-600 mb-1">Currency</label>
+                <select id="goalCurrency" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]">
+                  <option value="AED">AED</option>
+                  <option value="SAR">SAR</option>
+                  <option value="QAR">QAR</option>
+                  <option value="KWD">KWD</option>
+                  <option value="BHD">BHD</option>
+                  <option value="OMR">OMR</option>
+                  <option value="INR">INR</option>
+                  <option value="PKR">PKR</option>
+                  <option value="BDT">BDT</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                  <option value="GBP">GBP</option>
+                </select>
+              </div>
+              <div class="sm:col-span-2">
                 <label class="block text-[12px] font-medium text-zinc-600 mb-1">Optional note</label>
-                <input id="goalNote" type="text" placeholder="Save AED 1,000 each month" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" />
+                <input id="goalNote" type="text" placeholder="Save 1,000 each month" class="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-[14px]" />
               </div>
             </div>
             <div class="flex gap-2 mt-4">
@@ -3906,7 +3935,7 @@
           localStorage.setItem('cc_base_currency', c);
           if (opts.markChosen) { try { localStorage.setItem(currencyOnboardingKey(), '1'); } catch(_){} }
         } catch (_) {}
-        document.querySelectorAll('#overviewBaseCurrencyLabel, #exposureBaseCurrencyLabel, #perfBaseCurrencyLabel, #allocBaseCurrencyLabel').forEach(el => {
+        document.querySelectorAll('#overviewBaseCurrencyLabel, #exposureBaseCurrencyLabel, #perfBaseCurrencyLabel, #allocBaseCurrencyLabel, #portfolioValueCurrencyLabel').forEach(el => {
           if (el) el.textContent = c;
         });
         const bcEl = document.getElementById('profileBaseCurrency');
@@ -4513,7 +4542,7 @@
         GOLD_AED: 'Gold · AED', SILVER_AED: 'Silver · AED', GOLD_SAR: 'Gold · SAR', SILVER_SAR: 'Silver · SAR', GOLD_QAR: 'Gold · QAR', SILVER_QAR: 'Silver · QAR', GOLD_KWD: 'Gold · KWD', SILVER_KWD: 'Silver · KWD', GOLD_BHD: 'Gold · BHD', SILVER_BHD: 'Silver · BHD', GOLD_OMR: 'Gold · OMR', SILVER_OMR: 'Silver · OMR', GOLD_USD: 'Gold · USD', SILVER_USD: 'Silver · USD', GOLD_EUR: 'Gold · EUR', SILVER_EUR: 'Silver · EUR', GOLD_GBP: 'Gold · GBP', SILVER_GBP: 'Silver · GBP', GOLD_CHF: 'Gold · CHF', SILVER_CHF: 'Silver · CHF', GOLD_INR: 'Gold · INR', SILVER_INR: 'Silver · INR', GOLD_PKR: 'Gold · PKR', SILVER_PKR: 'Silver · PKR', GOLD_BDT: 'Gold · BDT', SILVER_BDT: 'Silver · BDT', GOLD_EGP: 'Gold · EGP', SILVER_EGP: 'Silver · EGP', GOLD_TRY: 'Gold · TRY', SILVER_TRY: 'Silver · TRY', GOLD_JPY: 'Gold · JPY', SILVER_JPY: 'Silver · JPY', GOLD_CNY: 'Gold · CNY', SILVER_CNY: 'Silver · CNY', GOLD_HKD: 'Gold · HKD', SILVER_HKD: 'Silver · HKD', GOLD_SGD: 'Gold · SGD', SILVER_SGD: 'Silver · SGD', GOLD_AUD: 'Gold · AUD', SILVER_AUD: 'Silver · AUD', GOLD_CAD: 'Gold · CAD', SILVER_CAD: 'Silver · CAD', GOLD_NZD: 'Gold · NZD', SILVER_NZD: 'Silver · NZD', GOLD_MYR: 'Gold · MYR', SILVER_MYR: 'Silver · MYR', GOLD_IDR: 'Gold · IDR', SILVER_IDR: 'Silver · IDR', GOLD_THB: 'Gold · THB', SILVER_THB: 'Silver · THB', GOLD_PHP: 'Gold · PHP', SILVER_PHP: 'Silver · PHP', GOLD_KRW: 'Gold · KRW', SILVER_KRW: 'Silver · KRW', GOLD_ZAR: 'Gold · ZAR', SILVER_ZAR: 'Silver · ZAR', GOLD_BRL: 'Gold · BRL', SILVER_BRL: 'Silver · BRL', GOLD_MXN: 'Gold · MXN', SILVER_MXN: 'Silver · MXN',
         OTHER_USD: 'Other (USD)', OTHER_AED: 'Other (AED)', OTHER_EUR: 'Other (EUR)', OTHER_GBP: 'Other (GBP)',
         DFM: '🇦🇪 UAE', NSE: '🇮🇳 India', GOLD: 'Gold',
-        REAL_ESTATE: '🏠 Real Estate'
+        REAL_ESTATE: '🏠 Real Estate', RE_RESIDENTIAL: '🏠 Residential', RE_COMMERCIAL: '🏢 Commercial'
       };
       const ALLOC_COLORS = ['#7e22ce','#a855f7','#c084fc','#22c55e','#f59e0b','#3b82f6','#ef4444','#14b8a6','#ec4899','#64748b'];
 
@@ -4532,9 +4561,23 @@
           bySymbol[key] = (bySymbol[key] || 0) + r.aedVal;
           total += r.aedVal;
         });
-        // Include real estate in allocation %
-        const reAed = Number(window.__lastReVal) || 0;
-        if (reAed > 0) {
+        // Include real estate in allocation % (split residential / commercial when available)
+        const br = window.__reBreakdown || {};
+        const resV = Number(br.residential) || 0;
+        const comV = Number(br.commercial) || 0;
+        const reAed = Number(window.__lastReVal) || (resV + comV);
+        if (resV > 0 || comV > 0) {
+          if (resV > 0) {
+            byMarket['RE_RESIDENTIAL'] = (byMarket['RE_RESIDENTIAL'] || 0) + resV;
+            bySymbol['Residential|RE_RESIDENTIAL'] = (bySymbol['Residential|RE_RESIDENTIAL'] || 0) + resV;
+            total += resV;
+          }
+          if (comV > 0) {
+            byMarket['RE_COMMERCIAL'] = (byMarket['RE_COMMERCIAL'] || 0) + comV;
+            bySymbol['Commercial|RE_COMMERCIAL'] = (bySymbol['Commercial|RE_COMMERCIAL'] || 0) + comV;
+            total += comV;
+          }
+        } else if (reAed > 0) {
           byMarket['REAL_ESTATE'] = (byMarket['REAL_ESTATE'] || 0) + reAed;
           bySymbol['Real Estate|REAL_ESTATE'] = (bySymbol['Real Estate|REAL_ESTATE'] || 0) + reAed;
           total += reAed;
@@ -4600,6 +4643,34 @@
       function renderStockBreakdown(rows, total, marketFilter) {
         const el = document.getElementById('allocStockList');
         if (!el) return;
+        // Real estate filter: show residential vs commercial split
+        if (marketFilter === 'REAL_ESTATE') {
+          const br = window.__reBreakdown || {};
+          const res = Number(br.residential) || 0;
+          const com = Number(br.commercial) || 0;
+          const sub = res + com;
+          if (sub <= 0) {
+            el.innerHTML = '<p class="text-zinc-400 text-[13px]">No real estate value yet</p>';
+            return;
+          }
+          const items = [
+            ['Residential', res],
+            ['Commercial', com]
+          ].filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+          el.innerHTML = items.map(([sym, v], i) => {
+            const pct = sub > 0 ? (v / sub * 100) : 0;
+            return `<div>
+            <div class="flex justify-between text-[13px] mb-1">
+              <span class="font-medium text-zinc-800">${sym}</span>
+              <span class="tabular-nums text-zinc-600">${pct.toFixed(1)}% · ${baseCurrency} ${v.toLocaleString(undefined,{maximumFractionDigits:0})}</span>
+            </div>
+            <div class="h-1.5 rounded-full bg-zinc-100 overflow-hidden">
+              <div class="h-full rounded-full" style="width:${Math.min(100,pct)}%;background:${ALLOC_COLORS[i % ALLOC_COLORS.length]}"></div>
+            </div>
+          </div>`;
+          }).join('');
+          return;
+        }
         let filtered = rows;
         if (marketFilter && marketFilter !== 'ALL') {
           filtered = rows.filter(r => r.market === marketFilter);
@@ -5022,6 +5093,8 @@
         const container = document.getElementById('propertiesList');
         container.innerHTML = '';
         let totalReVal = 0;
+        let totalReResidential = 0;
+        let totalReCommercial = 0;
         const radarItems = [];
         // Real-estate amounts are stored in AED; convert into selected base currency
         const reRates = await getRatesToAed();
@@ -5040,6 +5113,9 @@
             // getRatesToAed returns: 1 unit of currency → baseCurrency amount (historically named *ToAed)
             const myInBase = rateToAed != null ? myFull * rateToAed : myFull;
             totalReVal += myInBase;
+            const useT = String(p.use_type || 'residential').toLowerCase();
+            if (useT === 'commercial') totalReCommercial += myInBase;
+            else totalReResidential += myInBase;
             // Golden Visa: only AED-denominated properties, user's ownership share
             if (propCur === 'AED') {
               totalReAed += myFull;
@@ -5099,8 +5175,14 @@
                       </div>
                       <input type="date" value="${i.due_date}" class="w-full rounded-lg border border-zinc-200 bg-white px-2.5 py-2 text-[13px] text-zinc-700"
                         onchange="updateInstallmentDate('${i.id}', this.value)" />
-                      <div class="flex items-center justify-between gap-3 pt-0.5">
-                        <span class="tabular-nums font-semibold text-zinc-900 text-[15px]">${formatMoney(myInstAmt * (p.__propCur === 'AED' ? aedToBase : (reRates[p.__propCur] != null ? reRates[p.__propCur] : aedToBase)), { maximumFractionDigits: 2 })} <span class="text-[11px] font-normal text-zinc-400">your share</span></span>
+                      <div class="flex flex-col gap-0.5 pt-0.5">
+                        <span class="tabular-nums font-semibold text-zinc-900 text-[15px]">${(p.__propCur || 'AED')} ${myInstAmt.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} <span class="text-[11px] font-normal text-zinc-400">your share</span></span>
+                        ${(() => {
+                          const rate = (p.__propCur === baseCurrency) ? 1 : (reRates[p.__propCur] != null ? reRates[p.__propCur] : (p.__propCur === 'AED' ? aedToBase : null));
+                          if (rate == null || p.__propCur === baseCurrency) return '';
+                          const inBase = myInstAmt * rate;
+                          return '<span class="tabular-nums text-[12px] text-zinc-400">≈ ' + baseCurrency + ' ' + inBase.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + '</span>';
+                        })()}
                       </div>
                       <div class="flex items-center gap-2 pt-1 border-t border-zinc-200/80">
                         ${st !== 'paid'
@@ -5147,9 +5229,11 @@
                     <button type="button" onclick="deleteProperty('${p.id}')" class="btn-act btn-act-del">Delete</button>
                   </div>
                 </div>
-                <p class="text-[17px] font-semibold text-zinc-900 mt-3 tabular-nums">${formatMoney(p.__myValueBase != null ? p.__myValueBase : (parseFloat(p.total_price || 0) * aedToBase), { maximumFractionDigits: 0, minimumFractionDigits: 0 })}
-                  <span class="text-[12px] font-normal text-zinc-400">your share</span></p>
-                <p class="text-[12px] text-zinc-500 mt-0.5">${(p.__ownPct != null ? p.__ownPct : 100)}% of ${Number(p.total_price||0).toLocaleString()} ${p.__propCur || 'AED'}${p.__propCur === 'AED' ? ' · counts toward Golden Visa' : ' · not in Golden Visa (non-AED)'}</p>
+                <p class="text-[17px] font-semibold text-zinc-900 mt-3 tabular-nums">${Number(p.total_price||0).toLocaleString(undefined,{maximumFractionDigits:0})} ${p.__propCur || 'AED'}
+                  <span class="text-[12px] font-normal text-zinc-400">full · ${(p.__ownPct != null ? p.__ownPct : 100)}% yours</span></p>
+                <p class="text-[14px] font-semibold tabular-nums text-brand-800 mt-0.5">${formatMoney(p.__myValueBase != null ? p.__myValueBase : (parseFloat(p.total_price || 0) * aedToBase), { maximumFractionDigits: 0, minimumFractionDigits: 0 })}
+                  <span class="text-[12px] font-normal text-zinc-400">your share in ${baseCurrency}</span></p>
+                <p class="text-[12px] text-zinc-500 mt-0.5">${p.__propCur === 'AED' ? 'Counts toward Golden Visa (AED property)' : 'Not in Golden Visa (non-AED property)'}</p>
                 ${!isOffplan && p.monthly_rent ? `
                 <div class="mt-3 border-t border-zinc-100 pt-3">
                   <div class="flex items-center justify-between mb-2">
@@ -5181,6 +5265,15 @@
         // Golden Visa goal is always measured in AED (UAE regulation)
         window.__lastReVal = totalReVal;
         window.__lastReAed = totalReAed;
+        window.__reBreakdown = {
+          residential: totalReResidential,
+          commercial: totalReCommercial,
+          total: totalReVal
+        };
+        const reResEl = document.getElementById('reResidentialTotal');
+        const reComEl = document.getElementById('reCommercialTotal');
+        if (reResEl) reResEl.textContent = formatMoney(totalReResidential, { maximumFractionDigits: 0, minimumFractionDigits: 0 });
+        if (reComEl) reComEl.textContent = formatMoney(totalReCommercial, { maximumFractionDigits: 0, minimumFractionDigits: 0 });
         updateGoldenVisaProgress(totalReAed);
         if (typeof lastHoldingsAed !== 'undefined' && lastHoldingsAed) {
           renderAllocation(lastHoldingsAed);
@@ -5580,17 +5673,31 @@
         const title = document.getElementById('goalTitle').value.trim();
         const target = parseFloat(document.getElementById('goalTarget').value);
         const note = document.getElementById('goalNote').value.trim() || null;
+        const currency = (document.getElementById('goalCurrency')?.value || baseCurrency || 'AED').toUpperCase();
         if (!title || isNaN(target) || target <= 0) {
-          alert('Enter a goal name and target amount (AED).');
+          alert('Enter a goal name and target amount.');
           return;
         }
-        const { error } = await supabaseClient.from('goals').insert([{
+        let payload = {
           user_id: currentUser.id,
           title,
           target_amount: target,
           note,
-          status: 'active'
-        }]);
+          status: 'active',
+          currency
+        };
+        let { error } = await supabaseClient.from('goals').insert([payload]);
+        if (error && /currency/i.test(error.message || '')) {
+          // Column may not exist yet — store currency in note prefix
+          payload = {
+            user_id: currentUser.id,
+            title,
+            target_amount: target,
+            note: (note ? note + ' · ' : '') + 'Currency: ' + currency,
+            status: 'active'
+          };
+          ({ error } = await supabaseClient.from('goals').insert([payload]));
+        }
         if (error) { alert(error.message); return; }
         document.getElementById('goalTitle').value = '';
         document.getElementById('goalTarget').value = '';
@@ -5613,7 +5720,7 @@
           return;
         }
         if (!goals || !goals.length) {
-          list.innerHTML = `<p class="text-sm text-zinc-400">No custom goals yet. Tap "+ New goal" (e.g. car AED 20,000).</p>`;
+          list.innerHTML = `<p class="text-sm text-zinc-400">No custom goals yet. Tap "+ New goal" and pick your currency.</p>`;
           return;
         }
         list.innerHTML = '';
@@ -5626,6 +5733,12 @@
           const paid = (contribs || []).filter(c => (c.status || 'paid') === 'paid')
             .reduce((s, c) => s + (Number(c.amount) || 0), 0);
           const target = Number(g.target_amount) || 0;
+          let gCur = (g.currency || '').toUpperCase();
+          if (!gCur && g.note) {
+            const m = String(g.note).match(/Currency:\s*([A-Z]{3})/i);
+            if (m) gCur = m[1].toUpperCase();
+          }
+          if (!gCur) gCur = 'AED';
           const pct = target > 0 ? Math.min(100, (paid / target) * 100) : 0;
           const remaining = Math.max(0, target - paid);
           const isDone = g.status === 'completed' || g.status === 'claimed' || paid >= target;
@@ -5637,7 +5750,7 @@
             contribHtml += `<div class="flex flex-wrap items-center gap-2 text-[12px] ${isClaimed ? 'bg-white/70 border border-amber-100' : 'bg-zinc-50'} rounded-xl px-3 py-2">
               <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${st === 'paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-zinc-200 text-zinc-500'}">${st === 'paid' ? '✓' : '○'}</span>
               <span class="flex-1 text-zinc-700">${c.note || 'Contribution'}</span>
-              <span class="tabular-nums font-semibold text-zinc-800">AED ${Number(c.amount).toLocaleString()}</span>
+              <span class="tabular-nums font-semibold text-zinc-800">${gCur} ${Number(c.amount).toLocaleString()}</span>
               ${st === 'paid'
                 ? `<span class="text-[11px] font-semibold text-emerald-700">Paid</span>`
                 : `<button onclick="markContribution('${c.id}','paid')" class="btn-act btn-act-ok">Mark paid</button>`}
@@ -5655,7 +5768,7 @@
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center text-lg shadow-sm">🏆</div>
                 <div class="flex-1 min-w-0">
                   <p class="text-[13px] font-bold text-amber-950">Goal completed</p>
-                  <p class="text-[11px] text-amber-800/80">You reached AED ${target.toLocaleString(undefined,{maximumFractionDigits:0})} for ${g.title}</p>
+                  <p class="text-[11px] text-amber-800/80">You reached ${gCur} ${target.toLocaleString(undefined,{maximumFractionDigits:0})} for ${g.title}</p>
                   ${g.completed_at ? `<p class="text-[10px] text-amber-700/60 mt-0.5">Claimed ${new Date(g.completed_at).toLocaleDateString()}</p>` : ''}
                 </div>
               </div>`;
@@ -5701,17 +5814,17 @@
               </div>
               <div class="relative flex justify-between text-[13px] mb-1.5">
                 <span class="text-zinc-500">Saved</span>
-                <span class="font-semibold tabular-nums text-zinc-900">AED ${paid.toLocaleString(undefined,{maximumFractionDigits:0})} <span class="text-zinc-400 font-normal">/</span> ${target.toLocaleString(undefined,{maximumFractionDigits:0})}</span>
+                <span class="font-semibold tabular-nums text-zinc-900">${gCur} ${paid.toLocaleString(undefined,{maximumFractionDigits:0})} <span class="text-zinc-400 font-normal">/</span> ${gCur} ${target.toLocaleString(undefined,{maximumFractionDigits:0})}</span>
               </div>
               <div class="relative h-2.5 rounded-full bg-zinc-100/90 overflow-hidden mb-1.5">
                 <div class="h-full rounded-full ${progressBarClass} transition-all duration-500" style="width:${pct.toFixed(1)}%"></div>
               </div>
               <div class="relative flex justify-between text-[12px] mb-1">
                 <span class="font-semibold ${isClaimed ? 'text-amber-800' : isDone ? 'text-emerald-700' : 'text-brand-700'}">${pct.toFixed(1)}% complete</span>
-                <span class="text-zinc-500">${isDone ? 'Target reached' : (formatMoney(remaining, { maximumFractionDigits: 0, minimumFractionDigits: 0 }) + ' to go')}</span>
+                <span class="text-zinc-500">${isDone ? 'Target reached' : (gCur + ' ' + remaining.toLocaleString(undefined,{maximumFractionDigits:0}) + ' to go')}</span>
               </div>
               ${footerHtml}
-              <div class="relative mt-3 space-y-1.5">${contribHtml || (!isClaimed ? '<p class="text-[12px] text-zinc-400">No contributions yet. Add AED 1,000 (or any amount) when you set money aside.</p>' : '')}</div>
+              <div class="relative mt-3 space-y-1.5">${contribHtml || (!isClaimed ? '<p class="text-[12px] text-zinc-400">No contributions yet. Add any amount in this goal's currency when you set money aside.</p>' : '')}</div>
             </div>`;
         }
       }
@@ -7796,7 +7909,7 @@ document.getElementById('headerNotifBtn')?.addEventListener('click', (e) => {
           const cnt = k ? k.c : 0;
           const pnl = k ? k.pnl : 0;
           if (focusText) {
-            focusText.textContent = L.t + ' dashboard · ' + cnt + ' holding(s) · AED ' + val.toLocaleString(undefined,{maximumFractionDigits:0}) + ' · P/L ' + (pnl>=0?'+':'') + Math.round(pnl).toLocaleString() + ' AED';
+            focusText.textContent = L.t + ' dashboard · ' + cnt + ' holding(s) · ' + baseCurrency + ' ' + val.toLocaleString(undefined,{maximumFractionDigits:0}) + ' · P/L ' + (pnl>=0?'+':'') + Math.round(pnl).toLocaleString() + ' ' + baseCurrency;
           }
           rows.forEach(tr => {
             const kind = tr.getAttribute('data-asset-kind') || 'stocks';
