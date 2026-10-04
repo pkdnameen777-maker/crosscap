@@ -1244,7 +1244,7 @@
               <div class="flex items-center justify-between mb-3">
                 <div>
                   <h3 class="text-[15px] font-semibold text-zinc-900">Holdings breakdown</h3>
-                  <p class="text-[12px] text-zinc-400" id="allocBreakdownSub">By holding · % of selected scope</p>
+                  <p class="text-[12px] text-zinc-400" id="allocBreakdownSub">By liquid holding · % of liquid portfolio</p>
                 </div>
                 <select id="allocMarketFilter" class="text-[12px] rounded-lg border border-zinc-200 px-2 py-1.5">
                   <option value="ALL">All markets</option>
@@ -4542,7 +4542,7 @@
         GOLD_AED: 'Gold · AED', SILVER_AED: 'Silver · AED', GOLD_SAR: 'Gold · SAR', SILVER_SAR: 'Silver · SAR', GOLD_QAR: 'Gold · QAR', SILVER_QAR: 'Silver · QAR', GOLD_KWD: 'Gold · KWD', SILVER_KWD: 'Silver · KWD', GOLD_BHD: 'Gold · BHD', SILVER_BHD: 'Silver · BHD', GOLD_OMR: 'Gold · OMR', SILVER_OMR: 'Silver · OMR', GOLD_USD: 'Gold · USD', SILVER_USD: 'Silver · USD', GOLD_EUR: 'Gold · EUR', SILVER_EUR: 'Silver · EUR', GOLD_GBP: 'Gold · GBP', SILVER_GBP: 'Silver · GBP', GOLD_CHF: 'Gold · CHF', SILVER_CHF: 'Silver · CHF', GOLD_INR: 'Gold · INR', SILVER_INR: 'Silver · INR', GOLD_PKR: 'Gold · PKR', SILVER_PKR: 'Silver · PKR', GOLD_BDT: 'Gold · BDT', SILVER_BDT: 'Silver · BDT', GOLD_EGP: 'Gold · EGP', SILVER_EGP: 'Silver · EGP', GOLD_TRY: 'Gold · TRY', SILVER_TRY: 'Silver · TRY', GOLD_JPY: 'Gold · JPY', SILVER_JPY: 'Silver · JPY', GOLD_CNY: 'Gold · CNY', SILVER_CNY: 'Silver · CNY', GOLD_HKD: 'Gold · HKD', SILVER_HKD: 'Silver · HKD', GOLD_SGD: 'Gold · SGD', SILVER_SGD: 'Silver · SGD', GOLD_AUD: 'Gold · AUD', SILVER_AUD: 'Silver · AUD', GOLD_CAD: 'Gold · CAD', SILVER_CAD: 'Silver · CAD', GOLD_NZD: 'Gold · NZD', SILVER_NZD: 'Silver · NZD', GOLD_MYR: 'Gold · MYR', SILVER_MYR: 'Silver · MYR', GOLD_IDR: 'Gold · IDR', SILVER_IDR: 'Silver · IDR', GOLD_THB: 'Gold · THB', SILVER_THB: 'Silver · THB', GOLD_PHP: 'Gold · PHP', SILVER_PHP: 'Silver · PHP', GOLD_KRW: 'Gold · KRW', SILVER_KRW: 'Silver · KRW', GOLD_ZAR: 'Gold · ZAR', SILVER_ZAR: 'Silver · ZAR', GOLD_BRL: 'Gold · BRL', SILVER_BRL: 'Silver · BRL', GOLD_MXN: 'Gold · MXN', SILVER_MXN: 'Silver · MXN',
         OTHER_USD: 'Other (USD)', OTHER_AED: 'Other (AED)', OTHER_EUR: 'Other (EUR)', OTHER_GBP: 'Other (GBP)',
         DFM: '🇦🇪 UAE', NSE: '🇮🇳 India', GOLD: 'Gold',
-        REAL_ESTATE: '🏠 Real Estate', RE_RESIDENTIAL: '🏠 Residential', RE_COMMERCIAL: '🏢 Commercial'
+        REAL_ESTATE: '🏠 Real Estate', RE_RESIDENTIAL: '🏠 Residential', RE_COMMERCIAL: '🏢 Commercial', MUTUAL_FUND: 'Mutual Funds', FIXED_DEPOSIT: 'Fixed Deposits', BOND_SUKUK: 'Bonds & Sukuk', VEHICLE: 'Vehicles', BUSINESS: 'Business'
       };
       const ALLOC_COLORS = ['#7e22ce','#a855f7','#c084fc','#22c55e','#f59e0b','#3b82f6','#ef4444','#14b8a6','#ec4899','#64748b'];
 
@@ -4583,6 +4583,23 @@
           total += reAed;
         }
 
+        // Other / liquid-adjacent assets (MF, FD, bonds, …) in total-wealth allocation
+        const altSums = window.__lastAltSums || {};
+        const altMap = {
+          mutual_fund: 'MUTUAL_FUND',
+          fixed_deposit: 'FIXED_DEPOSIT',
+          bond_sukuk: 'BOND_SUKUK',
+          vehicle: 'VEHICLE',
+          business: 'BUSINESS'
+        };
+        Object.entries(altMap).forEach(([cls, code]) => {
+          const v = Number(altSums[cls]) || 0;
+          if (v > 0) {
+            byMarket[code] = (byMarket[code] || 0) + v;
+            total += v;
+          }
+        });
+
         const markets = Object.entries(byMarket).sort((a,b) => b[1]-a[1]);
         const list = document.getElementById('allocMarketList');
         const filter = document.getElementById('allocMarketFilter');
@@ -4600,10 +4617,13 @@
             }).join('');
           }
         }
+        // Holdings breakdown filter = liquid only (no real estate)
         if (filter) {
           const cur = filter.value;
+          const reCodes = new Set(['REAL_ESTATE', 'RE_RESIDENTIAL', 'RE_COMMERCIAL']);
+          const liquidMarkets = markets.filter(([m]) => !reCodes.has(m));
           filter.innerHTML = '<option value="ALL">All markets</option>' +
-            markets.map(([m]) => `<option value="${m}">${marketLabel(m)}</option>`).join('');
+            liquidMarkets.map(([m]) => `<option value="${m}">${marketLabel(m)}</option>`).join('');
           filter.value = [...filter.options].some(o => o.value === cur) ? cur : 'ALL';
         }
 
@@ -4644,7 +4664,7 @@
         const el = document.getElementById('allocStockList');
         if (!el) return;
         if (!items.length) {
-          el.innerHTML = '<p class="text-zinc-400 text-[13px]">No real estate in this category</p>';
+          el.innerHTML = '<p class="text-zinc-400 text-[13px]">No holdings in this market</p>';
           return;
         }
         el.innerHTML = items.map(([sym, v], i) => {
@@ -4664,44 +4684,35 @@
       function renderStockBreakdown(rows, total, marketFilter) {
         const el = document.getElementById('allocStockList');
         if (!el) return;
-        const br = window.__reBreakdown || {};
-        const res = Number(br.residential) || 0;
-        const com = Number(br.commercial) || 0;
-        const reTotal = res + com || Number(br.total) || 0;
-        const props = window.__reProperties || [];
 
-        // Residential / Commercial / Real Estate filters — not liquid stocks
-        if (marketFilter === 'RE_RESIDENTIAL' || marketFilter === 'RE_COMMERCIAL' || marketFilter === 'REAL_ESTATE') {
-          if (marketFilter === 'RE_RESIDENTIAL') {
-            const list = props.filter(p => p.use === 'residential');
-            if (list.length) {
-              renderReBreakdownItems(
-                list.map(p => [p.name, p.value]).sort((a, b) => b[1] - a[1]),
-                res || list.reduce((s, p) => s + p.value, 0)
-              );
-            } else {
-              renderReBreakdownItems(res > 0 ? [['Residential', res]] : [], res);
-            }
-            return;
+        const altClassByCode = {
+          MUTUAL_FUND: 'mutual_fund',
+          FIXED_DEPOSIT: 'fixed_deposit',
+          BOND_SUKUK: 'bond_sukuk',
+          VEHICLE: 'vehicle',
+          BUSINESS: 'business'
+        };
+        const altItems = window.__altItems || [];
+        const altSums = window.__lastAltSums || {};
+
+        // Alt asset class filters (MF, FD, bonds, vehicles, business)
+        if (altClassByCode[marketFilter]) {
+          const cls = altClassByCode[marketFilter];
+          const list = altItems.filter(a => a.asset_class === cls && a.value > 0);
+          const sub = list.reduce((s, a) => s + a.value, 0) || Number(altSums[cls]) || 0;
+          if (list.length) {
+            renderReBreakdownItems(list.map(a => [a.name, a.value]).sort((a, b) => b[1] - a[1]), sub);
+          } else if (sub > 0) {
+            renderReBreakdownItems([[marketLabel(marketFilter), sub]], sub);
+          } else {
+            el.innerHTML = '<p class="text-zinc-400 text-[13px]">No holdings in this market</p>';
           }
-          if (marketFilter === 'RE_COMMERCIAL') {
-            const list = props.filter(p => p.use === 'commercial');
-            if (list.length) {
-              renderReBreakdownItems(
-                list.map(p => [p.name, p.value]).sort((a, b) => b[1] - a[1]),
-                com || list.reduce((s, p) => s + p.value, 0)
-              );
-            } else {
-              renderReBreakdownItems(com > 0 ? [['Commercial', com]] : [], com);
-            }
-            return;
-          }
-          // REAL_ESTATE aggregate
-          const items = [
-            ['Residential', res],
-            ['Commercial', com]
-          ].filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
-          renderReBreakdownItems(items, reTotal);
+          return;
+        }
+
+        // Liquid holdings only (exclude real-estate codes if somehow selected)
+        if (marketFilter === 'REAL_ESTATE' || marketFilter === 'RE_RESIDENTIAL' || marketFilter === 'RE_COMMERCIAL') {
+          el.innerHTML = '<p class="text-zinc-400 text-[13px]">Real estate is shown under Portfolio allocation, not liquid holdings.</p>';
           return;
         }
 
@@ -4715,14 +4726,37 @@
           bySym[r.symbol] = (bySym[r.symbol] || 0) + r.aedVal;
           subTotal += r.aedVal;
         });
-        // "All markets": include RE residential + commercial in the list (share of total wealth)
+
+        // All markets: liquid stocks/gold/crypto + MF/FD/bonds/etc. (not real estate)
         if (!marketFilter || marketFilter === 'ALL') {
-          if (res > 0) bySym['🏠 Residential'] = (bySym['🏠 Residential'] || 0) + res;
-          if (com > 0) bySym['🏢 Commercial'] = (bySym['🏢 Commercial'] || 0) + com;
-          subTotal = total; // already includes RE from renderAllocation
+          Object.entries(altClassByCode).forEach(([code, cls]) => {
+            const v = Number(altSums[cls]) || 0;
+            if (v > 0) bySym[marketLabel(code)] = (bySym[marketLabel(code)] || 0) + v;
+          });
+          // total from renderAllocation includes RE; for liquid breakdown use liquid+alt only
+          const liquidOnly = subTotal + Object.values(altSums).reduce((s, n) => s + (Number(n) || 0), 0);
+          const items = Object.entries(bySym).sort((a, b) => b[1] - a[1]);
+          if (!items.length) {
+            el.innerHTML = '<p class="text-zinc-400 text-[13px]">No liquid holdings yet</p>';
+            return;
+          }
+          el.innerHTML = items.map(([sym, v], i) => {
+            const pct = liquidOnly > 0 ? (v / liquidOnly * 100) : 0;
+            return `<div>
+            <div class="flex justify-between text-[13px] mb-1">
+              <span class="font-medium text-zinc-800">${sym}</span>
+              <span class="tabular-nums text-zinc-600">${pct.toFixed(1)}% · ${baseCurrency} ${v.toLocaleString(undefined,{maximumFractionDigits:0})}</span>
+            </div>
+            <div class="h-1.5 rounded-full bg-zinc-100 overflow-hidden">
+              <div class="h-full rounded-full" style="width:${Math.min(100,pct)}%;background:${ALLOC_COLORS[i % ALLOC_COLORS.length]}"></div>
+            </div>
+          </div>`;
+          }).join('');
+          return;
         }
-        const items = Object.entries(bySym).sort((a,b) => b[1]-a[1]);
-        const base = (!marketFilter || marketFilter === 'ALL') ? total : subTotal;
+
+        const items = Object.entries(bySym).sort((a, b) => b[1] - a[1]);
+        const base = subTotal;
         if (!items.length) {
           el.innerHTML = '<p class="text-zinc-400 text-[13px]">No holdings in this market</p>';
           return;
@@ -7552,6 +7586,15 @@ document.getElementById('headerNotifBtn')?.addEventListener('click', (e) => {
         });
         window.__lastAltAed = totalAed;
         window.__lastAltSums = sums;
+        window.__altItems = rows.map(r => ({
+          name: r.name || r.institution || (r.asset_class || 'Other'),
+          asset_class: r.asset_class || 'other',
+          value: r._aed || 0
+        }));
+        // Refresh allocation donut + liquid breakdown once alt values are known
+        if (typeof lastHoldingsAed !== 'undefined' && lastHoldingsAed && typeof renderAllocation === 'function') {
+          try { renderAllocation(lastHoldingsAed); } catch (_) {}
+        }
         const fmt = n => formatMoney(Math.round(n), { maximumFractionDigits: 0, minimumFractionDigits: 0 });
         const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = fmt(v); };
         set('altSumMf', sums.mutual_fund);
