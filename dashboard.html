@@ -1230,7 +1230,7 @@
           <div class="grid lg:grid-cols-2 gap-4 mb-6">
             <div class="cc-panel p-5">
               <h3 class="text-[15px] font-semibold text-zinc-900 mb-1">Portfolio allocation</h3>
-              <p class="text-[12px] text-zinc-400 mb-4">By market + real estate · share of total wealth (AED)</p>
+              <p class="text-[12px] text-zinc-400 mb-4">By market + real estate · share of total wealth (<span id="allocBaseCurrencyLabel">AED</span>)</p>
               <div class="flex flex-col sm:flex-row items-center gap-6">
                 <div class="relative w-40 h-40 shrink-0">
                   <canvas id="allocChart"></canvas>
@@ -3906,7 +3906,7 @@
           localStorage.setItem('cc_base_currency', c);
           if (opts.markChosen) { try { localStorage.setItem(currencyOnboardingKey(), '1'); } catch(_){} }
         } catch (_) {}
-        document.querySelectorAll('#overviewBaseCurrencyLabel, #exposureBaseCurrencyLabel, #perfBaseCurrencyLabel').forEach(el => {
+        document.querySelectorAll('#overviewBaseCurrencyLabel, #exposureBaseCurrencyLabel, #perfBaseCurrencyLabel, #allocBaseCurrencyLabel').forEach(el => {
           if (el) el.textContent = c;
         });
         const bcEl = document.getElementById('profileBaseCurrency');
@@ -4586,7 +4586,7 @@
                   label: (c) => {
                     const v = c.raw || 0;
                     const pct = total > 0 ? (v/total*100).toFixed(1) : 0;
-                    return ` AED ${Number(v).toLocaleString(undefined,{maximumFractionDigits:0})} (${pct}%)`;
+                    return ` ${baseCurrency} ${Number(v).toLocaleString(undefined,{maximumFractionDigits:0})} (${pct}%)`;
                   }
                 }
               }}
@@ -4621,7 +4621,7 @@
           return `<div>
             <div class="flex justify-between text-[13px] mb-1">
               <span class="font-medium text-zinc-800">${sym}</span>
-              <span class="tabular-nums text-zinc-600">${pct.toFixed(1)}% · AED ${v.toLocaleString(undefined,{maximumFractionDigits:0})}</span>
+              <span class="tabular-nums text-zinc-600">${pct.toFixed(1)}% · ${baseCurrency} ${v.toLocaleString(undefined,{maximumFractionDigits:0})}</span>
             </div>
             <div class="h-1.5 rounded-full bg-zinc-100 overflow-hidden">
               <div class="h-full rounded-full" style="width:${Math.min(100,pct)}%;background:${ALLOC_COLORS[i % ALLOC_COLORS.length]}"></div>
