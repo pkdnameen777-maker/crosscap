@@ -1244,7 +1244,7 @@
               <div class="flex items-center justify-between mb-3">
                 <div>
                   <h3 class="text-[15px] font-semibold text-zinc-900">Holdings breakdown</h3>
-                  <p class="text-[12px] text-zinc-400">By stock · % of liquid portfolio</p>
+                  <p class="text-[12px] text-zinc-400" id="allocBreakdownSub">By holding · % of selected scope</p>
                 </div>
                 <select id="allocMarketFilter" class="text-[12px] rounded-lg border border-zinc-200 px-2 py-1.5">
                   <option value="ALL">All markets</option>
@@ -4640,37 +4640,71 @@
         renderStockBreakdown(rows, total, filter ? filter.value : 'ALL');
       }
 
-      function renderStockBreakdown(rows, total, marketFilter) {
+      function renderReBreakdownItems(items, baseTotal) {
         const el = document.getElementById('allocStockList');
         if (!el) return;
-        // Real estate filter: show residential vs commercial split
-        if (marketFilter === 'REAL_ESTATE') {
-          const br = window.__reBreakdown || {};
-          const res = Number(br.residential) || 0;
-          const com = Number(br.commercial) || 0;
-          const sub = res + com;
-          if (sub <= 0) {
-            el.innerHTML = '<p class="text-zinc-400 text-[13px]">No real estate value yet</p>';
-            return;
-          }
-          const items = [
-            ['Residential', res],
-            ['Commercial', com]
-          ].filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
-          el.innerHTML = items.map(([sym, v], i) => {
-            const pct = sub > 0 ? (v / sub * 100) : 0;
-            return `<div>
+        if (!items.length) {
+          el.innerHTML = '<p class="text-zinc-400 text-[13px]">No real estate in this category</p>';
+          return;
+        }
+        el.innerHTML = items.map(([sym, v], i) => {
+          const pct = baseTotal > 0 ? (v / baseTotal * 100) : 0;
+          return `<div>
             <div class="flex justify-between text-[13px] mb-1">
               <span class="font-medium text-zinc-800">${sym}</span>
-              <span class="tabular-nums text-zinc-600">${pct.toFixed(1)}% · ${baseCurrency} ${v.toLocaleString(undefined,{maximumFractionDigits:0})}</span>
+              <span class="tabular-nums text-zinc-600">${pct.toFixed(1)}% · ${baseCurrency} ${Number(v).toLocaleString(undefined,{maximumFractionDigits:0})}</span>
             </div>
             <div class="h-1.5 rounded-full bg-zinc-100 overflow-hidden">
               <div class="h-full rounded-full" style="width:${Math.min(100,pct)}%;background:${ALLOC_COLORS[i % ALLOC_COLORS.length]}"></div>
             </div>
           </div>`;
-          }).join('');
+        }).join('');
+      }
+
+      function renderStockBreakdown(rows, total, marketFilter) {
+        const el = document.getElementById('allocStockList');
+        if (!el) return;
+        const br = window.__reBreakdown || {};
+        const res = Number(br.residential) || 0;
+        const com = Number(br.commercial) || 0;
+        const reTotal = res + com || Number(br.total) || 0;
+        const props = window.__reProperties || [];
+
+        // Residential / Commercial / Real Estate filters — not liquid stocks
+        if (marketFilter === 'RE_RESIDENTIAL' || marketFilter === 'RE_COMMERCIAL' || marketFilter === 'REAL_ESTATE') {
+          if (marketFilter === 'RE_RESIDENTIAL') {
+            const list = props.filter(p => p.use === 'residential');
+            if (list.length) {
+              renderReBreakdownItems(
+                list.map(p => [p.name, p.value]).sort((a, b) => b[1] - a[1]),
+                res || list.reduce((s, p) => s + p.value, 0)
+              );
+            } else {
+              renderReBreakdownItems(res > 0 ? [['Residential', res]] : [], res);
+            }
+            return;
+          }
+          if (marketFilter === 'RE_COMMERCIAL') {
+            const list = props.filter(p => p.use === 'commercial');
+            if (list.length) {
+              renderReBreakdownItems(
+                list.map(p => [p.name, p.value]).sort((a, b) => b[1] - a[1]),
+                com || list.reduce((s, p) => s + p.value, 0)
+              );
+            } else {
+              renderReBreakdownItems(com > 0 ? [['Commercial', com]] : [], com);
+            }
+            return;
+          }
+          // REAL_ESTATE aggregate
+          const items = [
+            ['Residential', res],
+            ['Commercial', com]
+          ].filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+          renderReBreakdownItems(items, reTotal);
           return;
         }
+
         let filtered = rows;
         if (marketFilter && marketFilter !== 'ALL') {
           filtered = rows.filter(r => r.market === marketFilter);
@@ -4681,8 +4715,14 @@
           bySym[r.symbol] = (bySym[r.symbol] || 0) + r.aedVal;
           subTotal += r.aedVal;
         });
+        // "All markets": include RE residential + commercial in the list (share of total wealth)
+        if (!marketFilter || marketFilter === 'ALL') {
+          if (res > 0) bySym['🏠 Residential'] = (bySym['🏠 Residential'] || 0) + res;
+          if (com > 0) bySym['🏢 Commercial'] = (bySym['🏢 Commercial'] || 0) + com;
+          subTotal = total; // already includes RE from renderAllocation
+        }
         const items = Object.entries(bySym).sort((a,b) => b[1]-a[1]);
-        const base = marketFilter === 'ALL' ? total : subTotal;
+        const base = (!marketFilter || marketFilter === 'ALL') ? total : subTotal;
         if (!items.length) {
           el.innerHTML = '<p class="text-zinc-400 text-[13px]">No holdings in this market</p>';
           return;
@@ -5095,6 +5135,7 @@
         let totalReVal = 0;
         let totalReResidential = 0;
         let totalReCommercial = 0;
+        const rePropertyItems = [];
         const radarItems = [];
         // Real-estate amounts are stored in AED; convert into selected base currency
         const reRates = await getRatesToAed();
@@ -5116,6 +5157,12 @@
             const useT = String(p.use_type || 'residential').toLowerCase();
             if (useT === 'commercial') totalReCommercial += myInBase;
             else totalReResidential += myInBase;
+            rePropertyItems.push({
+              name: p.name || 'Property',
+              use: useT === 'commercial' ? 'commercial' : 'residential',
+              value: myInBase,
+              currency: propCur
+            });
             // Golden Visa: only AED-denominated properties, user's ownership share
             if (propCur === 'AED') {
               totalReAed += myFull;
@@ -5270,6 +5317,7 @@
           commercial: totalReCommercial,
           total: totalReVal
         };
+        window.__reProperties = rePropertyItems;
         const reResEl = document.getElementById('reResidentialTotal');
         const reComEl = document.getElementById('reCommercialTotal');
         if (reResEl) reResEl.textContent = formatMoney(totalReResidential, { maximumFractionDigits: 0, minimumFractionDigits: 0 });
