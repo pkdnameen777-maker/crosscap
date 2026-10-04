@@ -836,11 +836,32 @@
       border-radius: 9999px;
       overflow: hidden;
       background: linear-gradient(145deg, #c4b5fd, #7c3aed);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .hdr-avatar-inner img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      position: absolute;
+      inset: 0;
+    }
+    .hdr-avatar-initials {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.02em;
+      line-height: 1;
+      user-select: none;
+    }
+    /* Keep avatar visible on narrow phones */
+    @media (max-width: 1023px) {
+      .hdr-avatar {
+        width: 2rem;
+        height: 2rem;
+      }
     }
     #notifBadge {
       top: 2px !important;
@@ -1029,6 +1050,7 @@
           </div>
           <button type="button" id="headerAvatarBtn" class="hdr-avatar" aria-label="Open profile settings" title="Profile & settings">
             <div id="headerAvatar" class="hdr-avatar-inner">
+              <span id="headerAvatarInitials" class="hdr-avatar-initials">?</span>
               <img id="headerAvatarImg" src="" alt="" class="hidden" />
             </div>
           </button>
@@ -2795,13 +2817,14 @@
         let wish = 'Good evening';
         if (hour < 12) wish = 'Good morning';
         else if (hour < 17) wish = 'Good afternoon';
-        document.getElementById('userGreeting').textContent = `${wish}, ${name}`;
+        setUserGreeting(wish, name);
         const emailEl = document.getElementById('userEmailDisplay');
         if (emailEl) emailEl.textContent = currentUser.email;
         const sn = document.getElementById('sidebarUserName');
         const se = document.getElementById('sidebarUserEmail');
         if (sn) sn.textContent = name;
         if (se) se.textContent = currentUser.email || '';
+        setAvatarInitials(name);
         const setE = document.getElementById('settingsEmail');
         if (setE) setE.textContent = currentUser.email || '';
         const adminBox = document.getElementById('adminLinkBox');
@@ -2816,17 +2839,52 @@
         }
       });
 
+      function setUserGreeting(wish, name) {
+        const el = document.getElementById('userGreeting');
+        if (!el) return;
+        const isMobile = window.matchMedia('(max-width: 1023px)').matches;
+        // Phone: greeting only (no name). Desktop: greeting + name.
+        el.textContent = (isMobile || !name) ? wish : (wish + ', ' + name);
+      }
+
+      function setAvatarInitials(name) {
+        const el = document.getElementById('headerAvatarInitials');
+        if (!el) return;
+        const n = (name || '').trim();
+        let initials = '?';
+        if (n) {
+          const parts = n.split(/\s+/).filter(Boolean);
+          if (parts.length >= 2) initials = (parts[0][0] + parts[1][0]).toUpperCase();
+          else initials = n.slice(0, 2).toUpperCase();
+        }
+        el.textContent = initials;
+      }
+
       function setAvatarDisplay(url) {
         const headerImg = document.getElementById('headerAvatarImg');
         const settingsImg = document.getElementById('settingsAvatarImg');
+        const initials = document.getElementById('headerAvatarInitials');
         [headerImg, settingsImg].forEach(img => {
           if (!img) return;
           if (url) {
+            img.onload = () => {
+              img.classList.remove('hidden');
+              if (img === headerImg && initials) initials.classList.add('hidden');
+            };
+            img.onerror = () => {
+              img.classList.add('hidden');
+              if (img === headerImg && initials) initials.classList.remove('hidden');
+            };
             img.src = url;
-            img.classList.remove('hidden');
+            // if already cached, onload may not fire
+            if (img.complete && img.naturalWidth) {
+              img.classList.remove('hidden');
+              if (img === headerImg && initials) initials.classList.add('hidden');
+            }
           } else {
             img.src = '';
             img.classList.add('hidden');
+            if (img === headerImg && initials) initials.classList.remove('hidden');
           }
         });
       }
@@ -2913,7 +2971,10 @@
         if (data?.avatar_path) {
           const url = await resolveAvatarUrl(data.avatar_path);
           setAvatarDisplay(url);
+        } else {
+          setAvatarDisplay(null);
         }
+        if (data?.full_name) setAvatarInitials(data.full_name);
         goldenVisaHolder = !!data?.golden_visa_holder;
         goldenVisaClaimedAt = data?.golden_visa_claimed_at || null;
         if (typeof updateGoldenVisaProgress === 'function') {
@@ -2990,9 +3051,10 @@
           let wish = 'Good evening';
           if (hour < 12) wish = 'Good morning';
           else if (hour < 17) wish = 'Good afternoon';
-          document.getElementById('userGreeting').textContent = `${wish}, ${row.full_name}`;
+          setUserGreeting(wish, row.full_name);
           const sn = document.getElementById('sidebarUserName');
           if (sn) sn.textContent = row.full_name;
+          setAvatarInitials(row.full_name);
         }
         const nextBase = (row.base_currency || 'AED').toUpperCase();
         const baseChanged = nextBase !== baseCurrency;
@@ -4139,6 +4201,19 @@
         window.completeCurrencyOnboarding = completeCurrencyOnboarding;
       }
       // setupPwaInstallHandlers() deferred until modals exist in DOM
+
+      // Keep mobile greeting without name on resize / rotate
+      window.addEventListener('resize', () => {
+        const el = document.getElementById('userGreeting');
+        if (!el) return;
+        const text = el.textContent || '';
+        const wishMatch = text.match(/^(Good morning|Good afternoon|Good evening)/);
+        if (!wishMatch) return;
+        const wish = wishMatch[1];
+        const name = (document.getElementById('sidebarUserName')?.textContent || '').trim();
+        if (name && name !== '—') setUserGreeting(wish, name);
+        else setUserGreeting(wish, '');
+      });
 
       let privacyMode = false;
       try { privacyMode = localStorage.getItem('cc_privacy_mode') === '1'; } catch (_) {}
