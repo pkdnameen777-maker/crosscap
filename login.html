@@ -55,14 +55,14 @@
     <div class="w-full max-w-[400px]">
       <div class="bg-white rounded-[22px] border border-zinc-200/80 shadow-lg p-8 sm:p-9">
         <div class="text-center mb-8">
-          <img src="assets/logo.png" alt="CrossCap" class="w-14 h-14 rounded-2xl mx-auto mb-5 object-contain shadow" width="56" height="56" />
-          <h1 class="font-display text-[22px] font-semibold text-zinc-900 tracking-tight mb-1.5">Welcome to CrossCap</h1>
-          <p class="text-[14px] text-zinc-500">Sign in to access your multi-currency wealth dashboard</p>
+          <img src="assets/logo.png" alt="CrossCap" class="w-14 h-14 rounded-2xl object-contain mx-auto mb-4 shadow-sm" width="56" height="56" />
+          <h1 id="authTitle" class="font-display text-[22px] font-semibold tracking-tight text-zinc-900">Log in</h1>
+          <p id="authSubtitle" class="text-[14px] text-zinc-500 mt-1.5 leading-relaxed">Sign in to access your multi-currency wealth dashboard</p>
         </div>
 
-        <div id="auth-error" class="hidden mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs leading-relaxed"></div>
+        <div id="auth-error" class="hidden mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-[13px] leading-relaxed"></div>
+        <div id="auth-info" class="hidden mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-[13px] leading-relaxed"></div>
 
-        <!-- Google OAuth Button -->
         <button id="googleBtn" type="button" class="flex items-center justify-center gap-3 w-full rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-800 text-[14.5px] font-semibold px-4 py-3.5 shadow-sm transition mb-4">
           <svg class="w-5 h-5" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -70,7 +70,7 @@
             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
           </svg>
-          Continue with Google
+          <span id="googleBtnLabel">Sign in with Google</span>
         </button>
 
         <div class="relative my-6">
@@ -81,16 +81,25 @@
         <form id="emailForm" class="space-y-3.5">
           <div>
             <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Email</label>
-            <input id="email" type="email" required placeholder="alex@example.com" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
+            <input id="email" type="email" required autocomplete="email" placeholder="you@example.com" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
           </div>
           <div>
-            <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Password</label>
-            <input id="password" type="password" required placeholder="••••••••" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-[12px] font-medium text-zinc-600">Password</label>
+              <button type="button" id="forgotBtn" class="text-[12px] font-medium text-brand-700 hover:underline">Forgot password?</button>
+            </div>
+            <input id="password" type="password" required autocomplete="current-password" minlength="6" placeholder="••••••••" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
+            <p id="passwordHint" class="hidden mt-1.5 text-[11px] text-zinc-400">At least 6 characters</p>
           </div>
-          <button type="submit" class="w-full rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[14.5px] font-semibold px-4 py-3.5 shadow transition">
-            Sign In / Sign Up
+          <button id="submitBtn" type="submit" class="w-full rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[14.5px] font-semibold px-4 py-3.5 shadow transition">
+            Log in
           </button>
         </form>
+
+        <p id="switchMode" class="mt-6 text-center text-[13px] text-zinc-500">
+          New to CrossCap?
+          <button type="button" id="switchBtn" class="font-semibold text-brand-700 hover:underline">Sign up</button>
+        </p>
       </div>
     </div>
   </main>
@@ -103,67 +112,161 @@
 
       const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      // Auto-redirect if session is active
       supabaseClient.auth.onAuthStateChange((event, session) => {
-        if (session) {
-          window.location.href = '/dashboard';
-        }
+        if (session) window.location.href = '/dashboard';
       });
 
+      let mode = 'login'; // 'login' | 'signup'
+
       const errorBox = document.getElementById('auth-error');
+      const infoBox = document.getElementById('auth-info');
+      const titleEl = document.getElementById('authTitle');
+      const subtitleEl = document.getElementById('authSubtitle');
+      const submitBtn = document.getElementById('submitBtn');
+      const switchBtn = document.getElementById('switchBtn');
+      const switchMode = document.getElementById('switchMode');
+      const googleLabel = document.getElementById('googleBtnLabel');
+      const passwordHint = document.getElementById('passwordHint');
+      const passwordInput = document.getElementById('password');
+      const forgotBtn = document.getElementById('forgotBtn');
+
+      function clearMessages() {
+        if (errorBox) { errorBox.textContent = ''; errorBox.classList.add('hidden'); }
+        if (infoBox) { infoBox.textContent = ''; infoBox.classList.add('hidden'); }
+      }
       function showError(msg) {
+        clearMessages();
         if (errorBox) {
           errorBox.textContent = msg;
           errorBox.classList.remove('hidden');
-        } else {
-          alert(msg);
+        } else alert(msg);
+      }
+      function showInfo(msg) {
+        clearMessages();
+        if (infoBox) {
+          infoBox.textContent = msg;
+          infoBox.classList.remove('hidden');
         }
       }
 
-      // Google Sign In
-      const googleBtn = document.getElementById('googleBtn');
-      if (googleBtn) {
-        googleBtn.addEventListener('click', async () => {
-          const { error } = await supabaseClient.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-              redirectTo: window.location.origin + '/dashboard'
-            }
-          });
-          if (error) showError(error.message);
-        });
+      function setMode(next) {
+        mode = next;
+        clearMessages();
+        if (mode === 'login') {
+          titleEl.textContent = 'Log in';
+          subtitleEl.textContent = 'Sign in to access your multi-currency wealth dashboard';
+          submitBtn.textContent = 'Log in';
+          googleLabel.textContent = 'Sign in with Google';
+          switchMode.innerHTML = 'New to CrossCap? <button type="button" id="switchBtn" class="font-semibold text-brand-700 hover:underline">Sign up</button>';
+          passwordInput.autocomplete = 'current-password';
+          passwordHint.classList.add('hidden');
+          forgotBtn.classList.remove('hidden');
+        } else {
+          titleEl.textContent = 'Sign up';
+          subtitleEl.textContent = 'Create your CrossCap account to track net worth across currencies';
+          submitBtn.textContent = 'Create account';
+          googleLabel.textContent = 'Sign up with Google';
+          switchMode.innerHTML = 'Already have an account? <button type="button" id="switchBtn" class="font-semibold text-brand-700 hover:underline">Log in</button>';
+          passwordInput.autocomplete = 'new-password';
+          passwordHint.classList.remove('hidden');
+          forgotBtn.classList.add('hidden');
+        }
+        document.getElementById('switchBtn')?.addEventListener('click', () => setMode(mode === 'login' ? 'signup' : 'login'));
       }
 
-      // Email Sign In / Sign Up
-      const emailForm = document.getElementById('emailForm');
-      if (emailForm) {
-        emailForm.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const email = document.getElementById('email').value;
-          const password = document.getElementById('password').value;
+      document.getElementById('switchBtn')?.addEventListener('click', () => setMode('signup'));
 
-          let { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-          if (error && (error.message.includes('Invalid login credentials') || error.message.includes('User not found'))) {
-            const signUpRes = await supabaseClient.auth.signUp({ email, password });
-            if (signUpRes.error) {
-              showError(signUpRes.error.message);
+      // Support ?mode=signup
+      try {
+        if (new URLSearchParams(location.search).get('mode') === 'signup') setMode('signup');
+      } catch (_) {}
+
+      document.getElementById('googleBtn')?.addEventListener('click', async () => {
+        clearMessages();
+        const { error } = await supabaseClient.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: window.location.origin + '/dashboard' }
+        });
+        if (error) showError(error.message);
+      });
+
+      document.getElementById('forgotBtn')?.addEventListener('click', async () => {
+        clearMessages();
+        const email = (document.getElementById('email').value || '').trim();
+        if (!email) {
+          showError('Enter your email above, then click Forgot password.');
+          return;
+        }
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin + '/login'
+        });
+        if (error) showError(error.message);
+        else showInfo('If an account exists for that email, we sent a reset link. Check your inbox (and spam).');
+      });
+
+      document.getElementById('emailForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearMessages();
+        const email = (document.getElementById('email').value || '').trim();
+        const password = document.getElementById('password').value || '';
+
+        if (password.length < 6) {
+          showError('Password must be at least 6 characters.');
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = mode === 'login' ? 'Signing in…' : 'Creating account…';
+
+        try {
+          if (mode === 'login') {
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) {
+              const msg = (error.message || '').toLowerCase();
+              if (msg.includes('invalid') || msg.includes('credentials')) {
+                showError("Incorrect email or password. If you're new, use Sign up. If you signed up with Google, use Continue with Google.");
+              } else if (msg.includes('confirm') || msg.includes('not confirmed')) {
+                showError('Please confirm your email first. Check your inbox for the confirmation link.');
+              } else {
+                showError(error.message);
+              }
               return;
             }
             window.location.href = '/dashboard';
             return;
           }
 
+          // Sign up
+          const { data, error } = await supabaseClient.auth.signUp({
+            email,
+            password,
+            options: { emailRedirectTo: window.location.origin + '/dashboard' }
+          });
           if (error) {
-            showError(error.message);
-          } else {
-            window.location.href = '/dashboard';
+            const msg = (error.message || '').toLowerCase();
+            if (msg.includes('already') || msg.includes('registered')) {
+              showError('An account with this email already exists. Log in instead, or use Forgot password.');
+              setMode('login');
+            } else {
+              showError(error.message);
+            }
+            return;
           }
-        });
-      }
+          // If session returned, email confirm is off
+          if (data?.session) {
+            window.location.href = '/dashboard';
+            return;
+          }
+          showInfo('Account created. Check your email to confirm, then log in. (If no email arrives, ask your admin to disable "Confirm email" in Supabase.)');
+          setMode('login');
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = mode === 'login' ? 'Log in' : 'Create account';
+        }
+      });
     });
   </script>
   <script>
-    // PWA service worker
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
         navigator.serviceWorker.register("/sw.js").catch(function (err) {
@@ -172,12 +275,9 @@
       });
     }
   </script>
-
-  <!-- Vercel Analytics -->
   <script>
     window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
   </script>
   <script defer src="/_vercel/insights/script.js"></script>
-
 </body>
 </html>
