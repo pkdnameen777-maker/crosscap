@@ -7027,6 +7027,60 @@
         return items;
       }
 
+      // Notification sound (Web Audio — no external file)
+      let __notifAudioCtx = null;
+      let __notifSoundUnlocked = false;
+      let __notifSoundPrimed = false;
+      let __prevUnreadNotifIds = null; // null = first run (no sound)
+
+      function unlockNotifSound() {
+        try {
+          const AC = window.AudioContext || window.webkitAudioContext;
+          if (!AC) return;
+          if (!__notifAudioCtx) __notifAudioCtx = new AC();
+          if (__notifAudioCtx.state === 'suspended') __notifAudioCtx.resume();
+          __notifSoundUnlocked = true;
+        } catch (_) {}
+      }
+
+      function playNotifSound(urgent) {
+        try {
+          if (localStorage.getItem('cc_notif_sound') === '0') return;
+          unlockNotifSound();
+          const ctx = __notifAudioCtx;
+          if (!ctx) return;
+          const t0 = ctx.currentTime;
+          // Soft two-tone chime (urgent = slightly higher / brighter)
+          const freqs = urgent ? [880, 1174.7] : [659.25, 880];
+          freqs.forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            const start = t0 + i * 0.12;
+            gain.gain.setValueAtTime(0.0001, start);
+            gain.gain.exponentialRampToValueAtTime(urgent ? 0.08 : 0.055, start + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.28);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(start);
+            osc.stop(start + 0.3);
+          });
+        } catch (_) {}
+      }
+
+      // Unlock audio after first user gesture (browser autoplay policy)
+      if (!window.__notifSoundGestureBound) {
+        window.__notifSoundGestureBound = true;
+        const unlock = () => {
+          unlockNotifSound();
+          document.removeEventListener('pointerdown', unlock);
+          document.removeEventListener('keydown', unlock);
+        };
+        document.addEventListener('pointerdown', unlock, { once: true });
+        document.addEventListener('keydown', unlock, { once: true });
+      }
+
       function refreshNotifications() {
         const list = document.getElementById('notifList');
         const badge = document.getElementById('notifBadge');
@@ -7035,6 +7089,21 @@
         const read = notifReadSet();
         const unreadItems = items.filter(i => !read.has(i.id));
         const urgentUnread = unreadItems.filter(i => i.urgent);
+
+        // Real-time sound: only when new unread ids appear (not on first paint)
+        try {
+          const ids = unreadItems.map(i => i.id).sort();
+          const key = ids.join('|');
+          if (__prevUnreadNotifIds !== null) {
+            const prev = new Set(__prevUnreadNotifIds.split('|').filter(Boolean));
+            const newly = ids.filter(id => !prev.has(id));
+            if (newly.length) {
+              const urgentNew = newly.some(id => unreadItems.find(u => u.id === id && u.urgent));
+              playNotifSound(urgentNew);
+            }
+          }
+          __prevUnreadNotifIds = key;
+        } catch (_) {}
 
         if (!items.length) {
           list.innerHTML = '<p class="px-2 py-3 text-zinc-400">No alerts yet.</p>';
@@ -7098,10 +7167,23 @@
 
 document.getElementById('headerNotifBtn')?.addEventListener('click', (e) => {
         e.stopPropagation();
+        unlockNotifSound();
         const panel = document.getElementById('notifPanel');
         panel?.classList.toggle('hidden');
         if (panel && !panel.classList.contains('hidden')) refreshNotifications();
       });
+
+      // Periodic refresh so new installment / data events can chime without full reload
+      if (!window.__notifPollBound) {
+        window.__notifPollBound = true;
+        setInterval(() => {
+          try {
+            if (typeof currentUser !== 'undefined' && currentUser && typeof refreshNotifications === 'function') {
+              refreshNotifications();
+            }
+          } catch (_) {}
+        }, 45000);
+      }
       document.getElementById('notifMarkRead')?.addEventListener('click', () => {
         try {
           const items = buildNotificationItems();
