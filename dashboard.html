@@ -5403,6 +5403,10 @@
             oList.innerHTML = '';
           }
         }
+        window.__lastRadarItems = radarItems.slice();
+        window.__lastOverdue = radarItems.filter(r => r.days < 0).length;
+        window.__lastDue30 = radarItems.filter(r => r.days >= 0 && r.days <= 30).length;
+        if (typeof refreshNotifications === 'function') refreshNotifications();
       }
 
 
@@ -6879,46 +6883,211 @@
         loadNetworkFeed();
       }
 
+      // ---- In-app notification center (bell) ----
+      const CC_SITE_UPDATES = [
+        {
+          id: 'upd-gcc-wealth-os-2026-10',
+          t: 'CrossCap is now the GCC Wealth OS',
+          s: 'Track stocks, gold, crypto, property installments and multi-currency net worth in one place.',
+          urgent: false
+        },
+        {
+          id: 'upd-proof-of-wealth-seal',
+          t: 'Proof of Wealth documents upgraded',
+          s: 'New confidential seal and system fonts — use Share in the header to generate.',
+          urgent: false
+        },
+        {
+          id: 'upd-other-assets',
+          t: 'Mutual funds, FDs and bonds supported',
+          s: 'Add them under Other assets — they appear in liquid allocation breakdown.',
+          urgent: false
+        }
+      ];
+
+      function notifReadSet() {
+        try {
+          return new Set(JSON.parse(localStorage.getItem('cc_notif_read_ids') || '[]'));
+        } catch (_) {
+          return new Set();
+        }
+      }
+      function saveNotifReadSet(set) {
+        try {
+          localStorage.setItem('cc_notif_read_ids', JSON.stringify([...set]));
+        } catch (_) {}
+      }
+      function markNotifIdsRead(ids) {
+        const set = notifReadSet();
+        (ids || []).forEach(id => set.add(id));
+        saveNotifReadSet(set);
+      }
+
+      function buildNotificationItems() {
+        const items = [];
+        const now = new Date();
+        const hour = now.getHours();
+        let wish = 'Good evening';
+        if (hour < 12) wish = 'Good morning';
+        else if (hour < 17) wish = 'Good afternoon';
+
+        let name =
+          (document.getElementById('sidebarUserName')?.textContent || '').trim() ||
+          (document.getElementById('profileName')?.value || '').trim() ||
+          (currentUser?.user_metadata?.full_name || '').trim() ||
+          ((currentUser?.email || '').split('@')[0]) ||
+          'there';
+        if (name === '—') name = 'there';
+
+        try {
+          const uid = currentUser?.id || '';
+          const welcomeKey = 'cc_welcomed_' + uid;
+          const already = localStorage.getItem(welcomeKey) === '1';
+          const createdAt = currentUser?.created_at ? new Date(currentUser.created_at) : null;
+          const ageMs = createdAt ? (Date.now() - createdAt.getTime()) : Infinity;
+          if (!already) {
+            items.push({
+              id: 'welcome-' + uid,
+              t: wish + ', ' + name + ' — welcome to CrossCap',
+              s: 'Add holdings, cash, or a property to see live net worth. Set your base currency from the header.',
+              urgent: true,
+              kind: 'welcome'
+            });
+          } else {
+            const dayKey = now.toISOString().slice(0, 10);
+            items.push({
+              id: 'greet-' + dayKey,
+              t: wish + (name && name !== 'there' ? ', ' + name.split(' ')[0] : ''),
+              s: 'Your GCC wealth dashboard is ready. Check Overview for net worth and alerts.',
+              urgent: false,
+              kind: 'greeting'
+            });
+          }
+        } catch (_) {}
+
+        try {
+          const radar = window.__lastRadarItems || [];
+          const overdue = radar.filter(r => r.days < 0);
+          const dueSoon = radar.filter(r => r.days >= 0 && r.days <= 30);
+          if (overdue.length) {
+            const first = overdue[0];
+            items.push({
+              id: 'inst-overdue',
+              t: overdue.length + ' overdue installment' + (overdue.length > 1 ? 's' : ''),
+              s: (first.name || 'Property') + (first.stage ? ' · ' + first.stage : '') + ' — open Real Estate',
+              urgent: true,
+              kind: 'installment'
+            });
+          }
+          if (dueSoon.length) {
+            const first = dueSoon.sort((a, b) => a.days - b.days)[0];
+            items.push({
+              id: 'inst-due30',
+              t: dueSoon.length + ' payment' + (dueSoon.length > 1 ? 's' : '') + ' due in 30 days',
+              s: (first.name || 'Property') + ' in ' + first.days + ' day' + (first.days === 1 ? '' : 's') + ' · Real Estate radar',
+              urgent: first.days <= 7,
+              kind: 'installment'
+            });
+          }
+        } catch (_) {}
+
+        try {
+          const holdingsN = (typeof lastHoldingsAed !== 'undefined' && lastHoldingsAed) ? lastHoldingsAed.length : 0;
+          const re = Number(window.__lastReVal) || 0;
+          const alt = Number(window.__lastAltAed) || 0;
+          if (holdingsN === 0 && re <= 0 && alt <= 0) {
+            items.push({
+              id: 'nudge-add-assets',
+              t: 'Start tracking your wealth',
+              s: 'Tap + Add Asset or Real Estate to log stocks, gold, crypto, or property.',
+              urgent: false,
+              kind: 'tip'
+            });
+          }
+        } catch (_) {}
+
+        CC_SITE_UPDATES.forEach(u => {
+          items.push({
+            id: u.id,
+            t: u.t,
+            s: u.s,
+            urgent: !!u.urgent,
+            kind: 'update'
+          });
+        });
+
+        items.push({
+          id: 'tip-network',
+          t: 'CrossCap Network',
+          s: 'Share a market takeaway with other GCC investors under Insights → Network.',
+          urgent: false,
+          kind: 'tip'
+        });
+
+        return items;
+      }
+
       function refreshNotifications() {
         const list = document.getElementById('notifList');
         const badge = document.getElementById('notifBadge');
         if (!list) return;
-        const items = [];
-        try {
-          const pays = (typeof window.__lastUpcomingPayments === 'object' && window.__lastUpcomingPayments) ? window.__lastUpcomingPayments : [];
-          // Build from installment radar if available on page
-          const radar = document.getElementById('radarList');
-          if (radar && radar.children.length) {
-            [...radar.querySelectorAll('[data-notif-line], .text-\\[13px\\], p')].slice(0, 5);
-          }
-        } catch (_) {}
-        // From known globals / installment summary text
-        try {
-          const due30 = window.__lastDue30;
-          const overdue = window.__lastOverdue;
-          if (overdue && overdue > 0) items.push({ t: 'Overdue installments need attention', s: 'Open Real Estate · Payment radar', urgent: true });
-          if (due30 && due30 > 0) items.push({ t: 'Installments due within 30 days', s: 'Review Payment radar in Real Estate', urgent: false });
-        } catch (_) {}
-        // Local network tip
-        items.push({ t: 'CrossCap Network is live', s: 'Share a takeaway in Insights → Network', urgent: false });
+        const items = buildNotificationItems();
+        const read = notifReadSet();
+        const unreadItems = items.filter(i => !read.has(i.id));
+        const urgentUnread = unreadItems.filter(i => i.urgent);
+
         if (!items.length) {
           list.innerHTML = '<p class="px-2 py-3 text-zinc-400">No alerts yet.</p>';
           if (badge) badge.classList.add('hidden');
           return;
         }
-        list.innerHTML = items.map(i =>
-          '<div class="rounded-xl px-3 py-2.5 hover:bg-zinc-50 ' + (i.urgent ? 'bg-rose-50/50' : '') + '">' +
-          '<p class="text-[13px] font-medium text-zinc-900">' + i.t + '</p>' +
-          '<p class="text-[11px] text-zinc-500 mt-0.5">' + i.s + '</p></div>'
-        ).join('');
-        const unread = items.filter(i => i.urgent).length || items.length;
+
+        list.innerHTML = items.map(i => {
+          const isRead = read.has(i.id);
+          const bg = i.urgent && !isRead ? 'bg-rose-50/70' : (!isRead ? 'bg-brand-50/40' : 'hover:bg-zinc-50');
+          const dot = !isRead
+            ? '<span class="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5 ' + (i.urgent ? 'bg-rose-500' : 'bg-brand-600') + '"></span>'
+            : '<span class="w-1.5 h-1.5 shrink-0"></span>';
+          const kindLabel = ({
+            welcome: 'Welcome',
+            greeting: 'Today',
+            installment: 'Payments',
+            update: 'Product',
+            tip: 'Tip'
+          })[i.kind] || 'Update';
+          return '<div class="rounded-xl px-3 py-2.5 flex gap-2.5 ' + bg + '" data-notif-id="' + i.id + '">' +
+            dot +
+            '<div class="min-w-0 flex-1">' +
+            '<p class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-0.5">' + kindLabel + '</p>' +
+            '<p class="text-[13px] font-medium text-zinc-900 leading-snug">' + i.t + '</p>' +
+            '<p class="text-[11px] text-zinc-500 mt-0.5 leading-snug">' + i.s + '</p>' +
+            '</div></div>';
+        }).join('');
+
         if (badge) {
-          badge.textContent = String(Math.min(9, unread));
-          badge.classList.toggle('hidden', localStorage.getItem('cc_notif_read') === '1' && !items.some(x => x.urgent));
+          const n = unreadItems.length;
+          if (n <= 0) {
+            badge.classList.add('hidden');
+          } else {
+            badge.textContent = n > 9 ? '9+' : String(n);
+            badge.classList.remove('hidden');
+            badge.classList.toggle('bg-rose-500', urgentUnread.length > 0);
+            badge.classList.toggle('bg-brand-600', urgentUnread.length === 0);
+          }
         }
       }
 
-      
+      function completeWelcomeIfNeeded() {
+        try {
+          if (!currentUser?.id) return;
+          const key = 'cc_welcomed_' + currentUser.id;
+          if (localStorage.getItem(key) === '1') return;
+          localStorage.setItem(key, '1');
+          markNotifIdsRead(['welcome-' + currentUser.id]);
+          refreshNotifications();
+        } catch (_) {}
+      }
+
       document.getElementById('headerPrivacyBtn')?.addEventListener('click', () => {
         setPrivacyMode(!privacyMode);
       });
@@ -6934,7 +7103,12 @@ document.getElementById('headerNotifBtn')?.addEventListener('click', (e) => {
         if (panel && !panel.classList.contains('hidden')) refreshNotifications();
       });
       document.getElementById('notifMarkRead')?.addEventListener('click', () => {
-        try { localStorage.setItem('cc_notif_read', '1'); } catch (_) {}
+        try {
+          const items = buildNotificationItems();
+          markNotifIdsRead(items.map(i => i.id));
+          completeWelcomeIfNeeded();
+        } catch (_) {}
+        refreshNotifications();
         document.getElementById('notifBadge')?.classList.add('hidden');
       });
       document.addEventListener('click', (e) => {
