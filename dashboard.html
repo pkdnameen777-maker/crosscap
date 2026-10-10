@@ -1787,14 +1787,14 @@
 
               <div id="rentIncomeFields" class="grid sm:grid-cols-2 gap-3 hidden">
                 <div>
-                  <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Monthly rent income (AED)</label>
+                  <label id="reMonthlyRentLabel" class="block text-[12px] font-medium text-zinc-600 mb-1.5">Monthly rent income (AED)</label>
                   <input id="reMonthlyRent" type="number" step="any" placeholder="e.g. 8500" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]" />
                 </div>
                 <div>
                   <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Rent due day of month</label>
                   <input id="reRentDueDay" type="number" min="1" max="28" placeholder="1" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-[14px]" />
                 </div>
-                <p class="sm:col-span-2 text-[11px] text-zinc-400">Shown only for <span class="font-semibold">Ready</span> properties — not off-plan.</p>
+                <p class="sm:col-span-2 text-[11px] text-zinc-400">Shown only for <span class="font-semibold">Ready</span> properties — not off-plan. Rent is in the same currency as the property value above.</p>
               </div>
 
               <!-- SPA upload + AI extract -->
@@ -2750,13 +2750,17 @@
                     <option value="ml">Malayalam</option>
                   </select>
                 </div>
-                <div class="sm:col-span-2 flex items-center gap-2">
-                  <input type="checkbox" id="profileEmailAlerts" class="rounded border-zinc-300 text-brand-700" />
-                  <label for="profileEmailAlerts" class="text-[13px] text-zinc-700">Email me installment reminders</label>
-                </div>
-                <div class="sm:col-span-2 flex items-center gap-2">
-                  <input type="checkbox" id="profileWhatsappAlerts" class="rounded border-zinc-300 text-brand-700" />
-                  <label for="profileWhatsappAlerts" class="text-[13px] text-zinc-700">WhatsApp installment reminders (coming soon)</label>
+                <div class="sm:col-span-2 rounded-xl border border-brand-100 bg-brand-50/40 p-3 space-y-2">
+                  <p class="text-[12px] font-semibold text-zinc-800">Email alerts</p>
+                  <p class="text-[11px] text-zinc-500 leading-relaxed">Daily payment radar: overdue installments and dues in 30 / 14 / 7 / 3 / 1 days (and due today). Sent to your login email.</p>
+                  <div class="flex items-center gap-2 pt-1">
+                    <input type="checkbox" id="profileEmailAlerts" class="rounded border-zinc-300 text-brand-700" checked />
+                    <label for="profileEmailAlerts" class="text-[13px] text-zinc-700">Email me installment &amp; essential alerts</label>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <input type="checkbox" id="profileWhatsappAlerts" class="rounded border-zinc-300 text-brand-700" />
+                    <label for="profileWhatsappAlerts" class="text-[13px] text-zinc-500">WhatsApp alerts (coming soon)</label>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2994,7 +2998,7 @@
         } else {
           setTimeout(() => maybeShowPwaInstall(), 900);
         }
-        document.getElementById('profileEmailAlerts').checked = !!data?.email_alerts;
+        document.getElementById('profileEmailAlerts').checked = data?.email_alerts !== false; // default on
         document.getElementById('profileWhatsappAlerts').checked = !!data?.whatsapp_alerts;
         document.getElementById('profileAvatarPath').value = data?.avatar_path || '';
         if (data?.avatar_path) {
@@ -3441,11 +3445,20 @@
         document.getElementById('bedsWrap').style.display = use === 'residential' ? '' : 'none';
       }
 
+      function syncRentCurrencyLabel() {
+        const cur = (document.getElementById('reCurrency')?.value || 'AED').toUpperCase();
+        const lab = document.getElementById('reMonthlyRentLabel');
+        if (lab) lab.textContent = 'Monthly rent income (' + cur + ')';
+        const inp = document.getElementById('reMonthlyRent');
+        if (inp) inp.placeholder = cur === 'AED' ? 'e.g. 8500' : ('e.g. amount in ' + cur);
+      }
+
       function syncInstallmentsVisibility() {
         const status = document.getElementById('reStatus').value;
         document.getElementById('installmentsBuilder').style.display = status === 'offplan' ? '' : 'none';
         const rentBox = document.getElementById('rentIncomeFields');
         if (rentBox) rentBox.classList.toggle('hidden', status !== 'ready');
+        syncRentCurrencyLabel();
       }
 
       function addInstallmentRow(stage = '', due = '', amount = '') {
@@ -3481,6 +3494,7 @@
       });
       document.getElementById('reUseType')?.addEventListener('change', fillPropTypes);
       document.getElementById('reStatus')?.addEventListener('change', syncInstallmentsVisibility);
+      document.getElementById('reCurrency')?.addEventListener('change', syncRentCurrencyLabel);
 
       let spaUploading = false;
 
@@ -5319,13 +5333,21 @@
                 <div class="mt-3 border-t border-zinc-100 pt-3">
                   <div class="flex items-center justify-between mb-2">
                     <p class="text-[12px] font-semibold text-zinc-500">Rental income</p>
-                    <button onclick="logRentReceived('${p.id}', ${Number(p.monthly_rent)}, ${Number(p.rent_due_day)||1})" class="btn-act btn-act-edit">+ Rent received</button>
+                    <button onclick="logRentReceived('${p.id}', ${Number(p.monthly_rent)}, ${Number(p.rent_due_day)||1}, '${(p.__propCur || 'AED')}')" class="btn-act btn-act-edit">+ Rent received</button>
                   </div>
-                  <p class="text-[13px] text-zinc-700">${formatMoney(Number(p.monthly_rent) * aedToBase, { maximumFractionDigits: 0, minimumFractionDigits: 0 })} / month · due day ${p.rent_due_day || 1}</p>
+                  <p class="text-[13px] text-zinc-700"><span class="font-semibold tabular-nums">${(p.__propCur || 'AED')} ${Number(p.monthly_rent).toLocaleString(undefined,{maximumFractionDigits:0})}</span> / month · due day ${p.rent_due_day || 1}</p>
+                  ${(() => {
+                    const pc = (p.__propCur || 'AED').toUpperCase();
+                    if (pc === baseCurrency) return '';
+                    const rate = (typeof reRates !== 'undefined' && reRates[pc] != null) ? reRates[pc] : (pc === 'AED' ? aedToBase : null);
+                    if (rate == null) return '';
+                    const inBase = Number(p.monthly_rent) * rate;
+                    return '<p class="text-[11px] text-zinc-400 mt-0.5">≈ ' + formatMoney(inBase, { maximumFractionDigits: 0, minimumFractionDigits: 0 }) + ' / month in ' + baseCurrency + '</p>';
+                  })()}
                   <div id="rentHist-${p.id}" class="mt-2 space-y-1 text-[12px] text-zinc-500">Loading rent log…</div>
                 </div>` : (!isOffplan ? `<div class="mt-3 border-t border-zinc-100 pt-3">
                   <p class="text-[12px] text-zinc-500 mb-1">Rental income not set</p>
-                  <button type="button" onclick="setPropertyRent('${p.id}')" class="btn-act btn-act-edit">+ Set rent</button>
+                  <button type="button" onclick="setPropertyRent('${p.id}', '${(p.__propCur || p.currency || 'AED')}')" class="btn-act btn-act-edit">+ Set rent</button>
                 </div>` : '')}
                 ${instHtml}
               </div>
@@ -6667,12 +6689,13 @@
           const st = (r.status || 'received').toLowerCase();
           const color = st === 'received' ? 'text-emerald-700' : st === 'overdue' ? 'text-rose-600' : 'text-amber-700';
           const amt = Number(r.amount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-          return `<div class="grid grid-cols-[6.5rem_1fr_4.5rem] gap-2 items-center"><span class="tabular-nums text-zinc-600">${r.due_date}</span><span class="tabular-nums font-medium text-zinc-800 text-right">AED ${amt}</span><span class="${color} font-semibold text-right capitalize">${st}</span></div>`;
+          return `<div class="grid grid-cols-[6.5rem_1fr_4.5rem] gap-2 items-center"><span class="tabular-nums text-zinc-600">${r.due_date}</span><span class="tabular-nums font-medium text-zinc-800 text-right">${amt}</span><span class="${color} font-semibold text-right capitalize">${st}</span></div>`;
         }).join('');
       }
 
-      window.setPropertyRent = async function(propertyId) {
-        const rent = parseFloat(prompt('Monthly rent (AED)', '8500'));
+      window.setPropertyRent = async function(propertyId, currency) {
+        const cur = (currency || 'AED').toUpperCase();
+        const rent = parseFloat(prompt('Monthly rent (' + cur + ')', '8500'));
         if (isNaN(rent) || rent < 0) return;
         const day = parseInt(prompt('Due day of month (1-28)', '1'), 10) || 1;
         const { error } = await supabaseClient.from('properties').update({
@@ -6683,8 +6706,9 @@
         else loadProperties();
       };
 
-      window.logRentReceived = async function(propertyId, amount, dueDay) {
+      window.logRentReceived = async function(propertyId, amount, dueDay, currency) {
         if (!currentUser) return;
+        const cur = (currency || 'AED').toUpperCase();
         const now = new Date();
         const y = now.getFullYear();
         const m = now.getMonth(); // 0-based
@@ -6692,7 +6716,7 @@
         const due = `${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
         const custom = prompt('Due date for this rent (YYYY-MM-DD)', due);
         if (!custom) return;
-        const amt = parseFloat(prompt('Amount received (AED)', String(amount))) || amount;
+        const amt = parseFloat(prompt('Amount received (' + cur + ')', String(amount))) || amount;
         const { error } = await supabaseClient.from('rental_payments').insert([{
           user_id: currentUser.id,
           property_id: propertyId,
