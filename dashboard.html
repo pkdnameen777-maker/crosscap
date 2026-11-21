@@ -1389,6 +1389,15 @@
                 <label class="block text-[12px] font-medium text-zinc-600 mb-1.5">Avg cost <span id="stockCurLabel" class="text-zinc-400">(AED)</span></label>
                 <input id="stockPrice" type="number" step="any" placeholder="Price in market currency" class="w-full rounded-xl border border-zinc-200 px-3.5 py-3 text-[14px]" />
               </div>
+              <div class="rounded-xl border border-dashed border-brand-200 bg-brand-50/40 p-4">
+                <p class="text-[12px] font-semibold text-brand-900 mb-0.5">Extract from screenshot</p>
+                <p class="text-[11px] text-zinc-500 mb-3">Upload a photo of your broker / portfolio app. AI fills tickers, qty and cost — review before saving.</p>
+                <input type="file" id="portfolioShotFile" accept="image/*" class="block w-full text-[12px] text-zinc-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-white file:text-brand-700 file:text-[12px] file:font-semibold file:border file:border-zinc-200" />
+                <input type="hidden" id="portfolioShotPath" value="" />
+                <button type="button" id="extractPortfolioBtn" class="mt-3 w-full rounded-xl border border-brand-200 bg-white hover:bg-brand-50 text-brand-800 text-[13px] font-semibold py-2.5 transition disabled:opacity-50">Extract with AI</button>
+                <p id="extractPortfolioStatus" class="text-[12px] text-zinc-500 mt-2 hidden"></p>
+                <div id="extractPortfolioPreview" class="mt-3 hidden space-y-2"></div>
+              </div>
               <button type="button" id="saveStockBtn" class="w-full rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[14px] font-semibold px-5 py-3">Save stock</button>
             </div>
           </div>
@@ -3375,6 +3384,204 @@
         if (lab) lab.textContent = cur ? '(' + cur + ')' : '';
       });
 
+      
+      let portfolioShotUploading = false;
+      let lastExtractedHoldings = [];
+
+      function mapExtractMarket(m, currency) {
+        const s = String(m || '').toUpperCase();
+        const c = String(currency || '').toUpperCase();
+        if (s.includes('UAE') || s.includes('DFM') || s.includes('ADX') || c === 'AED') return 'UAE';
+        if (s.includes('US') || s.includes('NYSE') || s.includes('NASDAQ') || c === 'USD') return 'US';
+        if (s.includes('INDIA') || s.includes('NSE') || s.includes('BSE') || c === 'INR') return 'IN';
+        if (s.includes('SAUDI') || s.includes('TADAWUL') || c === 'SAR') return 'SA';
+        if (s.includes('UK') || s.includes('LSE') || c === 'GBP') return 'UK';
+        if (s.includes('HK') || c === 'HKD') return 'HK';
+        if (s.includes('JP') || s.includes('TSE') || c === 'JPY') return 'JP';
+        if (s.includes('CN') || s.includes('SSE') || c === 'CNY') return 'CN';
+        if (s.includes('EU') || s.includes('XETRA') || c === 'EUR') return 'EU';
+        if (s.includes('SG') || c === 'SGD') return 'SG';
+        if (s.includes('AU') || c === 'AUD') return 'AU';
+        if (s.includes('QA') || c === 'QAR') return 'QA';
+        if (s.includes('KW') || c === 'KWD') return 'KW';
+        if (s.includes('BH') || c === 'BHD') return 'BH';
+        if (s.includes('OM') || c === 'OMR') return 'OM';
+        return 'US';
+      }
+
+      function setStockMarketByCode(code) {
+        const sel = document.getElementById('stockMarket');
+        if (!sel) return;
+        if ([...sel.options].some(o => o.value === code)) {
+          sel.value = code;
+          const cur = sel.options[sel.selectedIndex].getAttribute('data-currency') || 'AED';
+          const lab = document.getElementById('stockCurLabel');
+          if (lab) lab.textContent = '(' + cur + ')';
+        }
+      }
+
+      function fillStockFormFromHolding(h) {
+        if (!h) return;
+        const sym = String(h.symbol || h.ticker || '').trim().toUpperCase();
+        const shares = h.shares != null ? h.shares : (h.quantity != null ? h.quantity : h.qty);
+        const avg = h.avg_cost != null ? h.avg_cost : (h.avg_buy_price != null ? h.avg_buy_price : h.price);
+        const currency = h.currency || '';
+        const market = mapExtractMarket(h.market || h.exchange, currency);
+        if (sym) document.getElementById('stockSymbol').value = sym;
+        setStockMarketByCode(market);
+        if (shares != null && shares !== '') document.getElementById('stockShares').value = shares;
+        if (avg != null && avg !== '') document.getElementById('stockPrice').value = avg;
+      }
+
+      function renderExtractedHoldings(list) {
+        const box = document.getElementById('extractPortfolioPreview');
+        if (!box) return;
+        lastExtractedHoldings = Array.isArray(list) ? list : [];
+        if (!lastExtractedHoldings.length) {
+          box.classList.add('hidden');
+          box.innerHTML = '';
+          return;
+        }
+        box.classList.remove('hidden');
+        const rows = lastExtractedHoldings.map((h, i) => {
+          const sym = String(h.symbol || h.ticker || '—').toUpperCase();
+          const shares = h.shares != null ? h.shares : (h.quantity != null ? h.quantity : '—');
+          const avg = h.avg_cost != null ? h.avg_cost : (h.avg_buy_price != null ? h.avg_buy_price : '—');
+          const cur = h.currency || '';
+          const mkt = mapExtractMarket(h.market || h.exchange, cur);
+          return '<label class="flex items-start gap-2 rounded-lg border border-zinc-100 bg-white px-3 py-2 text-[12px] cursor-pointer hover:border-brand-200">' +
+            '<input type="checkbox" class="extract-hold-cb mt-0.5" data-idx="' + i + '" checked />' +
+            '<span class="min-w-0"><span class="font-semibold text-zinc-900">' + sym + '</span>' +
+            ' <span class="text-zinc-400">· ' + mkt + (cur ? ' · ' + cur : '') + '</span><br/>' +
+            'Qty ' + shares + ' · Avg ' + avg +
+            ' <button type="button" class="extract-fill-one text-brand-700 font-semibold ml-1" data-idx="' + i + '">Fill form</button></span></label>';
+        }).join('');
+        box.innerHTML = '<p class="text-[11px] font-semibold text-zinc-600">Found ' + lastExtractedHoldings.length + ' holding(s) — review, then add</p>' +
+          rows +
+          '<button type="button" id="btnAddExtractedHoldings" class="w-full rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-[13px] font-semibold py-2.5 mt-1">Add selected to portfolio</button>';
+        box.querySelectorAll('.extract-fill-one').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const i = parseInt(btn.getAttribute('data-idx'), 10);
+            fillStockFormFromHolding(lastExtractedHoldings[i]);
+          });
+        });
+        document.getElementById('btnAddExtractedHoldings')?.addEventListener('click', async () => {
+          if (!currentUser) return;
+          const cbs = [...box.querySelectorAll('.extract-hold-cb:checked')];
+          if (!cbs.length) { alert('Select at least one holding.'); return; }
+          const status = document.getElementById('extractPortfolioStatus');
+          let ok = 0, fail = 0;
+          for (const cb of cbs) {
+            const h = lastExtractedHoldings[parseInt(cb.getAttribute('data-idx'), 10)];
+            if (!h) continue;
+            const symbol = String(h.symbol || h.ticker || '').trim().toUpperCase();
+            const shares = parseFloat(h.shares != null ? h.shares : (h.quantity != null ? h.quantity : h.qty));
+            const avg_buy_price = parseFloat(h.avg_cost != null ? h.avg_cost : (h.avg_buy_price != null ? h.avg_buy_price : h.price));
+            const currency = String(h.currency || 'USD').toUpperCase();
+            const market = mapExtractMarket(h.market || h.exchange, currency);
+            if (!symbol || isNaN(shares) || isNaN(avg_buy_price)) { fail++; continue; }
+            try {
+              await upsertHolding({ symbol, market, currency, shares, avg_buy_price, asset_type: 'stocks' });
+              ok++;
+            } catch (e) { console.warn(e); fail++; }
+          }
+          if (status) {
+            status.classList.remove('hidden');
+            status.textContent = 'Added ' + ok + (fail ? (', skipped ' + fail) : '') + '. Review Portfolio.';
+            status.className = 'text-[12px] text-emerald-600 mt-2';
+          }
+          portfolioAssetFilter = 'stocks';
+          showView('portfolio');
+          await loadPortfolio();
+          applyPortfolioAssetFilter();
+        });
+      }
+
+      async function uploadPortfolioShot(file) {
+        if (!currentUser || !file) return null;
+        const status = document.getElementById('extractPortfolioStatus');
+        const pathEl = document.getElementById('portfolioShotPath');
+        if (status) { status.classList.remove('hidden'); status.textContent = 'Uploading screenshot…'; status.className = 'text-[12px] text-zinc-500 mt-2'; }
+        portfolioShotUploading = true;
+        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+        const path = currentUser.id + '/portfolio-' + Date.now() + '.' + (ext === 'png' ? 'png' : (ext === 'webp' ? 'webp' : 'jpg'));
+        const { error } = await supabaseClient.storage.from('spa-uploads').upload(path, file, {
+          upsert: true,
+          contentType: file.type || 'image/jpeg'
+        });
+        portfolioShotUploading = false;
+        if (error) {
+          if (status) { status.textContent = 'Upload failed: ' + error.message; status.className = 'text-[12px] text-rose-600 mt-2'; }
+          return null;
+        }
+        if (pathEl) pathEl.value = path;
+        if (status) { status.textContent = 'Uploaded. Tap Extract with AI.'; status.className = 'text-[12px] text-zinc-500 mt-2'; }
+        return path;
+      }
+
+      document.getElementById('portfolioShotFile')?.addEventListener('change', async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (file) await uploadPortfolioShot(file);
+      });
+
+      document.getElementById('extractPortfolioBtn')?.addEventListener('click', async () => {
+        let path = document.getElementById('portfolioShotPath')?.value?.trim() || '';
+        const status = document.getElementById('extractPortfolioStatus');
+        const btn = document.getElementById('extractPortfolioBtn');
+        const fileInput = document.getElementById('portfolioShotFile');
+        if (!path && fileInput?.files?.[0]) {
+          path = await uploadPortfolioShot(fileInput.files[0]) || '';
+        }
+        if (!path) {
+          alert('Upload a portfolio screenshot first.');
+          return;
+        }
+        if (portfolioShotUploading) {
+          alert('Please wait for upload to finish.');
+          return;
+        }
+        btn.disabled = true;
+        if (status) { status.classList.remove('hidden'); status.textContent = 'Reading screenshot with AI…'; status.className = 'text-[12px] text-zinc-500 mt-2'; }
+        try {
+          const { data: sessionData } = await supabaseClient.auth.getSession();
+          const token = sessionData?.session?.access_token;
+          const res = await fetch(`${SUPABASE_URL}/functions/v1/extract-portfolio`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+              'apikey': SUPABASE_ANON_KEY
+            },
+            body: JSON.stringify({ path })
+          });
+          const json = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            const detailMsg = json?.detail?.error?.message || json?.detail?.message || '';
+            throw new Error((json.error || json.message || ('HTTP ' + res.status)) + (detailMsg ? (' — ' + detailMsg) : ''));
+          }
+          const data = json.data || json;
+          const holdings = Array.isArray(data.holdings) ? data.holdings : (Array.isArray(data) ? data : []);
+          if (!holdings.length) throw new Error('No holdings found in image. Try a clearer screenshot.');
+          renderExtractedHoldings(holdings);
+          if (holdings.length === 1) fillStockFormFromHolding(holdings[0]);
+          if (status) {
+            status.textContent = 'Found ' + holdings.length + ' row(s). Review list below or Fill form, then save.';
+            status.className = 'text-[12px] text-emerald-600 mt-2';
+          }
+        } catch (err) {
+          console.error(err);
+          if (status) {
+            status.textContent = 'Extract failed: ' + (err.message || err);
+            status.className = 'text-[12px] text-rose-600 mt-2';
+          }
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+
       document.getElementById('saveStockBtn')?.addEventListener('click', async () => {
         if (!currentUser) return;
         const symbol = document.getElementById('stockSymbol').value.trim().toUpperCase();
@@ -4462,7 +4669,7 @@
   .annex p.sub { font-size: 12px; color: #a1a1aa; margin: 0 0 20px; }
   table { width: 100%; border-collapse: collapse; }
   .toolbar { position: sticky; top: 0; background: #fff; border-bottom: 1px solid #e4e4e7; padding: 12px 16px; display: flex; gap: 8px; justify-content: flex-end; z-index: 10; }
-  .toolbar button { font-family: inherit; font-size: 13px; font-weight: 600; border-radius: 10px; padding: 8px 14px; cursor: pointer; border: 1px solid #e4e4e7; background: #fff; }
+  .toolbar button { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; font-size: 13px; font-weight: 600; border-radius: 10px; padding: 8px 14px; cursor: pointer; border: 1px solid #e4e4e7; background: #fff; }
   .toolbar button.primary { background: #6d28d9; color: #fff; border-color: #6d28d9; }
   .brand { font-size: 12px; font-weight: 700; color: #6d28d9; letter-spacing: 0.04em; margin-bottom: 28px; }
 </style></head><body>
