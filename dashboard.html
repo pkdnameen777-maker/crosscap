@@ -3223,24 +3223,33 @@
         syncCurrencyLabel();
       }
 
-      async function upsertHolding({ symbol, market, currency, shares, avg_buy_price, asset_type }) {
+      async function upsertHolding({ symbol, market, currency, shares, avg_buy_price, asset_type, mode }) {
+        // mode: 'replace' = set qty/avg from screenshot (default for extract)
+        //       'merge'   = add shares & weighted avg (manual "bought more")
+        const replace = mode !== 'merge';
         const { data: existingH } = await supabaseClient.from('holdings').select('*')
           .eq('user_id', currentUser.id)
           .ilike('symbol', symbol)
           .eq('market', market)
           .maybeSingle();
         if (existingH) {
-          const oldSh = Number(existingH.shares) || 0;
-          const oldAvg = Number(existingH.avg_buy_price) || 0;
-          const newSh = oldSh + shares;
-          const newAvg = newSh > 0 ? ((oldSh * oldAvg) + (shares * avg_buy_price)) / newSh : avg_buy_price;
+          let newSh, newAvg;
+          if (replace) {
+            newSh = shares;
+            newAvg = avg_buy_price;
+          } else {
+            const oldSh = Number(existingH.shares) || 0;
+            const oldAvg = Number(existingH.avg_buy_price) || 0;
+            newSh = oldSh + shares;
+            newAvg = newSh > 0 ? ((oldSh * oldAvg) + (shares * avg_buy_price)) / newSh : avg_buy_price;
+          }
           const res = await supabaseClient.from('holdings').update({
             shares: newSh,
             avg_buy_price: newAvg,
             currency
           }).eq('id', existingH.id);
           if (res.error) throw new Error(res.error.message);
-          return 'merged';
+          return replace ? 'updated' : 'merged';
         }
         const res = await supabaseClient.from('holdings').insert([{
           user_id: currentUser.id,
@@ -3469,10 +3478,17 @@
         });
         document.getElementById('btnAddExtractedHoldings')?.addEventListener('click', async () => {
           if (!currentUser) return;
+          const btn = document.getElementById('btnAddExtractedHoldings');
+          if (btn && btn.dataset.busy === '1') return; // prevent double / triple click
           const cbs = [...box.querySelectorAll('.extract-hold-cb:checked')];
           if (!cbs.length) { alert('Select at least one holding.'); return; }
+          if (btn) {
+            btn.dataset.busy = '1';
+            btn.disabled = true;
+            btn.textContent = 'Saving…';
+          }
           const status = document.getElementById('extractPortfolioStatus');
-          let ok = 0, fail = 0;
+          let created = 0, updated = 0, fail = 0;
           for (const cb of cbs) {
             const h = lastExtractedHoldings[parseInt(cb.getAttribute('data-idx'), 10)];
             if (!h) continue;
@@ -3483,15 +3499,27 @@
             const market = mapExtractMarket(h.market || h.exchange, currency);
             if (!symbol || isNaN(shares) || isNaN(avg_buy_price)) { fail++; continue; }
             try {
-              await upsertHolding({ symbol, market, currency, shares, avg_buy_price, asset_type: 'stocks' });
-              ok++;
+              // Screenshot = current totals → replace, do not stack on old qty
+              const result = await upsertHolding({
+                symbol, market, currency, shares, avg_buy_price,
+                asset_type: 'stocks', mode: 'replace'
+              });
+              if (result === 'created') created++;
+              else updated++;
             } catch (e) { console.warn(e); fail++; }
           }
           if (status) {
             status.classList.remove('hidden');
-            status.textContent = 'Added ' + ok + (fail ? (', skipped ' + fail) : '') + '. Review Portfolio.';
+            const parts = [];
+            if (updated) parts.push(updated + ' updated');
+            if (created) parts.push(created + ' added');
+            if (fail) parts.push(fail + ' skipped');
+            status.textContent = (parts.join(', ') || 'Done') + '. Review Portfolio.';
             status.className = 'text-[12px] text-emerald-600 mt-2';
           }
+          // Clear extract list so a second click cannot re-apply
+          lastExtractedHoldings = [];
+          box.innerHTML = '';
           portfolioAssetFilter = 'stocks';
           showView('portfolio');
           await loadPortfolio();
